@@ -1,0 +1,9 @@
+node_modules/
+dist/
+# Thư mục ios/ được tạo bằng `npx cap add ios` trên Mac — xem IOS-SETUP-NOTE.md.
+# Khi đẩy lên repo fotobro thì vẫn commit ios/ (đã có sẵn cert/profile cấu hình),
+# nhưng KHÔNG commit các file chứa secret (xem BUILD-GUIDE.md).
+*.mobileprovision
+*.p12
+*.key
+AuthKey_*.p8
