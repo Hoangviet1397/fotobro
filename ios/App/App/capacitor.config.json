@@ -1,0 +1,41 @@
+{
+	"appId": "com.fotobro.app",
+	"appName": "FotoBro",
+	"webDir": "www",
+	"backgroundColor": "#FFFFFF",
+	"ios": {
+		"contentInset": "always"
+	},
+	"server": {
+		"androidScheme": "https"
+	},
+	"plugins": {
+		"SplashScreen": {
+			"launchShowDuration": 800,
+			"launchAutoHide": true,
+			"backgroundColor": "#FFFFFF",
+			"showSpinner": false
+		},
+		"StatusBar": {
+			"style": "DEFAULT",
+			"backgroundColor": "#FFFFFF",
+			"overlaysWebView": false
+		},
+		"LocalNotifications": {
+			"smallIcon": "ic_stat_icon",
+			"iconColor": "#FA2D48"
+		}
+	},
+	"packageClassList": [
+		"AppPlugin",
+		"CAPBrowserPlugin",
+		"CalendarPlugin",
+		"CAPCameraPlugin",
+		"HapticsPlugin",
+		"LocalNotificationsPlugin",
+		"PreferencesPlugin",
+		"SharePlugin",
+		"SplashScreenPlugin",
+		"StatusBarPlugin"
+	]
+}
