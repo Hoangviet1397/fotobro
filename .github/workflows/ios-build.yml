@@ -62,10 +62,18 @@ jobs:
           fi
           echo "Đủ 6 secret bắt buộc."
 
-      - name: Chọn Xcode 26
-        uses: maximedenes/xcode-select@v1
-        with:
-          xcode-version: '26.3'
+      # Sửa 01:37 20/11/2026: bỏ action maximedenes/xcode-select@v1 — repo
+      # action này đã không còn tồn tại trên GitHub nên job lỗi ngay ở bước
+      # "Set up job" (lần chạy #1 thất bại sau 8 giây). Chọn Xcode trực tiếp
+      # bằng xcode-select, bước Xác minh Xcode 26 phía dưới giữ nguyên.
+      - name: Chọn Xcode 26.3
+        run: |
+          if [ -d /Applications/Xcode_26.3.app ]; then
+            sudo xcode-select -s /Applications/Xcode_26.3.app
+          else
+            echo "::error::Không thấy /Applications/Xcode_26.3.app — các bản Xcode có sẵn:"; ls /Applications | grep -i Xcode; exit 1
+          fi
+          xcodebuild -version
 
       - name: Xác minh Xcode 26
         run: |
