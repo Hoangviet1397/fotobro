@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CAPACITOR_DEBUG</key>
+	<string>$(CAPACITOR_DEBUG)</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>FotoBro</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>FotoBro cần máy ảnh để bạn chụp ảnh mới làm ảnh trang chủ của app.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>FotoBro lưu ảnh bạn chọn làm ảnh trang chủ trên máy của bạn.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>FotoBro cần xem thư viện ảnh để bạn chọn ảnh làm ảnh trang chủ của app.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>FotoBro cần đọc Lịch iPhone để nhập buổi chụp 30 ngày tới thành job — chỉ khi bạn bấm "Nhập từ Lịch iPhone".</string>
+	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+	<string>FotoBro cần ghi buổi chụp vào Lịch iPhone khi bạn bấm "Thêm vào Lịch iPhone" trong chi tiết job.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>FotoBro cần đọc và ghi Lịch iPhone để nhập buổi chụp thành job và thêm buổi chụp vào lịch của bạn.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>FotoBro dùng Face ID để mở khoá app khi bạn đã bật khoá (thay cho mã PIN).</string>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>Default Configuration</string>
+					<key>UISceneDelegateClassName</key>
+					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+					<key>UISceneStoryboardFile</key>
+					<string>Main</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>armv7</string>
+	</array>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.fotobro.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.fotobro.app</string>
+			</array>
+		</dict>
+		<!-- Google OAuth iOS — PLACEHOLDER, CHƯA CÓ CLIENT ID THẬT (L1, SECURITY-AUDIT):
+		     Scheme 'com.googleusercontent.apps.CHUA-CO-CLIENT-ID' dưới đây là
+		     GIỮ CHỖ, PHẢI THAY bằng reversed client ID thật
+		     (com.googleusercontent.apps.&lt;Client-ID-phần-đầu&gt;) ngay khi có
+		     Client ID iOS thật — xem GOOGLE-SETUP.md §2c. Nếu build cuối mà
+		     vẫn để placeholder, đăng nhập Google lỗi redirect_uri_mismatch.
+		     Scheme này phải khớp googleRedirectScheme() trong www/index.html. -->
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.googleusercontent.apps.fotobro</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.CHUA-CO-CLIENT-ID</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>
