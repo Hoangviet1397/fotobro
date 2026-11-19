@@ -1,0 +1,29 @@
+{
+  "dependencies": {
+    "@capacitor/app": "^8.0.0",
+    "@capacitor/browser": "^8.0.0",
+    "@capacitor/calendar": "^1.0.1",
+    "@capacitor/camera": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
+    "@capacitor/haptics": "^8.0.0",
+    "@capacitor/ios": "^8.6.2",
+    "@capacitor/local-notifications": "^8.0.0",
+    "@capacitor/preferences": "^8.0.0",
+    "@capacitor/share": "^8.0.0",
+    "@capacitor/splash-screen": "^8.0.0",
+    "@capacitor/status-bar": "^8.0.0"
+  },
+  "description": "FotoBro — trợ lý studio ảnh cho nhiếp ảnh gia tự do. Bản iOS v1 (Capacitor 8, com.fotobro.app), base web FotoBro v2.6 tối giản.",
+  "devDependencies": {
+    "@capacitor/cli": "^8.0.0",
+    "typescript": "^5.6.0"
+  },
+  "name": "fotobro",
+  "private": true,
+  "scripts": {
+    "build:ios": "npx cap sync ios",
+    "open:ios": "npx cap open ios",
+    "sync": "npx cap sync ios"
+  },
+  "version": "2.0.0"
+}
