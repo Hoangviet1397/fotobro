@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hỗ trợ — FotoBro</title>
+<meta name="description" content="Trang hỗ trợ FotoBro: cách dùng nhanh, câu hỏi thường gặp và liên hệ hỗ trợ." />
+<style>
+  :root{
+    --accent:#FA2D48; --text:#111111; --muted:#6e6e73; --bg:#ffffff;
+    --card:#f5f5f7; --border:#e5e5ea; --link:#FA2D48;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --text:#f5f5f7; --muted:#a1a1a6; --bg:#000000; --card:#1c1c1e; --border:#38383a; }
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height:1.6; -webkit-text-size-adjust:100%;
+  }
+  main{ max-width:760px; margin:0 auto; padding:32px 20px 64px; }
+  header h1{ font-size:34px; line-height:1.15; letter-spacing:-.02em; margin:8px 0 4px; }
+  header p{ color:var(--muted); margin:0 0 8px; font-size:17px; }
+  .eyebrow{ color:var(--accent); font-weight:700; font-size:13px; letter-spacing:.08em; text-transform:uppercase; }
+  .lang{ display:flex; gap:8px; margin:16px 0 24px; }
+  .lang button{
+    font:inherit; font-size:15px; font-weight:600; padding:8px 16px; border-radius:999px;
+    border:1px solid var(--border); background:var(--card); color:var(--text); cursor:pointer;
+  }
+  .lang button[aria-pressed="true"]{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  section{ margin-top:32px; }
+  h2{ font-size:24px; letter-spacing:-.01em; margin:0 0 12px; }
+  h3{ font-size:18px; margin:20px 0 6px; }
+  p{ margin:8px 0; }
+  ul, ol{ margin:8px 0; padding-left:22px; }
+  li{ margin:6px 0; }
+  .card{
+    background:var(--card); border:1px solid var(--border); border-radius:20px;
+    padding:20px; margin:12px 0;
+  }
+  .card h2, .card h3{ margin-top:0; }
+  a{ color:var(--link); text-decoration:none; }
+  a:hover{ text-decoration:underline; }
+  .btn{
+    display:inline-block; background:var(--accent); color:#fff; font-weight:700;
+    padding:12px 22px; border-radius:999px; margin-top:8px;
+  }
+  .btn:hover{ text-decoration:none; opacity:.9; }
+  .steps{ counter-reset:step; list-style:none; padding:0; }
+  .steps li{ counter-increment:step; padding-left:44px; position:relative; min-height:32px; }
+  .steps li::before{
+    content:counter(step); position:absolute; left:0; top:0; width:28px; height:28px;
+    border-radius:50%; background:var(--accent); color:#fff; font-weight:700;
+    display:flex; align-items:center; justify-content:center; font-size:15px;
+  }
+  details{ border:1px solid var(--border); border-radius:16px; padding:14px 18px; margin:10px 0; background:var(--card); }
+  summary{ font-weight:700; font-size:17px; cursor:pointer; }
+  details p{ margin:10px 0 4px; }
+  footer{ margin-top:40px; color:var(--muted); font-size:14px; }
+  .note{ font-size:14px; color:var(--muted); }
+  [lang="en"]{ display:none; }
+  html[lang="en"] [lang="en"]{ display:block; }
+  html[lang="en"] [lang="vi"]{ display:none; }
+  html[lang="en"] [lang="vi"].inline{ display:inline; }
+  [lang="vi"].inline{ display:inline; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <p class="eyebrow">FotoBro</p>
+    <h1 lang="vi">Hỗ trợ</h1>
+    <h1 lang="en">Support</h1>
+    <p lang="vi">Trợ lý studio ảnh cho nhiếp ảnh gia tự do. Trang này giúp bạn bắt đầu nhanh và tự xử lý các vấn đề thường gặp.</p>
+    <p lang="en">A studio assistant for freelance photographers. This page helps you get started quickly and fix common issues yourself.</p>
+    <p class="note" lang="vi">FotoBro v1.0 · Cập nhật: 20/11/2026</p>
+    <p class="note" lang="en">FotoBro v1.0 · Updated: 20 November 2026</p>
+  </header>
+
+  <div class="lang" role="group" aria-label="Ngôn ngữ / Language">
+    <button type="button" id="btn-vi" aria-pressed="true" onclick="setLang('vi')">Tiếng Việt</button>
+    <button type="button" id="btn-en" aria-pressed="false" onclick="setLang('en')">English</button>
+  </div>
+
+  <section class="card" aria-labelledby="contact-h">
+    <h2 id="contact-h" lang="vi">Liên hệ hỗ trợ</h2>
+    <h2 id="contact-h-en" lang="en">Contact support</h2>
+    <p lang="vi">Gặp vấn đề không tự xử lý được? Gửi email cho chúng tôi, ghi rõ mẫu iPhone, phiên bản iOS và phiên bản FotoBro bạn đang dùng.</p>
+    <p lang="en">Still stuck? Email us and include your iPhone model, iOS version and FotoBro version.</p>
+    <a class="btn" href="mailto:support@fotobro.app?subject=FotoBro%20%E2%80%94%20H%E1%BB%97%20tr%E1%BB%A3">✉️ support@fotobro.app</a>
+    <p class="note" lang="vi">Bạn cũng có thể xem mã nguồn và báo lỗi tại <a href="https://github.com/Hoangviet1397/fotobro">github.com/Hoangviet1397/fotobro</a>.</p>
+    <p class="note" lang="en">You can also view the source and report issues at <a href="https://github.com/Hoangviet1397/fotobro">github.com/Hoangviet1397/fotobro</a>.</p>
+  </section>
+
+  <section aria-labelledby="quick-h">
+    <h2 id="quick-h" lang="vi">Cách dùng nhanh</h2>
+    <h2 id="quick-h-en" lang="en">Quick start</h2>
+    <ol class="steps">
+      <li lang="vi"><strong>Tạo job:</strong> mở tab <strong>Job</strong>, bấm <strong>+ Job mới</strong>, nhập tên khách, loại chụp (Portrait, Couple, Wedding, Lookbook, Event), ngày giờ chụp, địa điểm và giá.</li>
+      <li lang="en"><strong>Create a job:</strong> open the <strong>Jobs</strong> tab, tap <strong>+ New job</strong>, then enter the client name, shoot type (Portrait, Couple, Wedding, Lookbook, Event), date and time, location and price.</li>
+      <li lang="vi"><strong>Đi theo pipeline 8 bước:</strong> Tư vấn → Chốt cọc → Sắp chụp → Đã chụp → Chọn ảnh → Hậu kỳ → Đã giao → Xong. Chạm vào bước cần để nhảy tới, không cần đi từng bước một.</li>
+      <li lang="en"><strong>Follow the 8-step pipeline:</strong> Consultation → Deposit → Ready to shoot → Shot → Photo selection → Editing → Delivered → Done. Tap any step to jump straight to it.</li>
+      <li lang="vi"><strong>Ghi tiền:</strong> trong chi tiết job, ghi cọc khi Chốt cọc và thu nốt khi Đã giao. App cảnh báo nếu bạn bấm Xong mà khách còn thiếu tiền.</li>
+      <li lang="en"><strong>Record money:</strong> in the job detail, record the deposit at the Deposit step and the balance at Delivered. The app warns you if you mark a job Done while money is still owed.</li>
+      <li lang="vi"><strong>Nhắc lịch:</strong> app nhắc trước giờ chụp và hạn giao ảnh. Bạn có thể huỷ job (Huỷ / Không chốt) và khôi phục lại khi cần.</li>
+      <li lang="en"><strong>Reminders:</strong> the app reminds you before the shoot and before the delivery deadline. You can cancel a job (Cancelled / Not confirmed) and restore it later.</li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="faq-h">
+    <h2 id="faq-h" lang="vi">Câu hỏi thường gặp</h2>
+    <h2 id="faq-h-en" lang="en">Frequently asked questions</h2>
+
+    <details>
+      <summary lang="vi">Tôi quên mã khoá (PIN) của app thì làm sao?</summary>
+      <summary lang="en">I forgot my app lock PIN. What can I do?</summary>
+      <p lang="vi">Mã khoá chỉ lưu trên iPhone của bạn, chúng tôi không giữ bản sao và không thể mở khoá từ xa. Cách duy nhất là gỡ app rồi cài lại và khôi phục từ bản sao lưu bạn đã xuất trước đó (Cài đặt → Sao lưu). Dữ liệu chưa sao lưu sẽ mất theo app đã gỡ, vì app không có máy chủ lưu dữ liệu của bạn.</p>
+      <p lang="en">Your lock PIN lives only on your iPhone. We do not keep a copy and cannot unlock it remotely. The only way back in is to delete the app, reinstall it and restore from a backup you exported earlier (Settings → Backup). Data that was never backed up is lost when the app is deleted, because the app has no server storing your data.</p>
+    </details>
+
+    <details>
+      <summary lang="vi">Tôi bị mất dữ liệu (job, sổ tiền) thì khôi phục thế nào?</summary>
+      <summary lang="en">I lost my data (jobs, money ledger). How do I restore it?</summary>
+      <p lang="vi">FotoBro lưu dữ liệu chỉ trên máy bạn (Nấc 1 miễn phí, local-first) và không đồng bộ lên máy chủ nào, nên chúng tôi không thể khôi phục giúp bạn. Hãy xuất bản sao lưu định kỳ trong Cài đặt → Sao lưu, rồi nhập lại file đó khi đổi máy hoặc cài lại app. Bản sao lưu có ảnh sẽ nặng, nên hãy giữ file sao lưu ở nơi an toàn (Files, iCloud Drive).</p>
+      <p lang="en">FotoBro stores your data only on your device (Tier 1, free, local-first) and does not sync it to any server, so we cannot restore it for you. Export a backup regularly in Settings → Backup, then import that file when you change phones or reinstall the app. Backups with photos are large, so keep the file somewhere safe (Files, iCloud Drive).</p>
+    </details>
+
+    <details>
+      <summary lang="vi">Đăng nhập Google để làm gì, và ngắt kết nối ra sao?</summary>
+      <summary lang="en">What is Google sign-in for, and how do I disconnect it?</summary>
+      <p lang="vi">Đăng nhập Google 1 chạm trong app cho bạn: xem Lịch Google, tìm tiền về và khách hỏi chụp trong Gmail, xem Danh bạ và thư mục Drive của job, ghi buổi chụp vào Google Lịch và gửi email cho khách. App chỉ đọc những gì bạn cho phép, ngay trên máy bạn. Muốn ngắt, vào Cài đặt → Google → Ngắt kết nối; quyền sẽ bị thu hồi ngay. Nếu Google báo hết hạn, đăng nhập lại là được.</p>
+      <p lang="en">One-tap Google sign-in gives you: Google Calendar, Gmail (money received and client enquiries), Contacts, Drive folders for each job, writing shoots to Google Calendar, and emailing clients. The app only reads what you allowed, on your device. To disconnect, go to Settings → Google → Disconnect; access is revoked immediately. If Google says the session expired, just sign in again.</p>
+    </details>
+
+    <details>
+      <summary lang="vi">Nhập buổi chụp từ Lịch iPhone như thế nào?</summary>
+      <summary lang="en">How do I import shoots from iPhone Calendar?</summary>
+      <p lang="vi">Trong app, chọn <strong>Nhập từ Lịch iPhone</strong> và cho phép app đọc Lịch khi iPhone hỏi. App tự lấy các sự kiện trong 30 ngày tới và tạo thành buổi chụp (tên khách, ngày, giờ, địa điểm, ghi chú). Bạn có thể tắt quyền này bất cứ lúc nào trong Cài đặt iPhone → Quyền riêng tư &amp; Bảo mật → Lịch → FotoBro. Nhắc trong app vẫn là nhắc chính, không phụ thuộc vào Lịch iPhone.</p>
+      <p lang="en">In the app, choose <strong>Import from iPhone Calendar</strong> and allow Calendar access when your iPhone asks. The app pulls events from the next 30 days and turns them into shoots (client, date, time, location, notes). You can revoke this anytime in iPhone Settings → Privacy &amp; Security → Calendars → FotoBro. Reminders inside the app are still the main reminders and do not depend on iPhone Calendar.</p>
+    </details>
+
+    <details>
+      <summary lang="vi">Sao job của tôi không hiện trên màn hình Hôm nay?</summary>
+      <summary lang="en">Why doesn't my job show on the Today screen?</summary>
+      <p lang="vi">Màn hình Hôm nay chỉ hiện job cần làm hôm nay: job chụp hôm nay, job tới hạn giao, job kẹt ở một bước quá lâu, và khoản tiền cần thu. Job ở bước Tư vấn chưa có ngày chụp, job đã Xong hoặc đã Huỷ sẽ không hiện ở đây — bạn vẫn thấy chúng trong tab Job.</p>
+      <p lang="en">The Today screen only shows jobs that need attention today: shoots happening today, jobs due for delivery, jobs stuck at one step for too long, and money to collect. Jobs in Consultation without a shoot date, and jobs that are Done or Cancelled, do not appear here — you can still find them in the Jobs tab.</p>
+    </details>
+
+    <details>
+      <summary lang="vi">App có thu phí không? Đồng bộ iCloud (CloudKit) dùng sao?</summary>
+      <summary lang="en">Is the app paid? How does iCloud (CloudKit) sync work?</summary>
+      <p lang="vi">Nấc 1 (dùng trên 1 máy, dữ liệu chỉ trên máy) là miễn phí. Đồng bộ / sao lưu mã hoá qua iCloud (CloudKit) và tính năng nhóm/studio là tính năng trả phí, sẽ có giá cụ thể trong app khi ra mắt — hiện chưa bật thu phí. Ảnh gốc không đồng bộ lên CloudKit, chỉ thông tin ảnh được đồng bộ; ảnh ở lại trên máy bạn và trong file sao lưu mã hoá của bạn.</p>
+      <p lang="en">Tier 1 (one device, data only on that device) is free. Encrypted iCloud (CloudKit) sync/backup and team/studio features are paid, with prices shown in the app when they launch — charging is not enabled yet. Original photos are not synced to CloudKit, only photo metadata; photos stay on your device and inside your encrypted backup file.</p>
+    </details>
+
+    <details>
+      <summary lang="vi">App mở không lên / bị lỗi thì làm gì trước?</summary>
+      <summary lang="en">The app won't open or shows an error. What should I try first?</summary>
+      <p lang="vi">Thử theo thứ tự: 1) Tắt hẳn app rồi mở lại. 2) Khởi động lại iPhone. 3) Kiểm tra còn dung lượng trống và đang dùng FotoBro bản mới nhất trên TestFlight/App Store. 4) Xuất bản sao lưu trước nếu app còn mở được. Nếu vẫn lỗi, gửi email cho chúng tôi kèm ảnh chụp màn hình lỗi và các bước bạn vừa làm.</p>
+      <p lang="en">Try in order: 1) Force-close the app and reopen it. 2) Restart your iPhone. 3) Check you have free storage and are on the latest FotoBro version from TestFlight / the App Store. 4) Export a backup first if the app still opens. If it still fails, email us with a screenshot of the error and the steps you just tried.</p>
+    </details>
+  </section>
+
+  <section class="card" aria-labelledby="privacy-h">
+    <h2 id="privacy-h" lang="vi">Riêng tư</h2>
+    <h2 id="privacy-h-en" lang="en">Privacy</h2>
+    <p lang="vi">Dữ liệu của bạn chỉ nằm trên iPhone của bạn. App không có máy chủ riêng, không bán dữ liệu, không quảng cáo, không theo dõi bạn. Chỉ khi bạn tự đăng nhập Google thì app mới đọc Lịch / Gmail / Danh bạ / Drive của bạn, theo đúng quyền bạn đã cho. Xem đầy đủ tại <a href="https://hoangviet1397.github.io/fotobro/PRIVACY.html">Chính sách riêng tư</a>.</p>
+    <p lang="en">Your data stays only on your iPhone. The app has no server of its own, sells no data, shows no ads and does not track you. Only when you sign in with Google yourself does the app read your Calendar / Gmail / Contacts / Drive, within the permissions you granted. Read the full <a href="https://hoangviet1397.github.io/fotobro/PRIVACY.html">Privacy Policy</a>.</p>
+  </section>
+
+  <footer>
+    <p lang="vi">FotoBro — Trợ lý studio ảnh · <a href="https://github.com/Hoangviet1397/fotobro">github.com/Hoangviet1397/fotobro</a></p>
+    <p lang="en">FotoBro — Photography studio assistant · <a href="https://github.com/Hoangviet1397/fotobro">github.com/Hoangviet1397/fotobro</a></p>
+  </footer>
+</main>
+<script>
+function setLang(l){
+  document.documentElement.lang = l;
+  document.getElementById('btn-vi').setAttribute('aria-pressed', l === 'vi' ? 'true' : 'false');
+  document.getElementById('btn-en').setAttribute('aria-pressed', l === 'en' ? 'true' : 'false');
+  try { localStorage.setItem('fotobro-support-lang', l); } catch (e) {}
+}
+try {
+  var saved = localStorage.getItem('fotobro-support-lang');
+  if (saved === 'en') setLang('en');
+} catch (e) {}
+</script>
+</body>
+</html>
