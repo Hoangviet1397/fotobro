@@ -13,7 +13,7 @@
  * MIC ĐÃ DỜI SANG v2.1 (20/11/2026): plugin @capacitor-community/speech-
  * recognition@7.0.1 đã GỠ khỏi package.json vì không có Package.swift (SPM)
  * nên build Capacitor 8 gãy. Toàn bộ code giọng nói native đã xoá khỏi file
- * này; nút mic trong app hiện báo "Giọng nói sẽ có ở bản v2.1". Đừng thêm
+ * này; nút mic trong app hiện báo "Giọng nói sẽ có ở bản sau". Đừng thêm
  * lại plugin này nếu chưa có Package.swift hoặc chưa viết plugin SPM mới.
  *
  * TRẠNG THÁI (20/11/2026): file này VIẾT XONG nhưng CHƯA KIỂM CHỨNG trên iOS
@@ -95,15 +95,28 @@
         // Nhắc trước giờ chụp 12 TIẾNG (NOTIFICATIONS.md) — thống nhất với
         // tài liệu và PRIVACY (trước đây code để 60 phút, lệch tài liệu).
         // Lựa chọn 1h/24h trong Cài đặt dời sang v2.1.
-        notes.push({ id: notifId('shoot', job.id), title: 'Hôm nay có lịch chụp 📷',
-          body: (job.client || 'Khách') + ' — ' + (job.type || 'chụp') + (job.shootTime ? ' lúc ' + job.shootTime : ''),
-          schedule: { at: new Date(d.getTime() - 12 * 3600000) } });
+        // Job gấp trong ngày: mốc 12 tiếng đã qua thì nhắc 60 phút trước,
+        // 60 phút cũng qua rồi thì nhắc ngay sau ~30 giây — không lặng lẽ
+        // bỏ nhắc. Chỉ nhắc khi giờ chụp còn ở phía trước.
+        var at = d.getTime() - 12 * 3600000;
+        if (at <= Date.now()) at = d.getTime() - 3600000;
+        if (at <= Date.now()) at = Date.now() + 30000;
+        if (d.getTime() > Date.now()) {
+          notes.push({ id: notifId('shoot', job.id), title: 'Hôm nay có lịch chụp 📷',
+            body: (job.client || 'Khách') + ' — ' + (job.type || 'chụp') + (job.shootTime ? ' lúc ' + job.shootTime : ''),
+            schedule: { at: new Date(at) } });
+        }
       }
       if (job.deadline) {
         var dl = new Date(job.deadline + 'T09:00:00');
-        notes.push({ id: notifId('dl', job.id), title: 'Sắp tới hạn giao ảnh',
-          body: (job.client || 'Khách') + ' — hạn giao ' + job.deadline,
-          schedule: { at: new Date(dl.getTime() - 24 * 3600000) } });
+        var atDl = dl.getTime() - 24 * 3600000;
+        if (atDl <= Date.now()) atDl = dl.getTime() - 3600000;
+        if (atDl <= Date.now()) atDl = Date.now() + 30000;
+        if (dl.getTime() > Date.now()) {
+          notes.push({ id: notifId('dl', job.id), title: 'Sắp tới hạn giao ảnh',
+            body: (job.client || 'Khách') + ' — hạn giao ' + job.deadline,
+            schedule: { at: new Date(atDl) } });
+        }
       }
       // Chỉ đặt lịch trong tương lai; quá khứ thì bỏ qua.
       notes = notes.filter(function (n) { return n.schedule.at.getTime() > Date.now(); });
