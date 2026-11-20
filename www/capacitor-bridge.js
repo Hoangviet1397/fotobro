@@ -7,8 +7,10 @@
  *  - Nhắc lịch chụp / hạn giao ảnh bằng Local Notifications (chạy cả khi app đóng).
  *  - Chạm có rung nhẹ (Haptics), chia sẻ hệ thống (Share), chọn ảnh trang chủ
  *    từ thư viện bằng Camera plugin (thay input file).
- *  - Splash screen + Status Bar nền trắng #FFFFFF theo UI Apple Music
- *    (cấu hình trong capacitor.config.ts, không cần code ở đây).
+ *  - Splash screen + Status Bar: v2.3 webview phủ full màn
+ *    (overlaysWebView:true, contentInset:'never' trong
+ *    capacitor.config.ts) nên chữ status bar đổi theo theme bằng §9
+ *    dưới đây, không còn nền trắng #FFFFFF như v2.0–v2.2 nữa.
  *
  * MIC ĐÃ DỜI SANG v2.1 (20/11/2026): plugin @capacitor-community/speech-
  * recognition@7.0.1 đã GỠ khỏi package.json vì không có Package.swift (SPM)
@@ -230,6 +232,27 @@
       return true;
     } catch (e) { return false; } // Huỷ / thất bại: im lặng, caller tự dùng PIN
   };
+
+  /* ---------- 9. Status Bar theo theme (v2.3) ---------- */
+  // v2.2 lộ viền trắng ở safe area vì capacitor.config.ts đặt
+  // overlaysWebView:false + nền trắng; v2.3 cho webview phủ full màn
+  // (overlaysWebView:true, contentInset:'never') nên chữ trên status bar
+  // phải đổi theo theme, không thì chữ đen chìm trên nền tối (theme Tối)
+  // hoặc chữ trắng chìm trên nền sáng (theme Ấm / Tối giản).
+  // 'LIGHT' = chữ trắng (theme tối), 'DARK' = chữ đen (theme sáng).
+  // Không có plugin (bản web) thì im lặng bỏ qua.
+  // Hàm này được applyTheme() trong index.html gọi mỗi khi đổi theme;
+  // bridge nạp SAU script chính (thẻ <script> cuối body) nên tự đồng bộ
+  // một lần lúc nạp để lần mở app đầu tiên cũng đúng chữ.
+  window.__fotobroStatusBarStyle = function (isDark) {
+    var SB = P.StatusBar;
+    if (!SB || !SB.setStyle) return;
+    try { SB.setStyle({ style: isDark ? 'LIGHT' : 'DARK' }); } catch (e) {}
+  };
+  try {
+    var _th = document.documentElement && document.documentElement.getAttribute('data-theme');
+    window.__fotobroStatusBarStyle(_th === 'dark');
+  } catch (e) {}
 
   void isIOS;
 })();

@@ -1,4 +1,4 @@
-/* Test FotoBro iOS v2.2 — chạy bằng jsdom, không cần trình duyệt.
+/* Test FotoBro iOS v2.3 — chạy bằng jsdom, không cần trình duyệt.
    Từ repo root: NODE_PATH=/tmp/film-verify/node_modules node test-fotobro-v2.js
    (trên CI: NODE_PATH=node_modules node test-fotobro-v2.js, sau npm ci + npm i --no-save jsdom)
    Base: www/index.html. Kỳ vọng:
@@ -51,7 +51,7 @@ async function loadDom(beforeParse) {
   const W = win;
   t('trang tải không lỗi jsdom', errors.length === 0, errors.slice(0, 3).join(' | '));
   eq('title là FotoBro', doc.title, 'FotoBro');
-  eq('APP_VERSION 2.2', W.APP_VERSION, '2.2');
+  eq('APP_VERSION 2.3', W.APP_VERSION, '2.3');
   eq('storage key giữ troLyXeo.v1', W.LS_KEY, 'troLyXeo.v1');
   // Phương án A (20/11/2026): 5 ô = 4 màn (home, jobs, money, depts/Thêm) + nút Ghi nhanh ở giữa
   t('đủ 5 ô thanh tab (4 màn + nút Ghi)', doc.querySelectorAll('.tabbar button').length === 5 &&
@@ -499,7 +499,7 @@ async function loadDom(beforeParse) {
   const env = await W.buildBackupData();
   eq('backup: format', env.format, 'fotobro-backup');
   eq('backup: version 2', env.version, 2);
-  eq('backup: appVersion 2.2', env.appVersion, '2.2');
+  eq('backup: appVersion 2.3', env.appVersion, '2.3');
   t('backup: có exportedAt', typeof env.exportedAt === 'string' && env.exportedAt.length > 10);
   eq('backup: counts.jobs 1', env.counts.jobs, 1);
   eq('backup: counts.txs 1', env.counts.txs, 1);
@@ -582,7 +582,7 @@ async function loadDom(beforeParse) {
   {
     const { win: W, doc, errors } = await loadDom();
     t('trang tải không lỗi jsdom', errors.length === 0, errors.slice(0, 3).join(' | '));
-    eq('APP_VERSION 2.2', W.APP_VERSION, '2.2');
+    eq('APP_VERSION 2.3', W.APP_VERSION, '2.3');
     eq('storage key giữ troLyXeo.v1', W.LS_KEY, 'troLyXeo.v1');
 
     const mk01 = function (client, price, stage, paid, cancelled) {
@@ -661,7 +661,7 @@ async function loadDom(beforeParse) {
     DOC = doc;
     const W = win;
     t('trang tải không lỗi jsdom', errors.length === 0, errors.slice(0, 3).join(' | '));
-    eq('APP_VERSION 2.2', W.APP_VERSION, '2.2');
+    eq('APP_VERSION 2.3', W.APP_VERSION, '2.3');
     eq('storage key giữ troLyXeo.v1', W.LS_KEY, 'troLyXeo.v1');
     W.state.cfg.depositPct = 40;
 
@@ -780,7 +780,7 @@ async function loadDom(beforeParse) {
     DOC = doc;
     const W = win;
     t('trang tải không lỗi jsdom', errors.length === 0, errors.slice(0, 3).join(' | '));
-    eq('APP_VERSION 2.2', W.APP_VERSION, '2.2');
+    eq('APP_VERSION 2.3', W.APP_VERSION, '2.3');
     eq('storage key giữ troLyXeo.v1', W.LS_KEY, 'troLyXeo.v1');
 
     console.log('\n[1] Giá mặc định Digital (web v2.5), Film 0 = chưa đặt');
@@ -901,7 +901,7 @@ async function loadDom(beforeParse) {
   {
     const { win: W, doc, errors } = await loadDom();
     t('trang tải không lỗi jsdom', errors.length === 0, errors.slice(0, 3).join(' | '));
-    t('APP_VERSION vẫn 2.2', W.APP_VERSION === '2.2', String(W.APP_VERSION));
+    t('APP_VERSION vẫn 2.3', W.APP_VERSION === '2.3', String(W.APP_VERSION));
     t('storage key giữ troLyXeo.v1', W.LS_KEY === 'troLyXeo.v1', String(W.LS_KEY));
 
     /* Job Linh Chi: giá 5.000.000, đã thu 3.200.000, chi 1.150.000 -> lời 2.050.000, thiếu 1.800.000.
@@ -1312,7 +1312,7 @@ async function loadDom(beforeParse) {
     await new Promise(r => setTimeout(r, 50));
     const W = dom.window, doc = W.document;
     t('trang tải không lỗi jsdom', errors.length === 0, errors.slice(0, 3).join(' | '));
-    eq('APP_VERSION giữ 2.2', W.APP_VERSION, '2.2');
+    eq('APP_VERSION giữ 2.3', W.APP_VERSION, '2.3');
     eq('storage key giữ troLyXeo.v1', W.LS_KEY, 'troLyXeo.v1');
     t('chưa kết nối Google (không token)', !W.gToken());
 
@@ -1692,7 +1692,7 @@ async function loadDom(beforeParse) {
     const { win: W, doc, errors } = await loadDom();
     DOC = doc;
     t('trang tải không lỗi jsdom', errors.length === 0, errors.slice(0, 3).join(' | '));
-    eq('APP_VERSION vẫn 2.2', W.APP_VERSION, '2.2');
+    eq('APP_VERSION vẫn 2.3', W.APP_VERSION, '2.3');
     eq('storage key giữ troLyXeo.v1', W.LS_KEY, 'troLyXeo.v1');
     const chiCats = [];
     Object.keys(W.CHI_GROUPS).forEach(g => W.CHI_GROUPS[g].forEach(c => chiCats.push(c)));
@@ -1985,6 +1985,129 @@ async function loadDom(beforeParse) {
     t('editor: khôi phục -> xoá phần sửa trong cfg', !W.state.cfg.mailTpls.confirm);
     await closeSheetIn(docMain);
   }
+
+  console.log('\n[34] v2.3 — viền trắng safe area (StatusBar theo theme) + gợi ý lỗi Apple 1000');
+  {
+  const closeSheet23 = async (d) => { const els = d.querySelectorAll('.sheet .sh-l'); if (els.length) els[els.length - 1].click(); await sleep(500); };
+  // [34a] Bridge §9: __fotobroStatusBarStyle gọi StatusBar.setStyle đúng LIGHT/DARK
+  const bridgeSrc23 = fs.readFileSync(path.join(__dirname, 'www', 'capacitor-bridge.js'), 'utf-8');
+  async function loadBridgeSB(themeAttr) {
+    const sbCalls = [];
+    const dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>', {
+      url: 'http://localhost/', runScripts: 'dangerously', pretendToBeVisual: true,
+      beforeParse(w) {
+        w.Capacitor = { isNativePlatform: () => true, getPlatform: () => 'ios',
+          Plugins: { StatusBar: { setStyle: (o) => { sbCalls.push(o && o.style); } } } };
+      },
+    });
+    if (themeAttr) dom.window.document.documentElement.setAttribute('data-theme', themeAttr);
+    const s = dom.window.document.createElement('script');
+    s.textContent = bridgeSrc23;
+    dom.window.document.body.appendChild(s);
+    await new Promise(r => setTimeout(r, 50));
+    return { win: dom.window, sbCalls };
+  }
+  const sb1 = await loadBridgeSB(null);
+  t('bridge §9: có hàm __fotobroStatusBarStyle', typeof sb1.win.__fotobroStatusBarStyle === 'function');
+  eq('bridge §9: tự đồng bộ lúc nạp (không theme -> DARK)', sb1.sbCalls[0], 'DARK');
+  sb1.win.__fotobroStatusBarStyle(true);
+  eq('bridge §9: theme tối -> LIGHT', sb1.sbCalls[sb1.sbCalls.length - 1], 'LIGHT');
+  sb1.win.__fotobroStatusBarStyle(false);
+  eq('bridge §9: theme sáng -> DARK', sb1.sbCalls[sb1.sbCalls.length - 1], 'DARK');
+  const sb2 = await loadBridgeSB('dark');
+  eq('bridge §9: tự đồng bộ lúc nạp (theme dark -> LIGHT)', sb2.sbCalls[0], 'LIGHT');
+  const domNoSB = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>', {
+    url: 'http://localhost/', runScripts: 'dangerously', pretendToBeVisual: true,
+    beforeParse(w) { w.Capacitor = { isNativePlatform: () => true, getPlatform: () => 'ios', Plugins: {} }; },
+  });
+  const sNoSB = domNoSB.window.document.createElement('script');
+  sNoSB.textContent = bridgeSrc23;
+  domNoSB.window.document.body.appendChild(sNoSB);
+  await new Promise(r => setTimeout(r, 50));
+  let sbNoThrow = true;
+  try { domNoSB.window.__fotobroStatusBarStyle(true); } catch (e) { sbNoThrow = false; }
+  t('bridge §9: không plugin -> gọi im lặng, không ném lỗi', sbNoThrow);
+
+  // [34b] applyTheme() móc StatusBar + html có background var(--bg)
+  const loadDom23 = async function (opts) {
+    opts = opts || {};
+    const sbCalls = [];
+    const vc = new VirtualConsole();
+    const errors = [];
+    vc.on('jsdomError', e => errors.push(String((e && e.message) || e)));
+    const dom = new JSDOM(html, {
+      url: 'http://localhost/', runScripts: 'dangerously', pretendToBeVisual: true,
+      virtualConsole: vc,
+      beforeParse(win) {
+        win.__fotobroStatusBarStyle = (isDark) => { sbCalls.push(isDark); };
+        if (opts.native) win.Capacitor = { isNativePlatform: () => true };
+        if (opts.appleAvailable) win.__fotobroAppleAvailable = opts.appleAvailable;
+        if (opts.appleSignIn) win.__fotobroAppleSignIn = opts.appleSignIn;
+        if (opts.seedLS) for (const k of Object.keys(opts.seedLS)) win.localStorage.setItem(k, opts.seedLS[k]);
+      },
+    });
+    await new Promise(r => dom.window.addEventListener('load', r));
+    await new Promise(r => setTimeout(r, 50));
+    return { dom, win: dom.window, doc: dom.window.document, errors, sbCalls };
+  };
+  const g5 = await loadDom23();
+  const W5 = g5.win, doc5 = g5.doc;
+  t('theme: applyTheme lúc mở app gọi StatusBar (warm -> false)', g5.sbCalls.length >= 1 && g5.sbCalls[0] === false, JSON.stringify(g5.sbCalls));
+  W5.state.cfg.theme = 'dark'; W5.applyTheme();
+  eq('theme: đổi sang tối -> StatusBar true', g5.sbCalls[g5.sbCalls.length - 1], true);
+  eq('theme: data-theme = dark', doc5.documentElement.getAttribute('data-theme'), 'dark');
+  W5.state.cfg.theme = 'warm'; W5.applyTheme();
+  eq('theme: đổi về sáng -> StatusBar false', g5.sbCalls[g5.sbCalls.length - 1], false);
+  t('css: html có background var(--bg)', /html\{[^}]*background:var\(--bg\)/.test(html));
+  t('css: body vẫn có background var(--bg)', /body\{[^}]*background:var\(--bg\)/.test(html));
+  const g5b = await loadDom23({ native: true, appleAvailable: () => true });
+  const W5b = g5b.win, doc5b = g5b.doc;
+  W5b.openSettings(); await sleep(150);
+  const thBtn = doc5b.querySelector('#themeSeg button[data-th="dark"]');
+  t('theme: Cài đặt có nút chọn theme Tối', !!thBtn);
+  if (thBtn) { thBtn.click(); await sleep(100); }
+  t('theme: bấm nút Tối trong Cài đặt -> StatusBar true', g5b.sbCalls[g5b.sbCalls.length - 1] === true, JSON.stringify(g5b.sbCalls));
+  await closeSheet23(doc5b);
+
+  // [34c] Gợi ý lỗi Apple 1000 chỉ hiện khi code 1000
+  const g6 = await loadDom23({ native: true, appleAvailable: () => true });
+  const W6 = g6.win, doc6 = g6.doc;
+  W6.state.cfg.appleLastError = { code: '1000', message: 'The operation couldn\u2019t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.)', at: Date.now() };
+  W6.openSettings(); await sleep(150);
+  const st6 = doc6.querySelectorAll('.sheet .sheet-body'); const stBody6 = st6[st6.length - 1];
+  t('Apple 1000: Cài đặt hiện dòng "Lỗi gần nhất: 1000"', stBody6.textContent.includes('Lỗi gần nhất: 1000'));
+  t('Apple 1000: hiện gợi ý kiểm tra Xác thực hai yếu tố', stBody6.textContent.includes('Xác thực hai yếu tố'));
+  t('Apple 1000: gợi ý nhắc đăng nhập iCloud', stBody6.textContent.includes('đăng nhập iCloud'));
+  await closeSheet23(doc6);
+  const g7 = await loadDom23({ native: true, appleAvailable: () => true });
+  const W7 = g7.win, doc7 = g7.doc;
+  W7.state.cfg.appleLastError = { code: '1004', message: 'Test error 1004', at: Date.now() };
+  W7.openSettings(); await sleep(150);
+  const st7 = doc7.querySelectorAll('.sheet .sheet-body'); const stBody7 = st7[st7.length - 1];
+  t('Apple 1004: hiện dòng lỗi nhưng KHÔNG gợi ý 2FA', stBody7.textContent.includes('Lỗi gần nhất: 1004') && !stBody7.textContent.includes('Xác thực hai yếu tố'));
+  await closeSheet23(doc7);
+  const g8 = await loadDom23({ native: true, appleAvailable: () => true,
+    appleSignIn: async () => { const e = new Error('The operation couldn\u2019t be completed.'); e.code = '1000'; throw e; },
+  });
+  const W8 = g8.win, doc8 = g8.doc;
+  await W8.aConnect();
+  await sleep(50);
+  eq('Apple 1000 qua aConnect: appleLastError.code', W8.state.cfg.appleLastError && W8.state.cfg.appleLastError.code, '1000');
+  W8.openSettings(); await sleep(150);
+  const st8 = doc8.querySelectorAll('.sheet .sheet-body'); const stBody8 = st8[st8.length - 1];
+  t('Apple 1000 qua aConnect: Cài đặt hiện gợi ý 2FA', stBody8.textContent.includes('Xác thực hai yếu tố'));
+  await closeSheet23(doc8);
+
+  // [34d] capacitor.config.ts: webview phủ full màn, không còn nền trắng
+  const cfgSrc = fs.readFileSync(path.join(__dirname, 'capacitor.config.ts'), 'utf-8');
+  t('config: overlaysWebView true', cfgSrc.includes('overlaysWebView: true'));
+  t('config: contentInset never', cfgSrc.includes("contentInset: 'never'"));
+  t('config: backgroundColor top-level đen', cfgSrc.includes("backgroundColor: '#000000'"));
+  const sbBlock = (cfgSrc.match(/StatusBar:\s*\{[^}]*\}/) || [''])[0];
+  t('config: StatusBar không còn backgroundColor trắng', !sbBlock.includes('#FFFFFF'));
+  t('config: SplashScreen giữ nguyên (không đụng)', cfgSrc.includes('SplashScreen') && cfgSrc.includes("backgroundColor: '#FFFFFF'"));
+  }
+
   console.log('\n===== KẾT QUẢ: ' + pass + ' đạt / ' + (pass + fail) + ' =====');
   if (fail) { console.log('FAILURES:', fails.join(' | ')); process.exit(1); }
 })().catch(e => { console.error('TEST CRASH:', e); process.exit(2); });

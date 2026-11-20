@@ -2,9 +2,9 @@
 	"appId": "com.fotobro.app",
 	"appName": "FotoBro",
 	"webDir": "www",
-	"backgroundColor": "#FFFFFF",
+	"backgroundColor": "#000000",
 	"ios": {
-		"contentInset": "always"
+		"contentInset": "never"
 	},
 	"server": {
 		"androidScheme": "https"
@@ -18,8 +18,7 @@
 		},
 		"StatusBar": {
 			"style": "DEFAULT",
-			"backgroundColor": "#FFFFFF",
-			"overlaysWebView": false
+			"overlaysWebView": true
 		},
 		"LocalNotifications": {
 			"smallIcon": "ic_stat_icon",
@@ -37,6 +36,7 @@
 		"SharePlugin",
 		"SplashScreenPlugin",
 		"StatusBarPlugin",
-		"AppleSignInPlugin"
+		"AppleSignInPlugin",
+		"NativeBiometricPlugin"
 	]
 }

@@ -59,7 +59,10 @@
           --seg-on:#3A3A3C; --shadow:0 1px 3px rgba(0,0,0,.4);
         }
       }
-      html{ box-sizing:border-box; font:-apple-system-body; -webkit-text-size-adjust:100%; -webkit-tap-highlight-color:transparent; }
+      html{ box-sizing:border-box; font:-apple-system-body; -webkit-text-size-adjust:100%; -webkit-tap-highlight-color:transparent; background:var(--bg); }
+      /* v2.3: html cũng có background var(--bg) như body — trước đây chỉ
+         body có nền nên vùng ngoài body (rubber-band overscroll, mép
+         webview) lộ nền trắng của WKWebView trong theme tối. */
       *,*::before,*::after{ box-sizing:inherit; }
       html.locked, html.locked body{ overflow:hidden; }
       /* Chỉ chạm + vuốt dọc: không chụm zoom, không chạm đúp zoom, không kéo ngang trang */
@@ -749,7 +752,7 @@
           <p>Làm cho nhiếp ảnh gia tự do — job, tiền bạc, báo cáo trong một app.</p>
           <p id="footInfo">FotoBro — trợ lý studio ảnh</p>
           <p>Chụp bằng cảm xúc, để con số cho cả nhà lo.</p>
-          <p>FotoBro v2.2</p>
+          <p>FotoBro v2.3</p>
         </div>
       </section>
 
@@ -1479,7 +1482,7 @@
       var box = document.getElementById('chatBox'); if (!box) return;
       var d = document.createElement('div'); d.className = 'bub bot stkb'; d.innerHTML = STK(kind); box.appendChild(d);
     }
-    function applyTheme(){ document.documentElement.setAttribute('data-theme', ['warm', 'minimal', 'dark'].indexOf(state.cfg.theme) >= 0 ? state.cfg.theme : 'warm'); if (state.cfg.glass === false) document.documentElement.removeAttribute('data-glass'); else document.documentElement.setAttribute('data-glass', '1'); }
+    function applyTheme(){ var th = ['warm', 'minimal', 'dark'].indexOf(state.cfg.theme) >= 0 ? state.cfg.theme : 'warm'; document.documentElement.setAttribute('data-theme', th); if (state.cfg.glass === false) document.documentElement.removeAttribute('data-glass'); else document.documentElement.setAttribute('data-glass', '1'); /* v2.3: chữ status bar theo theme — webview phủ full màn (overlaysWebView:true) nên không còn nền trắng che nữa; theme tối cần chữ trắng, theme sáng cần chữ đen. Trên web không có bridge thì bỏ qua im lặng. */ if (typeof window.__fotobroStatusBarStyle === 'function'){ try { window.__fotobroStatusBarStyle(th === 'dark'); } catch (e) {} } }
 
 </script>
 
@@ -2707,7 +2710,7 @@
         try{ d = JSON.parse(r.result); }catch(err){ toast('Chưa đọc được file này, bạn thử lại nha', 'warn'); return; }
         var parsed = parseBackupFile(d);
         if (parsed.kind === 'invalid'){ toast('File này không giống bản sao lưu của FotoBro', 'warn'); return; }
-        if (parsed.kind === 'encrypted'){ toast('Bản sao lưu này đã mã hoá — bản v2.2 chưa mở được file mã hoá, sẽ có ở bản sau', 'warn'); return; }
+        if (parsed.kind === 'encrypted'){ toast('Bản sao lưu này đã mã hoá — bản v2.3 chưa mở được file mã hoá, sẽ có ở bản sau', 'warn'); return; }
         if (parsed.kind === 'photos'){ toast('Đây chỉ là file ảnh kèm theo, cần chọn file sao lưu chính trước', 'warn'); return; }
         var env = parsed.data;
         var nPhotos = (env.counts && typeof env.counts.photos === 'number') ? env.counts.photos : (Array.isArray(env.photos) ? env.photos.length : 0);
@@ -2854,8 +2857,14 @@
             : '<button type="button" class="row act" id="aConnRow"><span class="ic bg-gray">' + appleLogo() + '</span><span class="txt"><span class="t1" style="display:block;">' + tr('apple_signin') + '</span><span class="t2" style="display:block;">' + tr('apple_signin_sub') + '</span></span>' + chevSvg() + '</button>') +
           '</div><p class="sec-f">' + tr('apple_signin_note') + '</p>' +
           /* v2.2: hiện lỗi Apple gần nhất (nếu có) để chẩn đoán trên máy thật —
-             build 2.1 chỉ toast chung chung nên không biết lỗi gì. */
-          (c.appleLastError ? '<p class="sec-f">Lỗi gần nhất: ' + esc((c.appleLastError.code || '') + (c.appleLastError.message ? ' — ' + String(c.appleLastError.message).slice(0, 120) : '')) + '</p>' : '');
+             build 2.1 chỉ toast chung chung nên không biết lỗi gì.
+             v2.3: lỗi 1000 hiện thêm gợi ý kiểm tra 2FA/iCloud — đã chứng minh
+             bằng .ipa build #13: entitlement com.apple.developer.applesignin
+             CÓ trong app đã ký nên lỗi 1000 không phải do thiếu quyền ký;
+             nguyên nhân còn lại nhiều khả năng nhất là phía thiết bị
+             (Apple ID chưa bật Xác thực hai yếu tố / chưa đăng nhập iCloud)
+             hoặc lỗi nhất thời phía Apple. */
+          (c.appleLastError ? '<p class="sec-f">Lỗi gần nhất: ' + esc((c.appleLastError.code || '') + (c.appleLastError.message ? ' — ' + String(c.appleLastError.message).slice(0, 120) : '')) + '</p>' + (String(c.appleLastError.code) === '1000' ? '<p class="sec-f">Thử kiểm tra trên iPhone: Cài đặt → [tên bạn] → Đăng nhập &amp; Bảo mật → bật Xác thực hai yếu tố, và chắc chắn đã đăng nhập iCloud. Nếu vẫn lỗi, thử tắt app mở lại rồi đăng nhập lại.</p>' : '') : '');
       }
       h += '<p class="sec-s">Kết nối Google</p><div class="list">' +
         (googleClientId() ? (gt || gc
@@ -2985,7 +2994,7 @@
       $$('[data-eq]', b).forEach(function(x){ x.addEventListener('click', function(){ openCfgItem('eq', x.getAttribute('data-eq')); }); });
       $$('[data-fx]', b).forEach(function(x){ x.addEventListener('click', function(){ openCfgItem('fx', x.getAttribute('data-fx')); }); });
       $$('#themeSeg button', b).forEach(function(x){ x.addEventListener('click', function(){
-        state.cfg.theme = x.getAttribute('data-th'); $$('#themeSeg button', b).forEach(function(y){ y.classList.toggle('on', y === x); }); renderAll();
+        state.cfg.theme = x.getAttribute('data-th'); $$('#themeSeg button', b).forEach(function(y){ y.classList.toggle('on', y === x); }); applyTheme(); renderAll();
       }); });
       $$('[data-gfeat]', b).forEach(function(sw){ sw.addEventListener('change', function(){
         var k = sw.getAttribute('data-gfeat'); state.cfg.gFeat = state.cfg.gFeat || {}; state.cfg.gFeat[k] = sw.checked; saveLocal();
@@ -4607,7 +4616,7 @@
     /* ================= CẬP NHẬT PHẦN MỀM =================
        App luôn chạy bản đã lưu trên máy (dùng offline). Có mạng thì kiểm tra GitHub,
        có bản mới thì tải sẵn rồi hiện nút "Cập nhật" — bạn bấm mới chuyển, dữ liệu giữ nguyên. */
-    var APP_VERSION = '2.2';
+    var APP_VERSION = '2.3';
     var swReg = null, swReloading = false;
     function updReady(){ return !!(swReg && swReg.waiting && navigator.serviceWorker.controller); }
     function showUpdate(){
