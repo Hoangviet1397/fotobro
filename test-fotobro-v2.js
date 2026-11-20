@@ -13,7 +13,9 @@ const path = require('path');
 const { JSDOM, VirtualConsole } = require('jsdom');
 const vm = require('vm');
 
-const html = fs.readFileSync(path.join(__dirname, 'www', 'index.html'), 'utf-8');
+/* v2.4: app theo ngôn ngữ/tiền tệ của máy — jsdom mặc định en-US, giả lập máy tiếng Việt. */
+const html = fs.readFileSync(path.join(__dirname, 'www', 'index.html'), 'utf-8').replace('<head>',
+  '<head><script>try{Object.defineProperty(navigator,"language",{get:function(){return "vi-VN";}});Object.defineProperty(navigator,"languages",{get:function(){return ["vi-VN"];}});}catch(e){}</script>');
 let pass = 0, fail = 0;
 const fails = [];
 function t(name, cond, extra) {
@@ -271,8 +273,8 @@ async function loadDom(beforeParse) {
   console.log('\n[13] Pipeline v2.0: nhảy bước, cọc, xong-thiếu-tiền, huỷ/khôi phục, sổ trống');
   function mkJob(client, price) {
     const j = { id: W.nid(), client: client, type: 'Wedding', medium: 'Digital', stage: 'Tư vấn',
-      stageSince: W.dstr(0), shootDate: '2026-11-21', shootTime: '08:00', location: '', deadline: '',
-      price: price, phone: '', email: '', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false };
+      stageSince: W.dstr(0), shootDate: '2026-11-21', shootTime: '08:00', location: 'Studio', deadline: '',
+      price: price, phone: '', email: 'khach@vd.vn', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false };
     W.state.jobs.unshift(j); return j;
   }
   // (a) Nhảy kề Tư vấn -> Chốt cọc: không xác nhận, mở form cọc điền sẵn 40% của 15tr = 6tr
@@ -1082,8 +1084,8 @@ async function loadDom(beforeParse) {
   const lastAsheetBtn06 = function (doc, sel) { const els = doc.querySelectorAll('.asheet ' + sel); return els[els.length - 1]; }
   const mkJob06 = function (W, client, price) {
     const j = { id: W.nid(), client: client, type: 'Wedding', medium: 'Digital', stage: 'Tư vấn',
-      stageSince: W.dstr(0), shootDate: '2026-11-21', shootTime: '08:00', location: '', deadline: '',
-      price: price, phone: '', email: '', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false };
+      stageSince: W.dstr(0), shootDate: '2026-11-21', shootTime: '08:00', location: 'Studio', deadline: '',
+      price: price, phone: '', email: 'khach@vd.vn', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false };
     W.state.jobs.unshift(j); return j;
   }
     console.log('[A] "Để sau" trong form cọc mở từ setStage');
@@ -1136,6 +1138,7 @@ async function loadDom(beforeParse) {
     setSel(form.querySelector('select[name="type"]'), 'Wedding');
     eq('chọn Wedding -> giá tự điền 15tr', form.elements.price.value, '15.000.000');
     setSel(form.querySelector('select[name="stage"]'), 'Chốt cọc');
+    form.elements.shootDate.value = W.dstr(5); form.elements.shootTime.value = '08:00'; form.elements.location.value = 'Studio'; form.elements.phone.value = '0901234567'; // v2.4: qua Tư vấn cần đủ thông tin
     eq('ô cọc để trống', form.elements.deposit.value, '');
     lastSheetEl06(doc, '.sh-r').click();
     await sleep(900);
@@ -1348,7 +1351,7 @@ async function loadDom(beforeParse) {
     t('auth URL được mở (chỉ bật Lịch)', !!capturedUrl, capturedUrl);
     if (capturedUrl) {
       const u = new URL(capturedUrl);
-      eq('auth URL: scope đúng calendar.readonly', u.searchParams.get('scope'), SC08.cal);
+      eq('auth URL: scope đúng calendar.readonly (+ openid profile để lấy tên)', u.searchParams.get('scope'), SC08.cal + ' openid profile');
       eq('auth URL: include_granted_scopes=true (xin thêm quyền sau vẫn giữ quyền cũ)', u.searchParams.get('include_granted_scopes'), 'true');
       t('auth URL: không có gmail.send', !u.searchParams.get('scope').includes(SC08.send));
       t('auth URL: response_type=code (PKCE, không token ngầm)', u.searchParams.get('response_type') === 'code');
@@ -1360,7 +1363,7 @@ async function loadDom(beforeParse) {
     await sleep(50);
     if (capturedUrl) {
       const allUrl = scopesOf08(new URL(capturedUrl).searchParams.get('scope'));
-      eq('auth URL đủ tính năng: đúng 6 scope', allUrl.length, 6);
+      eq('auth URL đủ tính năng: đúng 6 scope (+ openid profile)', allUrl.filter(x => x !== 'openid' && x !== 'profile').length, 6);
       t('auth URL đủ: có calendar.events (ghi lịch)', allUrl.includes(SC08.calevents));
       t('auth URL đủ: có gmail.send (gửi email)', allUrl.includes(SC08.send));
     } else t('auth URL đủ tính năng: được mở', false);
@@ -1501,7 +1504,7 @@ async function loadDom(beforeParse) {
     return {
       id: W.nid(), client, type: 'Portrait', medium: 'Digital', stage: 'Tư vấn',
       shootDate: W.dstr(0), shootTime: '09:00', location: 'Studio', deadline: W.dstr(14),
-      price, phone: '', email: '', fbLink: '', msLink: '', driveLink: '', note: '',
+      price, phone: '', email: 'khach@vd.vn', fbLink: '', msLink: '', driveLink: '', note: '',
       cancelled: false, stageSince: W.dstr(0),
     };
   }
@@ -1753,7 +1756,7 @@ async function loadDom(beforeParse) {
     if (f2) {
       eq('form hoàn cọc: hạng mục = Hoàn cọc', f2.elements.category.value, 'Hoàn cọc');
       eq('form hoàn cọc: số tiền điền sẵn 6.000.000', f2.elements.amount.value, '6.000.000');
-      eq('form hoàn cọc: ghi chú điền sẵn', f2.elements.note.value, 'Hoàn cọc cho Khách Có Cọc');
+      eq('form hoàn cọc: ghi chú để trống, gợi ý hiện mờ (v2.4)', f2.elements.note.value + '|' + f2.elements.note.placeholder, '|Hoàn cọc cho Khách Có Cọc (không bắt buộc)');
       eq('form hoàn cọc: gắn đúng job', f2.elements.jobId.value, String(j1.id));
       t('form hoàn cọc: đang ở tab Chi', !!doc.querySelector('#txForm #txKindSeg button[data-k="chi"].on'));
     }
@@ -1761,8 +1764,8 @@ async function loadDom(beforeParse) {
 
     console.log('\n[F10-6] Huỷ job KHÔNG cọc -> không hỏi hoàn cọc');
     const j2 = { id: W.nid(), client: 'Khách Không Cọc', type: 'Portrait', medium: 'Digital', stage: 'Tư vấn',
-      stageSince: W.dstr(0), shootDate: W.dstr(0), shootTime: '08:00', location: '', deadline: '',
-      price: 2500000, phone: '', email: '', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false };
+      stageSince: W.dstr(0), shootDate: W.dstr(0), shootTime: '08:00', location: 'Studio', deadline: '',
+      price: 2500000, phone: '', email: 'khach@vd.vn', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false };
     W.state.jobs.unshift(j2);
     await sleep(500); /* chờ asheet của test trước tháo khỏi DOM */
     W.jobAction('cancel', j2.id);
@@ -2053,20 +2056,22 @@ async function loadDom(beforeParse) {
   const g5 = await loadDom23();
   const W5 = g5.win, doc5 = g5.doc;
   t('theme: applyTheme lúc mở app gọi StatusBar (warm -> false)', g5.sbCalls.length >= 1 && g5.sbCalls[0] === false, JSON.stringify(g5.sbCalls));
-  W5.state.cfg.theme = 'dark'; W5.applyTheme();
-  eq('theme: đổi sang tối -> StatusBar true', g5.sbCalls[g5.sbCalls.length - 1], true);
-  eq('theme: data-theme = dark', doc5.documentElement.getAttribute('data-theme'), 'dark');
-  W5.state.cfg.theme = 'warm'; W5.applyTheme();
-  eq('theme: đổi về sáng -> StatusBar false', g5.sbCalls[g5.sbCalls.length - 1], false);
+  /* v2.5: sáng / tối theo máy — giả lập iPhone chuyển chế độ tối */
+  const mm5 = W5.matchMedia; W5.matchMedia = (q) => ({ matches: /dark/.test(q), addEventListener(){}, addListener(){} }); W5.applyTheme();
+  eq('theme: máy chế độ tối -> StatusBar true', g5.sbCalls[g5.sbCalls.length - 1], true);
+  W5.matchMedia = mm5; W5.applyTheme();
+  eq('theme: máy về sáng -> StatusBar false', g5.sbCalls[g5.sbCalls.length - 1], false);
+  t('theme: màu riêng đặt vào --accent', /^#[0-9a-f]{6}$/i.test(doc5.documentElement.style.getPropertyValue('--accent').trim()), doc5.documentElement.style.getPropertyValue('--accent'));
   t('css: html có background var(--bg)', /html\{[^}]*background:var\(--bg\)/.test(html));
   t('css: body vẫn có background var(--bg)', /body\{[^}]*background:var\(--bg\)/.test(html));
   const g5b = await loadDom23({ native: true, appleAvailable: () => true });
   const W5b = g5b.win, doc5b = g5b.doc;
   W5b.openSettings(); await sleep(150);
-  const thBtn = doc5b.querySelector('#themeSeg button[data-th="dark"]');
-  t('theme: Cài đặt có nút chọn theme Tối', !!thBtn);
-  if (thBtn) { thBtn.click(); await sleep(100); }
-  t('theme: bấm nút Tối trong Cài đặt -> StatusBar true', g5b.sbCalls[g5b.sbCalls.length - 1] === true, JSON.stringify(g5b.sbCalls));
+  t('theme: Cài đặt không còn nút chọn sáng/tối (theo máy)', !doc5b.querySelector('#themeSeg'));
+  const bp5 = doc5b.querySelector('[data-brand="#2D7FF9"]');
+  t('theme: Cài đặt có bảng chọn màu riêng', !!bp5);
+  if (bp5) { bp5.click(); await sleep(50); }
+  eq('theme: chọn Xanh dương -> lưu màu riêng', W5b.state.cfg.brand, '#2D7FF9');
   await closeSheet23(doc5b);
 
   // [34c] Gợi ý lỗi Apple 1000 chỉ hiện khi code 1000
@@ -2134,8 +2139,8 @@ async function loadDom(beforeParse) {
   };
   const mkJ35 = (W, client, price, stage, paid) => {
     const j = { id: W.nid(), client, type: 'Portrait', medium: 'Digital', stage,
-      stageSince: W.dstr(0), shootDate: '2026-11-21', shootTime: '08:00', location: '', deadline: '',
-      price, phone: '', email: '', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false };
+      stageSince: W.dstr(0), shootDate: '2026-11-21', shootTime: '08:00', location: 'Studio', deadline: '',
+      price, phone: '', email: 'khach@vd.vn', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false };
     W.state.jobs.unshift(j);
     if (paid) W.state.txs.unshift({ id: W.nid(), kind: 'thu', category: 'Cọc', jobId: j.id, amount: paid, date: W.dstr(0), method: 'Chuyển khoản', note: '', src: '' });
     return j;
@@ -2258,11 +2263,12 @@ async function loadDom(beforeParse) {
   const W7 = g7.win, doc7 = g7.doc;
   const ag7 = doc7.querySelector('#authGate'); if (ag7) ag7.remove();
   W7.openSettings(); await sleep(150);
-  const thBtn7 = doc7.querySelector('#themeSeg button[data-th="dark"]');
-  t('7: Cài đặt có nút chọn theme Tối', !!thBtn7);
-  if (thBtn7) { thBtn7.click(); await sleep(100); }
-  eq('7: bấm Tối -> data-theme đổi ngay, không cần chuyển tab', doc7.documentElement.getAttribute('data-theme'), 'dark');
-  t('7: bấm Tối -> StatusBar được gọi theme tối', g7.sbCalls[g7.sbCalls.length - 1] === true, JSON.stringify(g7.sbCalls));
+  const bp7 = doc7.querySelector('[data-brand="#2FA84F"]');
+  if (bp7) { bp7.click(); await sleep(50); }
+  t('7: chọn màu riêng -> --accent đổi ngay, không cần chuyển tab', !!bp7 && doc7.documentElement.style.getPropertyValue('--accent').trim().length === 7);
+  const mm7 = W7.matchMedia; W7.matchMedia = (q) => ({ matches: /dark/.test(q), addEventListener(){}, addListener(){} }); W7.applyTheme();
+  t('7: máy tối -> StatusBar được gọi theme tối', g7.sbCalls[g7.sbCalls.length - 1] === true, JSON.stringify(g7.sbCalls));
+  W7.matchMedia = mm7;
   await closeSheet35(doc7);
 
   // [35h] Mục 8 — job đã huỷ còn cọc chưa hoàn: nhắc ở Tiền bạc, bấm mở form hoàn cọc
@@ -2523,8 +2529,8 @@ async function loadDom(beforeParse) {
   W36.state.jobs = []; W36.state.txs = [];
   const mk36 = (client, shootDate, price, paid) => {
     const j = { id: W36.nid(), client, type: 'Portrait', medium: 'Digital', stage: 'Tư vấn',
-      stageSince: W36.dstr(0), shootDate, shootTime: '08:00', location: '', deadline: '', price,
-      phone: '', email: '', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false };
+      stageSince: W36.dstr(0), shootDate, shootTime: '08:00', location: 'Studio', deadline: '', price,
+      phone: '', email: 'khach@vd.vn', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false };
     W36.state.jobs.unshift(j);
     if (paid) W36.state.txs.unshift({ id: W36.nid(), kind: 'thu', category: 'Cọc', jobId: j.id, amount: paid, date: W36.dstr(0), method: 'Chuyển khoản', note: '', src: '' });
     return j;
@@ -2575,6 +2581,56 @@ async function loadDom(beforeParse) {
   t('36f: lệnh gõ tay (runCommand) vẫn chạy', typeof W36.runCommand === 'function' && !!W36.runCommand('thêm job portrait cho Test36'));
   }
 
+
+  console.log('\n[37] v2.4–v2.5 — demo, chuẩn bị đồ, Tư vấn, Excel, hợp đồng, Cài đặt nhóm, thiết lập lần đầu');
+  {
+  const g = await loadDom();
+  const W = g.win, d = g.doc;
+  t('37: cổng có nút "Xem demo trước"', !!d.querySelector('#agSkip') && d.querySelector('#agSkip').textContent.includes('demo'));
+  d.querySelector('#agSkip').click(); await sleep(500);
+  t('37: demo nạp dữ liệu mẫu', W.state.sample === true && W.state.jobs.length >= 5);
+  t('37: thiết lập lần đầu KHÔNG mở khi đang xem demo', !W.setupSheet);
+  const jj = W.state.jobs.find(x => x.stage === 'Sắp chụp');
+  W.openJob(jj.id); await sleep(300);
+  const sb = [...d.querySelectorAll('.sheet .sheet-body')].pop();
+  t('37: chi tiết job có Chuẩn bị đồ', !!sb.querySelector('#prepList'));
+  const inp = sb.querySelector('#prepAdd input'); inp.value = 'Quạt test 37'; sb.querySelector('#prepAdd button').click(); await sleep(100);
+  t('37: thêm món đọc đúng ô nhập (không trùng elements.item)', (jj.prep || []).includes('Quạt test 37'));
+  t('37: chi tiết job có nút Hợp đồng', !![...d.querySelectorAll('.sheet [data-act="contract"]')].length);
+  const tv = W.state.jobs.find(x => x.stage === 'Tư vấn');
+  W.setStage(tv, 'Chốt cọc');
+  eq('37: Tư vấn thiếu thông tin -> không cho sang bước', tv.stage, 'Tư vấn');
+  eq('37: số tiền bằng chữ 2.500.000', W.vnWords(2500000), 'Hai triệu năm trăm nghìn đồng');
+  eq('37: số tiền bằng chữ 1.005.000', W.vnWords(1005000), 'Một triệu không trăm lẻ năm nghìn đồng');
+  eq('37: số tiền bằng chữ 15.000.000', W.vnWords(15000000), 'Mười lăm triệu đồng');
+  const cb = W.contractBlocks(jj).map(b => b.s).join('\n');
+  t('37: hợp đồng có tên khách + điều khoản', cb.includes(jj.client) && cb.includes('Điều 4') && cb.includes('Đặt cọc'));
+  const xl = W.buildXlsx();
+  t('37: file Excel là xlsx', xl.type.includes('spreadsheetml') && xl.size > 2000);
+  W.state.cfg.fb = 'facebook.com/nang.studio'; W.state.cfg.threads = 'nang.studio';
+  const soc = W.mySocials().map(x => x.url).join(' ');
+  t('37: link mạng xã hội chuẩn hoá', soc.includes('https://facebook.com/nang.studio') && soc.includes('threads.net/@nang.studio'), soc);
+  W.openSettings(); await sleep(150);
+  const st = [...d.querySelectorAll('.sheet .sheet-body')].pop();
+  t('37: Cài đặt mở ra là danh sách nhóm', !!st.querySelector('[data-sg-open="profile"]') && st.querySelector('.sg[data-sg="price"]').classList.contains('hidden'));
+  st.querySelector('[data-sg-open="price"]').click(); await sleep(50);
+  t('37: bấm nhóm Giá & cọc thì hiện nhóm đó', !st.querySelector('.sg[data-sg="price"]').classList.contains('hidden') && st.querySelector('.sg-menu').classList.contains('hidden'));
+  t('37: mẫu tin nhắn gọn 1 dòng', st.querySelectorAll('.tpl-mini').length === 5);
+  { const ls = [...d.querySelectorAll('.sheet .sh-r, .sheet .sh-l')].pop(); if (ls) ls.click(); await sleep(450); }
+  }
+  {
+  const g2 = await loadDom();
+  const W2 = g2.win, d2 = g2.doc;
+  const ag = d2.querySelector('#authGate'); if (ag) ag.remove();
+  W2.maybeSetup(); await sleep(100);
+  t('37: người mới (chưa tên) -> mở Thiết lập nhanh', !!W2.setupSheet);
+  const sb2 = [...d2.querySelectorAll('.sheet .sheet-body')].pop();
+  const nm = sb2.querySelector('[data-cfg="studio"]'); nm.value = 'Nắng Studio'; nm.dispatchEvent(new W2.Event('input'));
+  eq('37: thiết lập lưu tên studio', W2.state.cfg.studio, 'Nắng Studio');
+  for (let i = 0; i < 5; i++){ const nx = [...d2.querySelectorAll('.sheet #suNext')].pop(); if (nx) nx.click(); await sleep(60); }
+  await sleep(450);
+  t('37: đi hết các bước -> đánh dấu đã thiết lập', W2.state.cfg.setupDone === true && !W2.setupSheet);
+  }
 
   console.log('\n===== KẾT QUẢ: ' + pass + ' đạt / ' + (pass + fail) + ' =====');
   if (fail) { console.log('FAILURES:', fails.join(' | ')); process.exit(1); }

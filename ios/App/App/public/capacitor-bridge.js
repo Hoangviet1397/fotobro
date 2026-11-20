@@ -107,7 +107,9 @@
         if (at <= Date.now()) { at = Date.now() + 30000; ttl = 'Sắp tới lịch chụp 📷'; }
         if (d.getTime() > Date.now()) {
           notes.push({ id: notifId('shoot', job.id), title: ttl,
-            body: (job.client || 'Khách') + ' — ' + (job.type || 'chụp') + (job.shootTime ? ' lúc ' + job.shootTime : ''),
+            body: (job.client || 'Khách') + ' — ' + (job.type || 'chụp') + (job.shootTime ? ' lúc ' + job.shootTime : '') +
+              (job.prepText ? '\nChuẩn bị: ' + String(job.prepText).slice(0, 300) : ''), // v2.4: kèm đồ chưa tick
+
             schedule: { at: new Date(at) } });
         }
       }

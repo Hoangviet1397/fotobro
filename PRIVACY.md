@@ -81,8 +81,11 @@ dẫn mở app ngoài** — bạn bấm mới mở, app không tự gửi gì đ
 
 - **Lịch iPhone:** chỉ khi bạn bấm "Nhập từ Lịch iPhone" và cho phép quyền
   truy cập Lịch, app mới đọc các sự kiện trong 30 ngày tới để tạo buổi chụp.
-  App không đọc lịch khi bạn không bấm nhập, và không ghi gì vào Lịch iPhone
-  trừ khi bạn bấm "Thêm vào Lịch iPhone" trong chi tiết job.
+  App không đọc lịch khi bạn không bấm nhập. Khi bạn chưa đăng nhập Google,
+  buổi chụp có ngày chụp được tự lưu vào Lịch iPhone (iPhone hỏi quyền Lịch lần
+  đầu) để có nhắc trước 1 ngày; sửa, huỷ hay xoá buổi chụp thì sự kiện đó được
+  sửa / xoá theo. App chỉ ghi / xoá sự kiện do chính app tạo. Đã đăng nhập Google
+  thì lưu vào Google Lịch thay vì Lịch iPhone.
 - **CloudKit (đồng bộ / sao lưu, Nấc 2, có thu phí):** ở v2.0 chưa bật
   (trạng thái not-configured, container `iCloud.com.fotobro.app` chưa được
   tạo). Chỉ khi bạn đăng nhập bằng Apple ID và bật đồng bộ, dữ liệu mới được

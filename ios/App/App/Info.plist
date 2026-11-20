@@ -31,9 +31,9 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>FotoBro cần xem thư viện ảnh để bạn chọn ảnh làm ảnh trang chủ của app.</string>
 	<key>NSCalendarsFullAccessUsageDescription</key>
-	<string>FotoBro cần đọc Lịch iPhone để nhập buổi chụp 30 ngày tới thành job — chỉ khi bạn bấm "Nhập từ Lịch iPhone".</string>
+	<string>FotoBro lưu buổi chụp vào Lịch iPhone (có nhắc trước 1 ngày), sửa / xoá sự kiện khi bạn sửa / xoá job, và đọc lịch khi bạn bấm "Nhập từ Lịch iPhone".</string>
 	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
-	<string>FotoBro cần ghi buổi chụp vào Lịch iPhone khi bạn bấm "Thêm vào Lịch iPhone" trong chi tiết job.</string>
+	<string>FotoBro tự lưu buổi chụp vào Lịch iPhone để nhắc bạn trước ngày chụp 1 ngày.</string>
 	<key>NSCalendarsUsageDescription</key>
 	<string>FotoBro cần đọc và ghi Lịch iPhone để nhập buổi chụp thành job và thêm buổi chụp vào lịch của bạn.</string>
 	<key>NSFaceIDUsageDescription</key>
