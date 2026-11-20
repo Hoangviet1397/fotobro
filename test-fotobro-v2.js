@@ -189,7 +189,7 @@ async function loadDom(beforeParse) {
   eq('job mới medium Film', lan.medium, 'Film');
   eq('job mới giá 20tr', lan.price, 20000000);
   t('jobRow Lan hiện "Wedding — Film"', W.jobRow(lan).includes('Wedding — Film'));
-  t('chi tiết Lan hiện medium Film', W.jobDetailHTML(lan).includes('Chụp bằng') && W.jobDetailHTML(lan).includes('Film'));
+  t('chi tiết Lan hiện medium Film', W.jobDetailHTML(lan).includes('Film'));
   eq('mailCtx Lan type', W.mailCtx(lan).type, 'Wedding — Film');
   t('msgFor Lan có Film', W.msgFor(lan).includes('Wedding — Film'));
   await sleep(400);
@@ -863,6 +863,7 @@ async function loadDom(beforeParse) {
     await sleep(500);
     const jCoc = W.state.jobs.find(j => j.client === 'Khách Có Cọc');
     t('job Khách Có Cọc đã lưu', !!jCoc);
+    { const cf = [...DOC.querySelectorAll('.asheet [data-a="0"]')].pop(); t('v2.6: ghi cọc hỏi xác nhận lần 2', !!cf && cf.textContent.includes('1.000.000')); if (cf) cf.click(); await sleep(200); }
     const txCoc = W.state.txs.find(tx => tx.jobId === (jCoc && jCoc.id) && tx.category === 'Cọc');
     t('có khoản thu Cọc gắn job', !!txCoc, 'txs=' + W.state.txs.length + ' before=' + txBefore);
     eq('khoản Cọc đúng 1.000.000', txCoc && txCoc.amount, 1000000);
@@ -1034,7 +1035,7 @@ async function loadDom(beforeParse) {
     t('chi tiết job gấp hôm nay có cảnh báo mốc 12h đã qua',
       hToday.indexOf('Mốc nhắc trước 1 ngày đã qua') >= 0);
     t('chi tiết job gấp hôm nay ghi rõ nhắc 60 phút trước, lúc 14:00',
-      hToday.indexOf('60 phút trước giờ chụp, lúc 14:00') >= 0);
+      hToday.indexOf('60 phút trước giờ chụp, lúc') >= 0 && hToday.indexOf('14:00') >= 0);
     const hTomorrow = W.jobDetailHTML(jobTomorrow05);
     t('chi tiết job ngày mai (nhắc 12h bình thường) KHÔNG hiện cảnh báo',
       hTomorrow.indexOf('Mốc nhắc trước 1 ngày đã qua') < 0 &&
@@ -1084,7 +1085,7 @@ async function loadDom(beforeParse) {
   const lastAsheetBtn06 = function (doc, sel) { const els = doc.querySelectorAll('.asheet ' + sel); return els[els.length - 1]; }
   const mkJob06 = function (W, client, price) {
     const j = { id: W.nid(), client: client, type: 'Wedding', medium: 'Digital', stage: 'Tư vấn',
-      stageSince: W.dstr(0), shootDate: '2026-11-21', shootTime: '08:00', location: 'Studio', deadline: '',
+      stageSince: W.dstr(0), shootDate: W.dstr(20), shootTime: '08:00', location: 'Studio', deadline: '',
       price: price, phone: '', email: 'khach@vd.vn', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false };
     W.state.jobs.unshift(j); return j;
   }
@@ -1351,7 +1352,7 @@ async function loadDom(beforeParse) {
     t('auth URL được mở (chỉ bật Lịch)', !!capturedUrl, capturedUrl);
     if (capturedUrl) {
       const u = new URL(capturedUrl);
-      eq('auth URL: scope đúng calendar.readonly (+ openid profile để lấy tên)', u.searchParams.get('scope'), SC08.cal + ' openid profile');
+      eq('auth URL: scope đúng calendar.readonly (+ openid profile để lấy tên)', u.searchParams.get('scope'), SC08.cal + ' openid email profile');
       eq('auth URL: include_granted_scopes=true (xin thêm quyền sau vẫn giữ quyền cũ)', u.searchParams.get('include_granted_scopes'), 'true');
       t('auth URL: không có gmail.send', !u.searchParams.get('scope').includes(SC08.send));
       t('auth URL: response_type=code (PKCE, không token ngầm)', u.searchParams.get('response_type') === 'code');
@@ -1363,7 +1364,7 @@ async function loadDom(beforeParse) {
     await sleep(50);
     if (capturedUrl) {
       const allUrl = scopesOf08(new URL(capturedUrl).searchParams.get('scope'));
-      eq('auth URL đủ tính năng: đúng 6 scope (+ openid profile)', allUrl.filter(x => x !== 'openid' && x !== 'profile').length, 6);
+      eq('auth URL đủ tính năng: đúng 6 scope (+ openid profile)', allUrl.filter(x => x !== 'openid' && x !== 'profile' && x !== 'email').length, 6);
       t('auth URL đủ: có calendar.events (ghi lịch)', allUrl.includes(SC08.calevents));
       t('auth URL đủ: có gmail.send (gửi email)', allUrl.includes(SC08.send));
     } else t('auth URL đủ tính năng: được mở', false);
@@ -1665,13 +1666,13 @@ async function loadDom(beforeParse) {
     const st = sheets[sheets.length - 1];
     const pr = st.querySelector('#privacyRow');
     t('Cài đặt có hàng Quyền riêng tư', !!pr);
-    t('hàng Quyền riêng tư ghi đúng nội dung', !!pr && pr.textContent.includes('Quyền riêng tư') && pr.textContent.includes('không gửi dữ liệu'));
+    t('hàng Quyền riêng tư ghi đúng nội dung', !!pr && pr.textContent.includes('Quyền riêng tư') && pr.textContent.includes('không có máy chủ riêng'));
     e.openedUrls.length = 0;
     pr.click();
     await sleep(50);
     const pvs = doc5.querySelectorAll('.sheet .pv'); const pv = pvs[pvs.length - 1];
     t('bấm hàng Quyền riêng tư mở trang ngay trong app (không mở web)', !!pv && e.openedUrls.length === 0);
-    t('trang Quyền riêng tư có đủ mục Google + Xoá dữ liệu + Liên hệ', !!pv && pv.textContent.includes('Đăng nhập Google') && pv.textContent.includes('Xoá dữ liệu') && pv.textContent.includes('supportfotobro@gmail.com'));
+    t('trang Quyền riêng tư có đủ mục Google + Xoá dữ liệu + Liên hệ', !!pv && pv.textContent.includes('Đăng nhập Google') && pv.textContent.includes('Xoá tài khoản và dữ liệu') && pv.textContent.includes('supportfotobro@gmail.com'));
   }
   console.log('\n[32] fix-10 — Hiển thị nhỏ + hạng mục chi Thuê đèn/Hoàn cọc, hoàn cọc, .tx-note');
   {
@@ -2061,17 +2062,14 @@ async function loadDom(beforeParse) {
   eq('theme: máy chế độ tối -> StatusBar true', g5.sbCalls[g5.sbCalls.length - 1], true);
   W5.matchMedia = mm5; W5.applyTheme();
   eq('theme: máy về sáng -> StatusBar false', g5.sbCalls[g5.sbCalls.length - 1], false);
-  t('theme: màu riêng đặt vào --accent', /^#[0-9a-f]{6}$/i.test(doc5.documentElement.style.getPropertyValue('--accent').trim()), doc5.documentElement.style.getPropertyValue('--accent'));
+  t('theme: v2.6 không đổi màu app (không đặt --accent riêng)', doc5.documentElement.style.getPropertyValue('--accent').trim() === '');
   t('css: html có background var(--bg)', /html\{[^}]*background:var\(--bg\)/.test(html));
   t('css: body vẫn có background var(--bg)', /body\{[^}]*background:var\(--bg\)/.test(html));
   const g5b = await loadDom23({ native: true, appleAvailable: () => true });
   const W5b = g5b.win, doc5b = g5b.doc;
   W5b.openSettings(); await sleep(150);
   t('theme: Cài đặt không còn nút chọn sáng/tối (theo máy)', !doc5b.querySelector('#themeSeg'));
-  const bp5 = doc5b.querySelector('[data-brand="#2D7FF9"]');
-  t('theme: Cài đặt có bảng chọn màu riêng', !!bp5);
-  if (bp5) { bp5.click(); await sleep(50); }
-  eq('theme: chọn Xanh dương -> lưu màu riêng', W5b.state.cfg.brand, '#2D7FF9');
+  t('theme: v2.6 Cài đặt không còn bảng đổi màu app', !doc5b.querySelector('[data-brand]'));
   await closeSheet23(doc5b);
 
   // [34c] Gợi ý lỗi Apple 1000 chỉ hiện khi code 1000
@@ -2263,9 +2261,7 @@ async function loadDom(beforeParse) {
   const W7 = g7.win, doc7 = g7.doc;
   const ag7 = doc7.querySelector('#authGate'); if (ag7) ag7.remove();
   W7.openSettings(); await sleep(150);
-  const bp7 = doc7.querySelector('[data-brand="#2FA84F"]');
-  if (bp7) { bp7.click(); await sleep(50); }
-  t('7: chọn màu riêng -> --accent đổi ngay, không cần chuyển tab', !!bp7 && doc7.documentElement.style.getPropertyValue('--accent').trim().length === 7);
+  t('7: không còn đổi màu app', !doc7.querySelector('[data-brand]'));
   const mm7 = W7.matchMedia; W7.matchMedia = (q) => ({ matches: /dark/.test(q), addEventListener(){}, addListener(){} }); W7.applyTheme();
   t('7: máy tối -> StatusBar được gọi theme tối', g7.sbCalls[g7.sbCalls.length - 1] === true, JSON.stringify(g7.sbCalls));
   W7.matchMedia = mm7;
@@ -2630,6 +2626,59 @@ async function loadDom(beforeParse) {
   for (let i = 0; i < 5; i++){ const nx = [...d2.querySelectorAll('.sheet #suNext')].pop(); if (nx) nx.click(); await sleep(60); }
   await sleep(450);
   t('37: đi hết các bước -> đánh dấu đã thiết lập', W2.state.cfg.setupDone === true && !W2.setupSheet);
+  }
+
+  console.log('\n[38] v2.6 — tự sang Sắp chụp, xác nhận tiền 2 lần, hợp đồng, nhắc thanh toán, thẻ studio, tổng kết tối');
+  {
+  const { win: W, doc: d } = await loadDom();
+  const ag = d.querySelector('#authGate'); if (ag) ag.remove();
+  const mk = (o) => { const j = Object.assign({ id: W.nid(), client: 'K', type: 'Portrait', medium: 'Digital', stage: 'Chốt cọc', stageSince: W.dstr(0), shootDate: W.dstr(2), shootTime: '09:00', location: 'Hồ Gươm', deadline: '', price: 3000000, phone: '0901', email: '', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false }, o); W.state.jobs.unshift(j); return j; };
+  const near = mk({ client: 'Gần Ngày' }), far = mk({ client: 'Xa Ngày', shootDate: W.dstr(20) });
+  eq('38: autoAdvanceSoon chuyển 1 job', W.autoAdvanceSoon(), 1);
+  eq('38: Chốt cọc còn 2 ngày -> Sắp chụp', near.stage, 'Sắp chụp');
+  eq('38: còn 20 ngày -> giữ Chốt cọc', far.stage, 'Chốt cọc');
+  await sleep(700);
+  const msg = W.chatMsg('tien', near);
+  t('38: nhắc thanh toán có ngày giờ địa điểm', msg.includes('09:00') && msg.includes('Hồ Gươm'), msg);
+  const both = mk({ client: 'Hai Máy', medium: 'Cả hai', stage: 'Tư vấn', shootDate: W.dstr(30) });
+  const ct = W.contractBlocks(both).map(b => b.s).join('\n');
+  t('38: hợp đồng ghi rõ "ảnh số + ảnh film", không còn "Cả hai"', ct.includes('ảnh số + ảnh film') && !ct.includes('Cả hai'));
+  d.querySelectorAll('.asheet .cancel').forEach(b => b.click()); await sleep(300);
+  const before = W.state.txs.length;
+  W.openTxForm({ kind: 'thu' }); await sleep(200);
+  const f = [...d.querySelectorAll('#txForm')].pop(); f.elements.amount.value = '500.000';
+  [...d.querySelectorAll('.sheet .sh-r')].pop().click(); await sleep(150);
+  eq('38: bấm Lưu chưa ghi ngay (chờ xác nhận)', W.state.txs.length, before);
+  const cf = [...d.querySelectorAll('.asheet [data-a="0"]')].pop();
+  t('38: hộp xác nhận ghi rõ số tiền', !!cf && cf.textContent.includes('500.000'));
+  if (cf) cf.click(); await sleep(200);
+  eq('38: xác nhận xong mới ghi', W.state.txs.length, before + 1);
+  W.state.cfg.studio = 'Nắng Studio'; W.state.cfg.name = 'Việt'; W.state.cfg.instagram = 'nang.studio'; W.renderAll(); W.go('home'); await sleep(100);
+  t('38: thẻ studio hiện trên Hôm nay', !!d.querySelector('.idc') && d.querySelector('.idc-name').textContent === 'Nắng Studio');
+  eq('38: chữ lồng N', W.monogram(), 'N');
+  t('38: danh thiếp có Instagram', W.cardText().includes('instagram.com/nang.studio'));
+  t('38: tổng kết tối có lịch mai', W.dailyBody(0).length > 0);
+  W.openJob(near.id); await sleep(250);
+  const sb = [...d.querySelectorAll('.sheet .sheet-body')].pop();
+  t('38: chi tiết job gọn — có hàng nút nhắn khách', !!sb.querySelector('.jd-chips'));
+  t('38: chi tiết job không còn mục "Liên lạc" dài', ![...sb.querySelectorAll('.sec-s')].some(x => x.textContent === 'Liên lạc'));
+  }
+
+  console.log('\n[39] v2.6 — Đăng nhập Facebook (giả lập plugin)');
+  {
+  const { win: W0, doc: d0 } = await loadDom();
+  t('39: chưa gắn plugin -> cổng KHÔNG có nút Facebook', !d0.querySelector('#agFb'));
+  const { win: W, doc: d } = await loadDom(w => {
+    w.__fotobroFbAvailable = () => true;
+    w.__fotobroFbLogin = async () => ({ id: '123', name: 'Việt Nắng', email: 'viet@fb.vn', picture: 'https://platform-lookaside.fbsbx.com/x.jpg' });
+    w.__fotobroFbLogout = async () => {};
+  });
+  t('39: có plugin -> cổng có nút Facebook', !!d.querySelector('#agFb'));
+  await W.fbConnect(); await sleep(700);
+  t('39: đăng nhập FB lưu tài khoản', W.fbLinked() && W.state.cfg.fbAcc.id === '123');
+  eq('39: FB điền tên', W.state.cfg.name, 'Việt Nắng');
+  eq('39: FB điền ảnh đại diện', W.state.cfg.avatar, 'https://platform-lookaside.fbsbx.com/x.jpg');
+  t('39: đăng nhập FB xong thì cổng đóng', !d.querySelector('#authGate') || !d.querySelector('#authGate').classList.contains('on'));
   }
 
   console.log('\n===== KẾT QUẢ: ' + pass + ' đạt / ' + (pass + fail) + ' =====');
