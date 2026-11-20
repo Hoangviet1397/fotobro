@@ -38,7 +38,8 @@
  *  - @capacitor/app, @capacitor/browser, @capacitor/calendar,
  *    @capacitor/local-notifications, @capacitor/haptics, @capacitor/share,
  *    @capacitor/camera, @capacitor/splash-screen, @capacitor/status-bar,
- *    @capacitor/preferences, @capawesome/capacitor-apple-sign-in (v2.1).
+ *    @capacitor/preferences, @capawesome/capacitor-apple-sign-in (v2.1),
+ *    @capgo/capacitor-native-biometric (v2.2 — khoá Face ID native).
  *  Trong WebView, Capacitor tự chèn đối tượng `window.Capacitor` với
  *  `Capacitor.Plugins.*`. Trên bản web (Safari / GitHub Pages) đối tượng
  *  này không có — mọi nhánh dưới đây đều guard, app web chạy y như cũ.
@@ -187,6 +188,8 @@
   // idToken / authorizationCode KHÔNG trả về cho index.html (v2.1 không có
   // server để xác thực, giữ lại chỉ thêm rủi ro — xem APPLE-SIGNIN-PLAN.md §5).
   // Không gọi initialize() — chỉ cần cho Android/Web.
+  // v2.2: coi cả code '1001' (raw ASAuthorizationError.canceled) là Huỷ —
+  // phòng trường hợp CustomError mapping của plugin bị bypass ở bản sau.
   window.__fotobroAppleSignIn = async function () {
     var SIA = P.AppleSignIn;
     if (!SIA || !SIA.signIn) return null; // plugin chưa có (web / build cũ)
@@ -195,7 +198,7 @@
     try {
       r = await SIA.signIn({ scopes: ['EMAIL', 'FULL_NAME'], nonce: nonce });
     } catch (e) {
-      if (e && e.code === 'SIGN_IN_CANCELED') return null; // người dùng bấm Huỷ: im lặng
+      if (e && (e.code === 'SIGN_IN_CANCELED' || e.code === '1001')) return null; // người dùng bấm Huỷ: im lặng
       throw e;
     }
     r = r || {};
@@ -204,6 +207,28 @@
   };
   window.__fotobroAppleAvailable = function () {
     return !!(P.AppleSignIn && P.AppleSignIn.signIn);
+  };
+
+  /* ---------- 8. Sinh trắc native (v2.2) ---------- */
+  // Plugin @capgo/capacitor-native-biometric 8.9.3 — jsName "NativeBiometric".
+  // Khoá Face ID trong app native DÙNG CÁI NÀY, không dùng WebAuthn nữa:
+  // WebAuthn trong WKWebView (origin capacitor://localhost) hay lỗi
+  // NotAllowedError nên Việt bấm bật khoá trên máy thật là lỗi (build 2.1).
+  // Chỉ xác thực mở khoá, không lưu thêm gì: mã PIN dự phòng vẫn là hash
+  // SHA-256 + salt trong localStorage như cũ (LOCK_KEY không đổi).
+  window.__fotobroBiometricAvailable = async function () {
+    var NB = P.NativeBiometric;
+    if (!NB || !NB.isAvailable) return false;
+    try { var r = await NB.isAvailable({ useFallback: true }); return !!(r && r.isAvailable); }
+    catch (e) { return false; }
+  };
+  window.__fotobroBiometricVerify = async function (reason) {
+    var NB = P.NativeBiometric;
+    if (!NB || !NB.verifyIdentity) return false;
+    try {
+      await NB.verifyIdentity({ reason: reason || 'Mở khoá FotoBro', title: 'FotoBro', useFallback: true, negativeButtonText: 'Huỷ' });
+      return true;
+    } catch (e) { return false; } // Huỷ / thất bại: im lặng, caller tự dùng PIN
   };
 
   void isIOS;

@@ -1,4 +1,4 @@
-/* Test FotoBro iOS v2.1 — chạy bằng jsdom, không cần trình duyệt.
+/* Test FotoBro iOS v2.2 — chạy bằng jsdom, không cần trình duyệt.
    Từ repo root: NODE_PATH=/tmp/film-verify/node_modules node test-fotobro-v2.js
    (trên CI: NODE_PATH=node_modules node test-fotobro-v2.js, sau npm ci + npm i --no-save jsdom)
    Base: www/index.html. Kỳ vọng:
@@ -51,7 +51,7 @@ async function loadDom(beforeParse) {
   const W = win;
   t('trang tải không lỗi jsdom', errors.length === 0, errors.slice(0, 3).join(' | '));
   eq('title là FotoBro', doc.title, 'FotoBro');
-  eq('APP_VERSION 2.1', W.APP_VERSION, '2.1');
+  eq('APP_VERSION 2.2', W.APP_VERSION, '2.2');
   eq('storage key giữ troLyXeo.v1', W.LS_KEY, 'troLyXeo.v1');
   // Phương án A (20/11/2026): 5 ô = 4 màn (home, jobs, money, depts/Thêm) + nút Ghi nhanh ở giữa
   t('đủ 5 ô thanh tab (4 màn + nút Ghi)', doc.querySelectorAll('.tabbar button').length === 5 &&
@@ -499,7 +499,7 @@ async function loadDom(beforeParse) {
   const env = await W.buildBackupData();
   eq('backup: format', env.format, 'fotobro-backup');
   eq('backup: version 2', env.version, 2);
-  eq('backup: appVersion 2.1', env.appVersion, '2.1');
+  eq('backup: appVersion 2.2', env.appVersion, '2.2');
   t('backup: có exportedAt', typeof env.exportedAt === 'string' && env.exportedAt.length > 10);
   eq('backup: counts.jobs 1', env.counts.jobs, 1);
   eq('backup: counts.txs 1', env.counts.txs, 1);
@@ -582,7 +582,7 @@ async function loadDom(beforeParse) {
   {
     const { win: W, doc, errors } = await loadDom();
     t('trang tải không lỗi jsdom', errors.length === 0, errors.slice(0, 3).join(' | '));
-    eq('APP_VERSION 2.1', W.APP_VERSION, '2.1');
+    eq('APP_VERSION 2.2', W.APP_VERSION, '2.2');
     eq('storage key giữ troLyXeo.v1', W.LS_KEY, 'troLyXeo.v1');
 
     const mk01 = function (client, price, stage, paid, cancelled) {
@@ -661,7 +661,7 @@ async function loadDom(beforeParse) {
     DOC = doc;
     const W = win;
     t('trang tải không lỗi jsdom', errors.length === 0, errors.slice(0, 3).join(' | '));
-    eq('APP_VERSION 2.1', W.APP_VERSION, '2.1');
+    eq('APP_VERSION 2.2', W.APP_VERSION, '2.2');
     eq('storage key giữ troLyXeo.v1', W.LS_KEY, 'troLyXeo.v1');
     W.state.cfg.depositPct = 40;
 
@@ -780,7 +780,7 @@ async function loadDom(beforeParse) {
     DOC = doc;
     const W = win;
     t('trang tải không lỗi jsdom', errors.length === 0, errors.slice(0, 3).join(' | '));
-    eq('APP_VERSION 2.1', W.APP_VERSION, '2.1');
+    eq('APP_VERSION 2.2', W.APP_VERSION, '2.2');
     eq('storage key giữ troLyXeo.v1', W.LS_KEY, 'troLyXeo.v1');
 
     console.log('\n[1] Giá mặc định Digital (web v2.5), Film 0 = chưa đặt');
@@ -901,7 +901,7 @@ async function loadDom(beforeParse) {
   {
     const { win: W, doc, errors } = await loadDom();
     t('trang tải không lỗi jsdom', errors.length === 0, errors.slice(0, 3).join(' | '));
-    t('APP_VERSION vẫn 2.1', W.APP_VERSION === '2.1', String(W.APP_VERSION));
+    t('APP_VERSION vẫn 2.2', W.APP_VERSION === '2.2', String(W.APP_VERSION));
     t('storage key giữ troLyXeo.v1', W.LS_KEY === 'troLyXeo.v1', String(W.LS_KEY));
 
     /* Job Linh Chi: giá 5.000.000, đã thu 3.200.000, chi 1.150.000 -> lời 2.050.000, thiếu 1.800.000.
@@ -1312,7 +1312,7 @@ async function loadDom(beforeParse) {
     await new Promise(r => setTimeout(r, 50));
     const W = dom.window, doc = W.document;
     t('trang tải không lỗi jsdom', errors.length === 0, errors.slice(0, 3).join(' | '));
-    eq('APP_VERSION giữ 2.1', W.APP_VERSION, '2.1');
+    eq('APP_VERSION giữ 2.2', W.APP_VERSION, '2.2');
     eq('storage key giữ troLyXeo.v1', W.LS_KEY, 'troLyXeo.v1');
     t('chưa kết nối Google (không token)', !W.gToken());
 
@@ -1692,7 +1692,7 @@ async function loadDom(beforeParse) {
     const { win: W, doc, errors } = await loadDom();
     DOC = doc;
     t('trang tải không lỗi jsdom', errors.length === 0, errors.slice(0, 3).join(' | '));
-    eq('APP_VERSION vẫn 2.1', W.APP_VERSION, '2.1');
+    eq('APP_VERSION vẫn 2.2', W.APP_VERSION, '2.2');
     eq('storage key giữ troLyXeo.v1', W.LS_KEY, 'troLyXeo.v1');
     const chiCats = [];
     Object.keys(W.CHI_GROUPS).forEach(g => W.CHI_GROUPS[g].forEach(c => chiCats.push(c)));
@@ -1811,6 +1811,179 @@ async function loadDom(beforeParse) {
     await sleep(100);
     const upT2 = doc.querySelector('#upcomingList .row .t2');
     t('mục Sắp tới: t2 có wrap2', !upT2 || upT2.classList.contains('wrap2'));
+  }
+  console.log('\n[33] v2.2 — màn đăng nhập lúc vào app, lỗi Apple, khoá native, mẫu tin mới');
+  {
+  const nodeCrypto22 = require('crypto');
+  const loadDom22 = async function (opts) {
+    opts = opts || {};
+    const vc = new VirtualConsole();
+    const errors = [];
+    vc.on('jsdomError', e => errors.push(String((e && e.message) || e)));
+    const dom = new JSDOM(html, {
+      url: 'http://localhost/', runScripts: 'dangerously', pretendToBeVisual: true,
+      virtualConsole: vc,
+      beforeParse(win) {
+        win.crypto.subtle = nodeCrypto22.webcrypto.subtle; // jsdom không có subtle; PIN check cần nó
+        if (opts.native) win.Capacitor = { isNativePlatform: () => true };
+        if (opts.appleSignIn) win.__fotobroAppleSignIn = opts.appleSignIn;
+        if (opts.appleAvailable) win.__fotobroAppleAvailable = opts.appleAvailable;
+        if (opts.bioAvailable) win.__fotobroBiometricAvailable = opts.bioAvailable;
+        if (opts.bioVerify) win.__fotobroBiometricVerify = opts.bioVerify;
+        if (opts.seedLS) for (const k of Object.keys(opts.seedLS)) win.localStorage.setItem(k, opts.seedLS[k]);
+      },
+    });
+    await new Promise(r => dom.window.addEventListener('load', r));
+    await new Promise(r => setTimeout(r, 50));
+    return { dom, win: dom.window, doc: dom.window.document, errors };
+  };
+  const closeSheetIn = async (d) => { const els = d.querySelectorAll('.sheet .sh-l'); if (els.length) els[els.length - 1].click(); await sleep(500); };
+
+    console.log('\n[1] Màn đăng nhập lúc vào app');
+    const g0 = await loadDom22();
+    const W0 = g0.win, doc0 = g0.doc;
+    t('gate: hiện khi chưa liên kết tài khoản nào', !!doc0.querySelector('#authGate'));
+    t('gate (web): không có nút Apple', !doc0.querySelector('#agApple'));
+    t('gate: có nút Google', !!doc0.querySelector('#agGoogle'));
+    t('gate: có link dùng thử không cần tài khoản', !!doc0.querySelector('#agSkip'));
+    t('gate: có ghi chú dữ liệu ở trên máy', (doc0.querySelector('#authGate') || { textContent: '' }).textContent.includes('Dữ liệu vẫn ở trên máy bạn'));
+    doc0.querySelector('#agSkip').click();
+    eq('gate: bấm bỏ qua -> authAsked = true', W0.state.cfg.authAsked, true);
+    await sleep(500);
+    t('gate: bấm bỏ qua -> màn đăng nhập đóng', !doc0.querySelector('#authGate'));
+    const g0b = await loadDom22({ seedLS: { 'troLyXeo.v1': JSON.stringify({ jobs: [], txs: [], cfg: { authAsked: true }, sample: false }) } });
+    t('gate: đã bấm bỏ qua trước đó -> không hiện lại', !g0b.doc.querySelector('#authGate'));
+    const g0c = await loadDom22({ seedLS: { 'troLyXeo.v1': JSON.stringify({ jobs: [], txs: [], cfg: { apple: { user: 'u1', name: 'Mai Anh', email: '', relay: false, at: 1 } }, sample: false }) } });
+    t('gate: đã liên kết Apple -> không hiện', !g0c.doc.querySelector('#authGate'));
+
+    console.log('\n[2] Màn đăng nhập: bấm Apple trên native -> vào app');
+    const g1 = await loadDom22({ native: true,
+      appleAvailable: () => true,
+      appleSignIn: async () => ({ user: 'apple-u1', email: 'x@privaterelay.appleid.com', givenName: 'Mai', familyName: 'Anh' }),
+    });
+    const W1 = g1.win, doc1 = g1.doc;
+    t('gate (native): có nút Apple', !!doc1.querySelector('#agApple'));
+    doc1.querySelector('#agApple').click();
+    await sleep(300);
+    eq('gate (native): đăng nhập Apple xong -> cfg.apple.user', W1.state.cfg.apple && W1.state.cfg.apple.user, 'apple-u1');
+    eq('gate (native): tên lấy từ Apple', W1.state.cfg.apple && W1.state.cfg.apple.name, 'Mai Anh');
+    await sleep(500);
+    t('gate (native): đăng nhập xong -> màn đăng nhập tự đóng', !doc1.querySelector('#authGate'));
+
+    console.log('\n[3] Apple sign-in: lỗi thật lưu lại, Huỷ im lặng');
+    const g2 = await loadDom22({ native: true,
+      appleAvailable: () => true,
+      appleSignIn: async () => { const e = new Error('Test error 1004'); e.code = '1004'; throw e; },
+    });
+    const W2 = g2.win, doc2 = g2.doc;
+    await W2.aConnect();
+    await sleep(50);
+    eq('Apple lỗi 1004: appleLastError.code', W2.state.cfg.appleLastError && W2.state.cfg.appleLastError.code, '1004');
+    t('Apple lỗi 1004: appleLastError.message', (W2.state.cfg.appleLastError && W2.state.cfg.appleLastError.message || '').includes('Test error 1004'));
+    eq('Apple lỗi 1004: toast lỗi chung', doc2.querySelector('#toastText').textContent, 'Chưa đăng nhập được bằng Apple, thử lại nha');
+    W2.openSettings(); await sleep(150);
+    const st2 = doc2.querySelectorAll('.sheet .sheet-body'); const stBody2 = st2[st2.length - 1];
+    t('Apple lỗi 1004: Cài đặt hiện dòng "Lỗi gần nhất: 1004"', stBody2.textContent.includes('Lỗi gần nhất: 1004'));
+    await closeSheetIn(doc2);
+    const g3 = await loadDom22({ native: true,
+      appleAvailable: () => true,
+      appleSignIn: async () => { const e = new Error('Sign in was canceled.'); e.code = 'SIGN_IN_CANCELED'; throw e; },
+    });
+    const W3 = g3.win, doc3 = g3.doc;
+    const toastBefore3 = doc3.querySelector('#toastText').textContent;
+    await W3.aConnect();
+    await sleep(50);
+    t('Apple Huỷ (SIGN_IN_CANCELED): không lưu lỗi', W3.state.cfg.appleLastError == null);
+    eq('Apple Huỷ: không toast lỗi', doc3.querySelector('#toastText').textContent, toastBefore3);
+    const g4 = await loadDom22({ native: true,
+      appleAvailable: () => true,
+      appleSignIn: async () => { const e = new Error('The operation couldn\u2019t be completed.'); e.code = '1001'; throw e; },
+    });
+    const W4 = g4.win, doc4 = g4.doc;
+    await W4.aConnect();
+    await sleep(50);
+    t('Apple Huỷ (1001): không lưu lỗi', W4.state.cfg.appleLastError == null);
+    W2.state.cfg.appleLastError = { code: '1004', message: 'cũ', at: 1 };
+    W2.__fotobroAppleSignIn = async () => ({ user: 'u9', email: '', givenName: '', familyName: '' });
+    await W2.aConnect();
+    await sleep(50);
+    t('Apple thành công: xoá appleLastError', W2.state.cfg.appleLastError === null);
+
+    console.log('\n[4] Khoá Face ID native');
+    const g5 = await loadDom22({ native: true,
+      bioAvailable: async () => true,
+      bioVerify: async () => true,
+    });
+    const W5 = g5.win, doc5 = g5.doc;
+    t('khoá native: bioNative() true khi có bridge', W5.bioNative());
+    await W5.enableLock('1234');
+    const lc5 = W5.lockCfg();
+    t('khoá native: lockCfg có sau enableLock', !!lc5);
+    eq('khoá native: id = native', lc5 && lc5.id, 'native');
+    t('khoá native: PIN 1234 đúng', await W5.pinCheck('1234'));
+    t('khoá native: PIN sai bị từ chối', !(await W5.pinCheck('0000')));
+    t('khoá native: bioCheck mở được', await W5.bioCheck());
+    W5.__fotobroBiometricVerify = async () => false;
+    let threw5 = false; try { await W5.bioCheck(); } catch (e) { threw5 = true; }
+    t('khoá native: Huỷ Face ID -> bioCheck throw', threw5);
+    const g6 = await loadDom22({ native: true,
+      bioAvailable: async () => false,
+      bioVerify: async () => true,
+    });
+    const W6 = g6.win, doc6 = g6.doc;
+    W6.openLockSetup();
+    await sleep(150);
+    t('khoá native: máy không có sinh trắc -> toast rõ', (doc6.querySelector('#toastText').textContent || '').includes('chưa cài Face ID'));
+    t('khoá native: máy không có sinh trắc -> không mở form', !doc6.querySelector('#lkSetForm'));
+    t('khoá web: bioNative() false', W.bioNative() === false);
+
+    console.log('\n[5] Mẫu tin nhắn / email mới');
+    /* DOC toàn cục đã bị các mục trước đổi sang ngữ cảnh khác (dòng 1693) —
+       mục này dùng `doc` gốc của suite, không dùng DOC. */
+    const docMain = doc;
+    const lastSheetMain = (sel) => { const els = docMain.querySelectorAll('.sheet ' + sel); return els[els.length - 1]; };
+    const agMain = docMain.querySelector('#authGate'); if (agMain) agMain.remove(); // dọn cổng để test Cài đặt (hành vi bỏ qua đã test ở [1])
+    W.state.cfg.mailTpls = {}; W.saveLocal();
+    W.openSettings();
+    await sleep(150);
+    const cards = [...docMain.querySelectorAll('.tpl-card')];
+    eq('mẫu: đủ 5 card mẫu email', cards.length, 5);
+    const prev0 = cards[0].querySelector('.tpl-prev').textContent;
+    t('mẫu: xem trước đã điền tên mẫu', prev0.includes('Mai Anh'));
+    t('mẫu: xem trước KHÔNG còn {tên} thô', !prev0.includes('{tên}') && !prev0.includes('{loại}'));
+    t('mẫu: card Đã nhận cọc xem trước đã điền tiền cọc mẫu', cards[1].querySelector('.tpl-prev').textContent.includes('1.000.000₫'));
+    t('mẫu: Cài đặt không còn "xem README"', !docMain.querySelector('.sheet').textContent.includes('xem README'));
+    cards[0].click();
+    await sleep(150);
+    const ed = lastSheetMain('.sheet-body');
+    t('editor: mở sheet soạn mẫu', !!ed && !!ed.querySelector('#tplSubj'));
+    eq('editor: đủ 8 chip chèn', ed.querySelectorAll('.tpl-chip').length, 8);
+    t('editor: xem trước đang ẩn', ed.querySelector('#tplPrevBox').classList.contains('hidden'));
+    const bodyTa = ed.querySelector('#tplBody');
+    bodyTa.focus();
+    bodyTa.setSelectionRange(0, 0);
+    ed.querySelector('.tpl-chip[data-ph="{tên}"]').click();
+    t('editor: chip chèn {tên} vào đầu ô nội dung', bodyTa.value.startsWith('{tên}'));
+    t('editor: chèn xong tự lưu vào cfg', (W.state.cfg.mailTpls.confirm || {}).b && W.state.cfg.mailTpls.confirm.b.startsWith('{tên}'));
+    W.tplAutoGrow(bodyTa);
+    t('editor: textarea tự cao (style.height được đặt >= 56px)', parseInt(bodyTa.style.height, 10) >= 56, bodyTa.style.height);
+    ed.querySelector('#tplPrevBtn').click();
+    await sleep(50);
+    const pv = ed.querySelector('#tplPrevBox');
+    t('editor: Xem trước hiện bản đã điền (tên + giá mẫu)', !pv.classList.contains('hidden') && pv.textContent.includes('Mai Anh') && pv.textContent.includes('2.500.000₫'));
+    eq('editor: nút đổi thành Soạn mẫu', ed.querySelector('#tplPrevBtn').textContent, 'Soạn mẫu');
+    ed.querySelector('#tplPrevBtn').click();
+    await sleep(50);
+    t('editor: bấm Soạn mẫu quay lại soạn', ed.querySelector('#tplPrevBox').classList.contains('hidden'));
+    const subjTa = ed.querySelector('#tplSubj');
+    subjTa.value = 'Tiêu đề tự sửa';
+    subjTa.dispatchEvent(new W.Event('input', { bubbles: true }));
+    t('editor: sửa tiêu đề tự lưu', (W.state.cfg.mailTpls.confirm || {}).s === 'Tiêu đề tự sửa');
+    ed.querySelector('#tplResetBtn').click();
+    await sleep(50);
+    eq('editor: khôi phục -> tiêu đề về mẫu gốc', subjTa.value, 'Xác nhận lịch chụp {loại}');
+    t('editor: khôi phục -> xoá phần sửa trong cfg', !W.state.cfg.mailTpls.confirm);
+    await closeSheetIn(docMain);
   }
   console.log('\n===== KẾT QUẢ: ' + pass + ' đạt / ' + (pass + fail) + ' =====');
   if (fail) { console.log('FAILURES:', fails.join(' | ')); process.exit(1); }
