@@ -135,8 +135,8 @@
       .clip{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
       .wrap2{ display:-webkit-box !important; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; white-space:normal; overflow-wrap:anywhere; }
       /* Nút Ghi giữa thanh tab */
-      .tabbar .tab-add{ color:var(--accent-t); font-weight:600; }
-      .tab-plus{ width:34px; height:34px; border-radius:50%; background:var(--accent-btn); color:#fff; display:flex; align-items:center; justify-content:center; margin-top:-4px; box-shadow:0 4px 12px rgba(215,0,21,.28); }
+      .tabbar .tab-add{ color:var(--label); font-weight:600; }
+      .tab-plus{ width:34px; height:34px; border-radius:50%; background:var(--label); color:var(--bg); display:flex; align-items:center; justify-content:center; margin-top:-4px; box-shadow:0 3px 10px rgba(0,0,0,.18); }
       .tabbar .tab-plus svg{ width:20px; height:20px; }
       .tabbar .tab-add:active .tab-plus{ transform:scale(.92); }
       /* Ghi nhanh ở trang chủ: 3 nút, nút đầu là nút chính */
@@ -379,6 +379,10 @@
       .sheet.on{ transform:none; }
       .sheet.drag{ transition:none; }
       .sheet-grab{ width:36px; height:5px; border-radius:3px; background:var(--label3); margin:6px auto 0; flex:none; }
+      /* Đầu bảng đặc màu: nội dung cuộn phía dưới không lộ qua tiêu đề */
+      .sheet-head{ background:var(--bg); border-radius:14px 14px 0 0; border-bottom:.5px solid var(--sep); position:relative; z-index:2; }
+      html[data-glass="1"] .sheet{ background:var(--bg) !important; }
+      textarea.tpl-subj{ min-height:0; resize:vertical; line-height:1.35; }
       .sheet-head{ display:grid; grid-template-columns:1fr auto 1fr; align-items:center; min-height:46px; padding:0 6px; flex:none; touch-action:none; }
       .sheet-head b{ font-size:1.0625rem; font-weight:600; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:52vw; }
       .sh-btn{ border:0; background:none; color:var(--accent-t); font-size:1.0625rem; min-height:44px; padding:0 10px; }
@@ -1424,12 +1428,12 @@
     var CHAT_TPLS = [
       {k:'lienhe', t:'Chào khách', job:true, f:function(x){ return 'Chào ' + x.ten + '! ' + x.intro + 'Mình nhắn về buổi chụp ' + x.loai + (x.khi ? ' ' + x.khi : '') + x.gio + x.noi + ' nè. Bạn cần gì cứ nhắn mình nha.'; }},
       {k:'hoigia', t:'Trả lời khách hỏi giá', f:function(x){ return 'Chào ' + x.ten + '! ' + x.intro + 'Bạn định chụp dịp gì, ngày nào, ở đâu nè? Mình gửi gói hợp nhất kèm giá liền nha.' + (x.ig ? ' Ảnh mẫu: instagram.com/' + x.ig : ''); }},
-      {k:'baogia', t:'Báo giá & xin cọc', f:function(x){ return x.Ten + ' ơi, gói ' + (x.loai || 'chụp') + ' bên mình ' + (x.gia || '[giá]') + '. Bạn cọc trước ' + x.pct + '%' + (x.coc ? ' (' + x.coc + ')' : '') + ' là mình giữ lịch' + (x.khi ? ' ' + x.khi : '') + ' nha.'; }},
+      {k:'baogia', t:'Báo giá & xin cọc', f:function(x){ return x.Ten + ' ơi, ' + (x.gia ? 'gói ' + (x.loai || 'chụp') + ' bên mình ' + x.gia + '. Bạn' : 'bạn') + ' cọc trước ' + x.pct + '%' + (x.coc ? ' (' + x.coc + ')' : '') + ' là mình giữ lịch' + (x.khi ? ' ' + x.khi : '') + ' nha.'; }},
       {k:'coc', t:'Đã nhận cọc', f:function(x){ return 'Mình nhận cọc' + (x.da ? ' ' + x.da : '') + ' rồi nha ' + x.ten + '! Lịch' + (x.khi ? ' ' + x.khi : '') + ' đã giữ chắc rồi, gần ngày mình nhắn nhắc chuẩn bị.'; }},
       {k:'nhac', t:'Nhắc lịch chụp', f:function(x){ return x.Ten + ' ơi, nhắc lịch chụp ' + (x.khi || 'sắp tới') + x.gio + x.noi + ' nha. Nhớ ngủ sớm, tới sớm 10 phút giúp mình nhé!'; }},
       {k:'chon', t:'Mời chọn ảnh', f:function(x){ return x.Ten + ' ơi, ảnh đã lên link rồi nè' + (x.drive ? ': ' + x.drive : '') + '. Bạn chọn tấm ưng rồi gửi số ảnh cho mình nha.'; }},
       {k:'giao', t:'Giao ảnh', f:function(x){ return 'Ảnh của ' + x.ten + ' xong rồi nè' + (x.drive ? ': ' + x.drive : '') + '. Cần chỉnh tấm nào cứ nói mình nha!'; }},
-      {k:'tien', t:'Nhắc thanh toán', f:function(x){ return x.Ten + ' ơi, buổi chụp' + (x.loai ? ' ' + x.loai : '') + ' còn ' + (x.con || '[số tiền]') + ' nha. Bạn chuyển khi tiện giúp mình, cảm ơn bạn nhiều!'; }},
+      {k:'tien', t:'Nhắc thanh toán', f:function(x){ return x.Ten + ' ơi, ' + (x.con ? 'buổi chụp' + (x.loai ? ' ' + x.loai : '') + ' còn ' + x.con + ' nha.' : 'mình nhắc phần thanh toán còn lại của buổi chụp' + (x.loai ? ' ' + x.loai : '') + ' nha.') + ' Bạn chuyển khi tiện giúp mình, cảm ơn bạn nhiều!'; }},
       {k:'camnhan', t:'Xin cảm nhận', f:function(x){ return 'Cảm ơn ' + x.ten + ' đã chọn mình! Nếu ưng ảnh, cho mình xin 1 câu cảm nhận và cho đăng vài tấm nhé.'; }}
     ];
     function chatTpl(k){ return CHAT_TPLS.filter(function(t){ return t.k === k; })[0]; }
@@ -2551,8 +2555,8 @@
       h += '<p class="sec-s">Mẫu tin nhắn / email</p><div class="list">' + Object.keys(MAIL_TPLS_DEFAULT).map(function(k){
         var d = mailTplDef(k);
         return '<div style="padding:14px 16px;border-bottom:.5px solid var(--sep);"><div class="b" style="font-size:1rem;margin-bottom:8px;">' + esc(MAIL_TPLS_DEFAULT[k].t) + '</div>' +
-          '<label class="frow stack"><span>Tiêu đề</span><input data-mtpl-s="' + k + '" value="' + esc(d.s) + '" /></label>' +
-          '<label class="frow stack"><span>Nội dung — dùng {ten} {type} {date} {time} {loc} {price} {paid} {owe} {drive}</span><textarea data-mtpl-b="' + k + '" style="min-height:120px;">' + esc(d.b) + '</textarea></label>' +
+          '<label class="frow stack"><span>Tiêu đề</span><textarea data-mtpl-s="' + k + '" rows="2" class="tpl-subj">' + esc(d.s) + '</textarea></label>' +
+          '<label class="frow stack"><span>Nội dung — chỗ tự điền: {tên} {loại} {lịch} {địa điểm} {giá} {đã trả} {còn lại} {link}</span><textarea data-mtpl-b="' + k + '" style="min-height:120px;">' + esc(d.b) + '</textarea></label>' +
           '<button type="button" class="btn gray sm" data-mtpl-reset="' + k + '">Khôi phục mẫu gốc</button></div>';
       }).join('') + '</div><p class="sec-f">Sửa xong là tự lưu trên máy này. Khôi phục mẫu gốc chỉ xoá phần bạn đã sửa của mẫu đó.</p>';
       h += '<p class="sec-s">Giao diện</p><div class="list"><div style="padding:12px 16px;"><div class="seg" id="themeSeg">' +
@@ -3721,32 +3725,36 @@
     /* ---------- Email cho khách ---------- */
     function mailCtx(j){
       var c = state.cfg, dep = Math.round((j.price || 0) * (+c.depositPct || 0) / 100 / 10000) * 10000;
-      return { ten:j.client, type:jobTypeLabel(j), date:j.shootDate ? fmtDate(j.shootDate) : 'ngày mình hẹn', time:j.shootTime ? ' lúc ' + j.shootTime : '',
+      return { ten:callName(j.client), type:jobTypeLabel(j), date:j.shootDate ? fmtDate(j.shootDate) : 'ngày mình hẹn', time:j.shootTime ? ' lúc ' + j.shootTime : '',
         loc:j.location || 'mình sẽ chốt và báo bạn sau', price:j.price ? fmt(j.price) : 'theo gói mình đã báo', dep:dep ? fmt(dep) : '', pct:c.depositPct,
-        paid:fmt(jobThu(j.id)), owe:fmt(jobOwe(j)), oweN:jobOwe(j), drive:j.driveLink || '', studio:c.studio || '', sign:'\n\n' + c.name + '\n' + c.studio + (c.instagram ? ' · instagram.com/' + c.instagram : '') };
+        paid:fmt(jobThu(j.id)), owe:fmt(jobOwe(j)), oweN:jobOwe(j), drive:j.driveLink || '', studio:c.studio || '', sign:(function(){ var l = [c.name, [c.studio, c.instagram ? 'instagram.com/' + c.instagram : ''].filter(Boolean).join(' · ')].filter(Boolean); return l.length ? '\n\n' + l.join('\n') : ''; })() };
     }
     /* Mẫu tin nhắn/email — v1: 5 mẫu gốc + cho sửa câu chữ trong Cài đặt (cfg.mailTpls).
        Chỗ trống {ten} {type} {date} {time} {loc} {price} {dep} {pct} {paid} {owe} {drive} {studio} {sign}
        được điền tự động; {depPart} / {owePart} chỉ hiện khi có cọc / còn thiếu. */
     var MAIL_TPLS_DEFAULT = {
-      confirm:{ t:'Xác nhận lịch chụp', s:'Xác nhận lịch chụp {type} — {studio}',
-        b:'Chào {ten},\n\n{studio} xác nhận lịch chụp {type} của bạn:\n• Ngày: {date}{time}\n• Địa điểm: {loc}\n• Chi phí: {price}{depPart}\n\nTrước buổi chụp mình sẽ nhắn bạn về trang phục và giờ giấc. Có gì thay đổi bạn cứ trả lời email này nha.\n\nCảm ơn bạn đã chọn {studio}!{sign}' },
-      deposit:{ t:'Đã nhận cọc', s:'Đã nhận cọc — lịch chụp {type} của bạn đã được giữ',
-        b:'Chào {ten},\n\nMình đã nhận được {paid} cho buổi chụp {type} {date}{time}. Lịch của bạn đã được giữ chắc chắn rồi nha.{owePart}\n\nGần tới ngày mình sẽ nhắn nhắc chuẩn bị. Cảm ơn bạn đã tin {studio}!{sign}' },
-      remind:{ t:'Nhắc trước ngày chụp', s:'Nhắc lịch chụp {date}{time}',
-        b:'Chào {ten},\n\nMình nhắc lịch chụp {type} của mình nè:\n• Ngày: {date}{time}\n• Địa điểm: {loc}\n\nBạn nhớ ngủ sớm, chuẩn bị trang phục và phụ kiện như đã hẹn, tới sớm 10–15 phút để mình chỉnh ánh sáng nha. Có gì cần đổi giờ cứ báo mình sớm.\n\nHẹn gặp bạn!{sign}' },
-      deliver:{ t:'Giao ảnh', s:'Ảnh buổi chụp {type} của bạn đã xong!',
-        b:'Chào {ten},\n\nẢnh buổi chụp {type} của bạn xong rồi nè. Bạn xem và tải ảnh ở đây:\n{driveOrNote}\n\nTấm nào muốn mình chỉnh thêm bạn cứ nói nha.{owePart2}\n\nNếu bạn vui, cho mình xin một câu cảm nhận và cho phép mình đăng vài tấm lên trang nhé. Cảm ơn bạn rất nhiều!{sign}' },
-      balance:{ t:'Nhắc thanh toán', s:'Thông tin thanh toán buổi chụp {type}',
-        b:'Chào {ten},\n\nMình gửi bạn thông tin thanh toán cho buổi chụp {type} {date}:\n• Tổng: {price}\n• Đã nhận: {paid}\n• Còn lại: {owe}\n\nBạn chuyển khoản giúp mình khi tiện nha, có gì thắc mắc cứ trả lời email này.\n\nCảm ơn bạn!{sign}' }
+      confirm:{ t:'Xác nhận lịch chụp', s:'Xác nhận lịch chụp {loại}',
+        b:'Chào {tên},\n\nMình xác nhận lịch chụp {loại} của bạn:\n• Lịch: {lịch}\n• Địa điểm: {địa điểm}\n• Chi phí: {giá}{phần cọc}\n\nTrước buổi chụp mình sẽ nhắn bạn về trang phục và giờ giấc. Có gì thay đổi bạn cứ trả lời email này nha.\n\nCảm ơn bạn!{ký tên}' },
+      deposit:{ t:'Đã nhận cọc', s:'Đã nhận cọc — lịch chụp {loại} đã được giữ',
+        b:'Chào {tên},\n\nMình đã nhận {đã trả} cho buổi chụp {loại} ({lịch}). Lịch của bạn đã được giữ chắc rồi nha.{phần còn lại}\n\nGần tới ngày mình sẽ nhắn nhắc chuẩn bị. Cảm ơn bạn!{ký tên}' },
+      remind:{ t:'Nhắc trước ngày chụp', s:'Nhắc lịch chụp {lịch}',
+        b:'Chào {tên},\n\nMình nhắc lịch chụp {loại} nè:\n• Lịch: {lịch}\n• Địa điểm: {địa điểm}\n\nBạn nhớ ngủ sớm, chuẩn bị trang phục như đã hẹn và tới sớm 10–15 phút nha. Cần đổi giờ thì báo mình sớm.\n\nHẹn gặp bạn!{ký tên}' },
+      deliver:{ t:'Giao ảnh', s:'Ảnh buổi chụp {loại} của bạn đã xong',
+        b:'Chào {tên},\n\nẢnh buổi chụp {loại} của bạn xong rồi nè. Bạn xem và tải ảnh ở đây:\n{link hoặc ghi chú}\n\nTấm nào muốn chỉnh thêm bạn cứ nói mình nha.{phần còn lại 2}\n\nNếu ưng ảnh, cho mình xin một câu cảm nhận và cho phép đăng vài tấm lên trang nhé. Cảm ơn bạn!{ký tên}' },
+      balance:{ t:'Nhắc thanh toán', s:'Thanh toán buổi chụp {loại}',
+        b:'Chào {tên},\n\nMình gửi thông tin thanh toán buổi chụp {loại} ({lịch}):\n• Tổng: {giá}\n• Đã nhận: {đã trả}\n• Còn lại: {còn lại}\n\nBạn chuyển khoản giúp mình khi tiện nha. Cảm ơn bạn!{ký tên}' }
     };
     function fillTpl(str, x){
       var map = { ten:x.ten, type:x.type, date:x.date, time:x.time, loc:x.loc, price:x.price, dep:x.dep, pct:x.pct, paid:x.paid, owe:x.owe, drive:x.drive, studio:state.cfg.studio || '', sign:x.sign,
         depPart:x.dep ? ' (cọc trước ' + x.pct + '% là ' + x.dep + ' để giữ lịch)' : '',
-        owePart:x.oweN ? '\nPhần còn lại ' + x.owe + ' bạn thanh toán sau khi nhận ảnh.\n' : '',
+        owePart:x.oweN ? '\nPhần còn lại ' + x.owe + ' bạn thanh toán sau khi nhận ảnh.' : '',
         owePart2:x.oweN ? '\n\nPhần thanh toán còn lại: ' + x.owe + '.' : '',
         driveOrNote:x.drive || '(mình gửi link ngay sau email này)' };
-      return String(str).replace(/\{(ten|type|date|time|loc|price|dep|pct|paid|owe|drive|studio|sign|depPart|owePart|owePart2|driveOrNote)\}/g, function(_, k){ return map[k] == null ? '' : String(map[k]); });
+      /* Chỗ trống tiếng Việt (mẫu mới) — chỗ trống tiếng Anh cũ vẫn chạy cho mẫu bạn đã sửa trước đây */
+      var vi = { 'tên':'ten', 'loại':'type', 'ngày':'date', 'địa điểm':'loc', 'giá':'price', 'cọc':'dep', '% cọc':'pct', 'đã trả':'paid', 'còn lại':'owe', 'link':'drive', 'ký tên':'sign',
+        'phần cọc':'depPart', 'phần còn lại':'owePart', 'phần còn lại 2':'owePart2', 'link hoặc ghi chú':'driveOrNote' };
+      map['lịch'] = x.date + (x.time || ''); map['giờ'] = x.time ? x.time.replace(/^ lúc /, '') : ''; map.studio = map.studio;
+      return String(str).replace(/\{([^{}\n]{1,24})\}/g, function(all, k){ var key = vi[k] || k; if (k === 'lịch' || k === 'giờ') return map[k]; if (!Object.prototype.hasOwnProperty.call(map, key)) return all; return map[key] == null ? '' : String(map[key]); });
     }
     function mailTplDef(k){ var o = (state.cfg.mailTpls || {})[k]; var d = MAIL_TPLS_DEFAULT[k]; return { t:d.t, s:(o && o.s) || d.s, b:(o && o.b) || d.b }; }
     var MAIL_TPLS = {};
