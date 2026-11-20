@@ -551,9 +551,9 @@ async function loadDom(beforeParse) {
   const jNoDrive = mk16('Khách Không Link', 2500000, 'Đã chụp', 0);
   t('chat "Mời chọn ảnh" không link thì không nhắc link', !W.chatMsg('chon', jNoDrive).includes('link'));
 
-  console.log('\n[22] Hiển thị + Cài đặt: giọng nói, máy tính film, Sắp tới, Quyền riêng tư');
+  console.log('\n[22] Hiển thị + Cài đặt: máy tính film, Sắp tới, Quyền riêng tư');
   t('source không còn "Giọng nói sẽ có ở bản v2.1"', !html.includes('Giọng nói sẽ có ở bản v2.1'));
-  t('source có "Giọng nói sẽ có ở bản sau"', html.includes('Giọng nói sẽ có ở bản sau'));
+  t('source không còn "Giọng nói sẽ có ở bản sau" (mic hỏi đã gỡ)', !html.includes('Giọng nói sẽ có ở bản sau'));
   W.state.cfg.prices.Wedding = 15000000; W.state.cfg.pricesFilm.Wedding = 22000000;
   t('calcPkgOptions Film hiện giá film 22tr', W.calcPkgOptions('Film').includes('Wedding — 22.000.000'));
   t('calcPkgOptions Digital hiện giá digital 15tr', W.calcPkgOptions('Digital').includes('Wedding — 15.000.000'));
@@ -1014,7 +1014,7 @@ async function loadDom(beforeParse) {
 
     const a2 = ri(jobTomorrow05, NOON05);
     eq('job ngày mai 15:00, trưa hôm nay → mode 12h', a2 && a2.mode, '12h');
-    eq('job ngày mai 15:00 → nhắc 03:00 ngày mai', a2 && a2.at, T0300_NEXT05);
+    eq('job ngày mai 15:00 → nhắc trước 1 ngày (15:00 hôm nay)', a2 && a2.at, NOON05 + 3 * 3600000);
 
     const a3 = ri(jobToday05, SOON05);
     eq('job hôm nay 15:00, lúc 14:30 → mode now', a3 && a3.mode, 'now');
@@ -1030,16 +1030,16 @@ async function loadDom(beforeParse) {
     W.Date.now = () => NOON05; // giả lập "bây giờ" là trưa 20/11
     const hToday = W.jobDetailHTML(jobToday05);
     t('chi tiết job gấp hôm nay có cảnh báo mốc 12h đã qua',
-      hToday.indexOf('Mốc nhắc 12 tiếng trước đã qua') >= 0);
+      hToday.indexOf('Mốc nhắc trước 1 ngày đã qua') >= 0);
     t('chi tiết job gấp hôm nay ghi rõ nhắc 60 phút trước, lúc 14:00',
       hToday.indexOf('60 phút trước giờ chụp, lúc 14:00') >= 0);
     const hTomorrow = W.jobDetailHTML(jobTomorrow05);
     t('chi tiết job ngày mai (nhắc 12h bình thường) KHÔNG hiện cảnh báo',
-      hTomorrow.indexOf('Mốc nhắc 12 tiếng trước đã qua') < 0 &&
+      hTomorrow.indexOf('Mốc nhắc trước 1 ngày đã qua') < 0 &&
       hTomorrow.indexOf('Buổi chụp trong chưa tới 60 phút') < 0);
     const hCancelled = W.jobDetailHTML(Object.assign({}, jobToday05, { cancelled: true }));
     t('job đã huỷ KHÔNG hiện cảnh báo nhắc lịch',
-      hCancelled.indexOf('Mốc nhắc 12 tiếng trước đã qua') < 0);
+      hCancelled.indexOf('Mốc nhắc trước 1 ngày đã qua') < 0);
     W.Date.now = realNow;
 
     /* ============ [B] Cầu nối bridge đặt lịch nhắc thật ============ */
@@ -1061,8 +1061,8 @@ async function loadDom(beforeParse) {
     const b2 = runBridge05(NOON05);
     await b2.win.__trolyxeoScheduleReminder(jobTomorrow05);
     const shoot2 = b2.recorded.filter(n => n.title.indexOf('lịch chụp') >= 0);
-    eq('bridge [trưa]: job ngày mai 15:00 nhắc đúng 12h trước (03:00 ngày mai)',
-      shoot2[0] && shoot2[0].schedule.at.getTime(), T0300_NEXT05);
+    eq('bridge [trưa]: job ngày mai 15:00 nhắc trước 1 ngày (15:00 hôm nay)',
+      shoot2[0] && shoot2[0].schedule.at.getTime(), NOON05 + 3 * 3600000);
 
     const b3 = runBridge05(SOON05);
     await b3.win.__trolyxeoScheduleReminder(jobToday05);
@@ -1352,7 +1352,7 @@ async function loadDom(beforeParse) {
       eq('auth URL: include_granted_scopes=true (xin thêm quyền sau vẫn giữ quyền cũ)', u.searchParams.get('include_granted_scopes'), 'true');
       t('auth URL: không có gmail.send', !u.searchParams.get('scope').includes(SC08.send));
       t('auth URL: response_type=code (PKCE, không token ngầm)', u.searchParams.get('response_type') === 'code');
-      t('auth URL: không xin access_type=offline (không lưu refresh token)', u.searchParams.get('access_type') !== 'offline');
+      t('auth URL: xin access_type=offline (giữ đăng nhập bằng refresh token)', u.searchParams.get('access_type') === 'offline');
     }
     setFeat08(W, { cal: true, bank: true, leads: true, contacts: true, drive: true, calw: true, send: true });
     capturedUrl = null;
@@ -1408,7 +1408,7 @@ async function loadDom(beforeParse) {
     console.log('\n[5] Chân trang Cài đặt khớp 100% với scope thật');
     /* v2.3b: chân trang nằm trong cụm công tắc, chỉ hiện khi đã kết nối —
        gieo token để kiểm chứng logic chân trang (không test kết nối thật). */
-    W.sessionStorage.setItem('troLyXeo.gtoken', JSON.stringify({ t: 'tok30', exp: Date.now() + 3600000, s: '' }));
+    W.localStorage.setItem('troLyXeo.gtoken', JSON.stringify({ t: 'tok30', exp: Date.now() + 3600000, s: '' }));
     setFeat08(W, { cal: true });
     W.refreshSettings();
     await sleep(150);
@@ -1666,16 +1666,18 @@ async function loadDom(beforeParse) {
     e.openedUrls.length = 0;
     pr.click();
     await sleep(50);
-    eq('bấm hàng Quyền riêng tư mở đúng URL PRIVACY.html', e.openedUrls[0], 'https://hoangviet1397.github.io/fotobro/PRIVACY.html');
+    const pvs = doc5.querySelectorAll('.sheet .pv'); const pv = pvs[pvs.length - 1];
+    t('bấm hàng Quyền riêng tư mở trang ngay trong app (không mở web)', !!pv && e.openedUrls.length === 0);
+    t('trang Quyền riêng tư có đủ mục Google + Xoá dữ liệu + Liên hệ', !!pv && pv.textContent.includes('Đăng nhập Google') && pv.textContent.includes('Xoá dữ liệu') && pv.textContent.includes('supportfotobro@gmail.com'));
   }
   console.log('\n[32] fix-10 — Hiển thị nhỏ + hạng mục chi Thuê đèn/Hoàn cọc, hoàn cọc, .tx-note');
   {
     console.log('[F10-1] Chữ + lang (kiểm tra trên source)');
     t('không còn "Giọng nói sẽ có ở bản v2.1"', !html.includes('Giọng nói sẽ có ở bản v2.1'));
-    t('"Giọng nói sẽ có ở bản sau" có trong code', html.includes('Giọng nói sẽ có ở bản sau'));
+    t('"Giọng nói sẽ có ở bản sau" không còn trong code (mic hỏi đã gỡ)', !html.includes('Giọng nói sẽ có ở bản sau'));
     t('html lang="vi"', html.includes('<html lang="vi">'));
     t('câu dài "Nhập từ Lịch iPhone" đã rút ngắn', !html.includes('Bấm 1 chạm trong app iOS — sự kiện 30 ngày tới thành buổi chụp; hoặc đăng nhập Google để đọc Lịch Google'));
-    t('câu ngắn mới có trong code', html.includes('1 chạm trong app iOS — sự kiện 30 ngày tới thành buổi chụp, hoặc đăng nhập Google'));
+    t('câu ngắn mới có trong code', html.includes('Đăng nhập Google là buổi chụp tự lưu vào Google Lịch'));
 
     console.log('\n[F10-2] Tab bar + celebrate (kiểm tra trên source/CSS)');
     t('tabbar dùng nền đặc --bar-strong', /\.tabbar\{[^}]*background:var\(--bar-strong\)/.test(html));
@@ -1844,7 +1846,7 @@ async function loadDom(beforeParse) {
     t('gate (web): không có nút Apple', !doc0.querySelector('#agApple'));
     t('gate: có nút Google', !!doc0.querySelector('#agGoogle'));
     t('gate: có link dùng thử không cần tài khoản', !!doc0.querySelector('#agSkip'));
-    t('gate: có ghi chú dữ liệu ở trên máy', (doc0.querySelector('#authGate') || { textContent: '' }).textContent.includes('Dữ liệu vẫn ở trên máy bạn'));
+    t('gate: có ghi chú dữ liệu ở trên máy', (doc0.querySelector('#authGate') || { textContent: '' }).textContent.includes('Dữ liệu vẫn nằm trên máy bạn'));
     doc0.querySelector('#agSkip').click();
     eq('gate: bấm bỏ qua -> authAsked = true', W0.state.cfg.authAsked, true);
     await sleep(500);
@@ -2185,10 +2187,10 @@ async function loadDom(beforeParse) {
   W3.maybeSilentGoogle();
   t('3: user mới thật -> không thử đăng nhập im lặng', gcArgs === null);
   W3.state.cfg.googleEverLinked = true;
-  W3.sessionStorage.setItem('troLyXeo.gtoken', TOK35());
+  W3.localStorage.setItem('troLyXeo.gtoken', TOK35());
   gcArgs = null; W3.maybeSilentGoogle();
   t('3: token còn hạn -> không thử đăng nhập im lặng', gcArgs === null);
-  W3.sessionStorage.removeItem('troLyXeo.gtoken');
+  W3.localStorage.removeItem('troLyXeo.gtoken');
   W3.state.cfg.googleEverLinked = false; W3.saveLocal(); W3.gMarkLinked();
   t('3: gMarkLinked ghi cờ bền', W3.state.cfg.googleEverLinked === true && (W3.localStorage.getItem('troLyXeo.v1') || '').includes('"googleEverLinked":true'));
 
@@ -2237,7 +2239,7 @@ async function loadDom(beforeParse) {
   const g6b = await loadDom35();
   const W6b = g6b.win, doc6b = g6b.doc;
   W6b.FOTOBRO_CONFIG = { googleClientId: 'test.apps.googleusercontent.com' };
-  W6b.sessionStorage.setItem('troLyXeo.gtoken', TOK35());
+  W6b.localStorage.setItem('troLyXeo.gtoken', TOK35());
   W6b.state.cfg.googleEverLinked = true; W6b.state.cfg.authAsked = true; W6b.saveLocal();
   W6b.fetch = async () => ({ ok: true });
   const ag6b = doc6b.querySelector('#authGate'); if (ag6b) ag6b.remove();
@@ -2302,7 +2304,7 @@ async function loadDom(beforeParse) {
   const g11 = await loadDom35();
   const W11 = g11.win;
   W11.FOTOBRO_CONFIG = { googleClientId: 'test.apps.googleusercontent.com' };
-  W11.sessionStorage.setItem('troLyXeo.gtoken', TOK35());
+  W11.localStorage.setItem('troLyXeo.gtoken', TOK35());
   W11.fetch = undefined;
   await W11.gFetch(true);
   eq('11: lỗi tải lịch dịch sang tiếng Việt', W11.gState.error, 'Không tải được lịch mới — đang xem bản đã lưu.');
@@ -2367,7 +2369,7 @@ async function loadDom(beforeParse) {
   const g18b = await loadDom35();
   const W18b = g18b.win, doc18b = g18b.doc;
   W18b.FOTOBRO_CONFIG = { googleClientId: 'test.apps.googleusercontent.com' };
-  W18b.sessionStorage.setItem('troLyXeo.gtoken', TOK35());
+  W18b.localStorage.setItem('troLyXeo.gtoken', TOK35());
   const ag18b = doc18b.querySelector('#authGate'); if (ag18b) ag18b.remove();
   W18b.openSettings(); await sleep(150);
   eq('18: đã kết nối -> đủ 7 công tắc tính năng Google', doc18b.querySelectorAll('[data-gfeat]').length, 7);
@@ -2496,7 +2498,83 @@ async function loadDom(beforeParse) {
   opened16 = false; closed16 = false;
   await W16.gConnect(true, true);
   t('16: đăng nhập im lặng (auto) -> không mở tab mới', !opened16 && !closed16);
+
+  // [36] Việt 20/11 — (a) ví dụ hỏi đổi 'Ai chưa trả tiền?' -> 'Tuần này chụp gì?';
+  // (b) gỡ mic hỏi bằng giọng nói; (c) Trợ lý trả lời 'mai' / 'ngày kia'
+  console.log('\n[36] Ví dụ hỏi mới + gỡ mic + ngày tương đối (mai / ngày kia)');
+  const g36 = await loadDom35();
+  const W36 = g36.win, doc36 = g36.doc;
+  const ag36 = doc36.querySelector('#authGate'); if (ag36) ag36.remove();
+  t('36: trang tải không lỗi jsdom', g36.errors.length === 0, g36.errors[0] || '');
+  // (a) hàng Hỏi FotoBro + chip + bong bóng chào: không còn 'Ai chưa trả tiền?'
+  const homeAsk36 = doc36.querySelector('#homeAsk .t2');
+  t('36a: hàng Hỏi FotoBro gợi ý "Tuần này chụp gì?"', !!homeAsk36 && homeAsk36.textContent.includes('Tuần này chụp gì?'), homeAsk36 ? homeAsk36.textContent : 'không có #homeAsk .t2');
+  t('36a: hàng Hỏi FotoBro không còn "Ai chưa trả tiền?"', !!homeAsk36 && !homeAsk36.textContent.includes('Ai chưa trả tiền?'));
+  W36.go('ask'); await sleep(100);
+  const chips36 = [...doc36.querySelectorAll('#askChips .pill')].map(c => c.textContent);
+  t('36a: chip Trợ lý không còn "Ai chưa trả tiền?"', chips36.length > 0 && !chips36.some(c => c.includes('Ai chưa trả tiền?')), chips36.join(' | '));
+  t('36a: chip có "Tuần này chụp gì?" và "Ngày kia chụp gì?"', chips36.some(c => c.includes('Tuần này chụp gì?')) && chips36.some(c => c.includes('Ngày kia chụp gì?')), chips36.join(' | '));
+  const chat36 = doc36.querySelector('#chatBox');
+  t('36a: bong bóng chào không còn "Ai chưa trả tiền?"', !!chat36 && !chat36.textContent.includes('Ai chưa trả tiền?'), chat36 ? chat36.textContent.slice(0, 120) : 'không có #chatBox');
+  t('36a: bong bóng chào gợi ý "Tuần này chụp gì?"', !!chat36 && chat36.textContent.includes('Tuần này chụp gì?'));
+  t('36a: câu trả lời dự phòng không còn "Ai chưa trả tiền?"', !W36.answer('xyzqq khong hieu').includes('Ai chưa trả tiền?'));
+  t('36a: câu trả lời dự phòng gợi ý "Tuần này chụp gì?"', W36.answer('xyzqq khong hieu').includes('Tuần này chụp gì?'));
+  // dữ liệu kiểm soát: job tuần trả đủ (không phải nợ), chỉ Khach No còn thiếu 3tr
+  W36.state.jobs = []; W36.state.txs = [];
+  const mk36 = (client, shootDate, price, paid) => {
+    const j = { id: W36.nid(), client, type: 'Portrait', medium: 'Digital', stage: 'Tư vấn',
+      stageSince: W36.dstr(0), shootDate, shootTime: '08:00', location: '', deadline: '', price,
+      phone: '', email: '', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false };
+    W36.state.jobs.unshift(j);
+    if (paid) W36.state.txs.unshift({ id: W36.nid(), kind: 'thu', category: 'Cọc', jobId: j.id, amount: paid, date: W36.dstr(0), method: 'Chuyển khoản', note: '', src: '' });
+    return j;
+  };
+  mk36('Lan Anh', W36.dstr(2), 2500000, 2500000);   // trong tuần + ngày kia
+  mk36('Mai Anh', W36.dstr(5), 2500000, 2500000);   // trong tuần, tên chứa 'Mai'
+  mk36('Khach Xa', W36.dstr(10), 2500000, 2500000); // ngoài tuần
+  mk36('Khach No', W36.dstr(20), 4000000, 1000000); // nợ 3tr
+  mk36('Khach Du', W36.dstr(20), 2500000, 2500000); // trả đủ
+  // (b) 'Tuần này chụp gì?' liệt kê đúng job trong tuần, không lọt job ngoài tuần
+  const wk36 = W36.answer('Tuần này chụp gì?');
+  t('36b: "Tuần này chụp gì?" liệt kê job trong tuần', wk36.includes('Lan Anh') && wk36.includes('Mai Anh'), wk36);
+  t('36b: "Tuần này chụp gì?" không liệt kê job ngoài tuần', !wk36.includes('Khach Xa'));
+  W36.state.jobs = W36.state.jobs.filter(j => j.client !== 'Lan Anh' && j.client !== 'Mai Anh');
+  t('36b: "Tuần này chụp gì?" không có job thì báo không có', W36.answer('Tuần này chụp gì?').includes('chưa có buổi chụp nào'));
+  mk36('Lan Anh', W36.dstr(2), 2500000, 2500000);
+  mk36('Mai Anh', W36.dstr(5), 2500000, 2500000);
+  // (c) 'Mai Anh chụp khi nào?' vẫn tra job của Mai Anh trước (không nhầm nhánh 'mai')
+  const maiAnh36 = W36.answer('Mai Anh chụp khi nào?');
+  t('36c: "Mai Anh chụp khi nào?" tra job Mai Anh, không nhầm nhánh mai', maiAnh36.includes('Mai Anh') && !maiAnh36.includes('không có buổi chụp nào'), maiAnh36);
+  // (d) 'Ngày kia chụp gì?' / 'Mai chụp gì?'
+  const nk36 = W36.answer('Ngày kia chụp gì?');
+  t('36d: "Ngày kia chụp gì?" liệt kê job ngày kia', nk36.includes('Lan Anh'), nk36);
+  t('36d: "Ngày kia chụp gì?" không liệt kê job ngày khác', !nk36.includes('Mai Anh') && !nk36.includes('Khach Xa'));
+  W36.state.jobs = W36.state.jobs.filter(j => j.client !== 'Lan Anh' && j.client !== 'Mai Anh');
+  const nkEmpty36 = W36.answer('Ngày kia chụp gì?');
+  t('36d: "Ngày kia chụp gì?" không có job thì báo không có ngày kia', nkEmpty36.includes('Ngày kia') && nkEmpty36.includes('không có buổi chụp nào'), nkEmpty36);
+  const maiEmpty36 = W36.answer('Mai chụp gì?');
+  t('36d: "Mai chụp gì?" không có job mai thì báo không có', maiEmpty36.includes('Mai') && maiEmpty36.includes('không có buổi chụp nào'), maiEmpty36);
+  mk36('Lan Anh', W36.dstr(1), 2500000, 2500000);
+  t('36d: "Mai chụp gì?" có job mai thì liệt kê đúng', W36.answer('Mai chụp gì?').includes('Lan Anh'));
+  // (e) gõ tay 'Ai chưa trả tiền?' vẫn ra danh sách nợ đúng (tile Hôm nay dùng câu này)
+  const owe36 = W36.answer('Ai chưa trả tiền?');
+  t('36e: gõ tay "Ai chưa trả tiền?" vẫn liệt kê khách nợ', owe36.includes('Khach No') && owe36.includes('3.000.000'), owe36);
+  t('36e: gõ tay "Ai chưa trả tiền?" không liệt kê khách trả đủ', !owe36.includes('Khach Du') && !owe36.includes('Lan Anh'));
+  // (f) mic đã gỡ, ô gõ chữ vẫn hoạt động
+  t('36f: màn Trợ lý không còn nút mic hỏi', !doc36.querySelector('#micBtn'));
+  t('36f: màn Trợ lý không còn thẻ xác nhận giọng nói', !doc36.querySelector('#voiceHeard'));
+  t('36f: source không còn "Giọng nói sẽ có ở bản sau"', !html.includes('Giọng nói sẽ có ở bản sau'));
+  t('36f: source không còn nút mic / handler giọng nói', !html.includes('micBtn') && !html.includes('startListening') && !html.includes('runVoiceCommand'));
+  const askIn36 = doc36.querySelector('#askInput');
+  const askForm36 = doc36.querySelector('#askForm');
+  askIn36.value = 'Hôm nay chụp gì?';
+  askForm36.dispatchEvent(new W36.Event('submit', { bubbles: true, cancelable: true }));
+  await sleep(500);
+  const bots36 = [...doc36.querySelectorAll('#chatBox .bub.bot')].map(b => b.textContent);
+  t('36f: gõ chữ + gửi vẫn ra câu trả lời của Trợ lý', bots36.length > 0 && bots36[bots36.length - 1].includes('Hôm nay'), bots36[bots36.length - 1] || 'không có bong bóng bot');
+  t('36f: lệnh gõ tay (runCommand) vẫn chạy', typeof W36.runCommand === 'function' && !!W36.runCommand('thêm job portrait cho Test36'));
   }
+
 
   console.log('\n===== KẾT QUẢ: ' + pass + ' đạt / ' + (pass + fail) + ' =====');
   if (fail) { console.log('FAILURES:', fails.join(' | ')); process.exit(1); }

@@ -136,14 +136,52 @@ Sửa duy nhất cho lỗi này: trong Cài đặt → Tài khoản, ngay dướ
 2FA/iCloud trên iPhone. Các mã lỗi khác không hiện dòng này. Giữ nguyên
 toast và `appleLastError`. Không sửa phần ký, không đổi nonce/scopes.
 
+## Gộp main (Claude f3005026, 20/11/2026) + 3 mục Việt bổ sung
+
+Nhánh `v23-fixes` (đợt 1 + v2.3b) gộp với main sau khi Claude đẩy thẳng
+commit f3005026 "Giữ đăng nhập Google, Quyền riêng tư trong app, nhắc
+trước 1 ngày, soát UX". Giữ đủ cả hai bên, phiên bản vẫn 2.3.
+
+- **Cổng → màn chào:** không tự mở tour sau cổng (quyết định v23-fixes),
+  giữ sửa không-chớp trang chủ + màn chào canh giữa của Claude cho lúc tour
+  mở tay. Bấm "Dùng thử" hay đăng nhập xong đều vào thẳng Hôm nay.
+- **Đăng nhập Google:** giữ cả hai — cờ `googleEverLinked` + đăng nhập im
+  lặng `prompt=none` (v23-fixes) và lưu refresh token + tự làm mới
+  (mở app, quay lại app, mỗi phút; 401 làm mới rồi thử lại) của Claude.
+  Access token chuyển sang localStorage (có migration từ sessionStorage lúc
+  khởi động); đăng nhập im lặng làm dự phòng khi chưa có refresh token.
+- **Cài đặt:** giữ thứ tự mới của Claude (Google & thông tin lên đầu) +
+  mục "Sao lưu & dữ liệu" (v23-fixes) dời xuống cuối Cài đặt, giữ logic ẩn
+  7 công tắc Google khi chưa kết nối và cách gọi "Đăng nhập bằng Google".
+- **Hôm nay / chi tiết buổi chụp:** giữ cả hai — mỗi khách 1 dòng nhắc +
+  hàng Đăng nhập + nhắc job chưa ghi giá; mục lịch gọn 2 dòng + tiêu đề
+  Google 2 dòng / địa chỉ đủ.
+- **Nhắc trước 1 ngày** của Claude được giữ (thông báo, Google Lịch, Lịch
+  iPhone, file lịch); logic nhắc dự phòng (12h → 60 phút → ngay) không đổi.
+- **Quyền riêng tư** mở trong app (Claude) giữ nguyên; **entitlement Apple
+  dạng mảng** (Claude) giữ nguyên — vẫn là giả thuyết chưa chứng minh về
+  lỗi 1000, không sửa thêm.
+- **Ví dụ hỏi (Việt):** "Ai chưa trả tiền?" trong hàng Hỏi FotoBro, bong
+  bóng chào và câu trả lời dự phòng đổi thành "Tuần này chụp gì?"; chip
+  Trợ lý đổi thành "Ngày kia chụp gì?" (vì "Tuần này chụp gì?" đã có chip).
+  Gõ tay "Ai chưa trả tiền?" vẫn liệt kê đúng danh sách nợ (tile Hôm nay
+  dùng câu này).
+- **Gỡ mic hỏi bằng giọng nói (Việt):** bỏ nút mic cạnh ô nhập Trợ lý,
+  thẻ xác nhận giọng nói, handler, `speak`/`runVoiceCommand` và khối
+  SpeechRecognition. Ô gõ chữ + lệnh gõ tay (`runCommand`) giữ nguyên.
+- **Ngày tương đối (Việt):** Trợ lý trả lời "mai" (hôm nay + 1) và "ngày
+  kia" (hôm nay + 2) — liệt kê buổi chụp đúng ngày đó, không có thì nói rõ.
+  Đặt sau vòng tra tên khách nên "Mai Anh chụp khi nào?" vẫn tra job của
+  Mai Anh trước. "Hôm nay chụp gì?", "Tuần này chụp gì?" không đổi.
+
 ## Test
 
-- jsdom: toàn bộ suite đạt (683 test cũ + section [34] mới).
-- Render 375px / iPhone 14 Pro Max (430×932), theme tối + sáng: vùng trên
-  cùng (status bar) và vùng dưới cùng (home indicator) là màu nền của
-  theme, không còn trắng. Lưu ý: `env(safe-area-inset-*)` trên trình giả
-  lập trả 0 nên phần inset thật trên máy vẫn cần Việt kiểm chứng trên
-  iPhone thật (xem LOG.md trong fotofix-v23/).
+- jsdom: 827/827 đạt (gồm 26 test mới [36] cho 3 mục của Việt; test gieo
+  token Google đổi sang localStorage theo hành vi đã gộp, 2 test khẳng
+  định chuỗi mic cũ đổi thành khẳng định không còn chuỗi đó).
+- Trong lúc gộp phát hiện block Google thiếu 1 dấu `}` đóng `gAuthFetch`
+  (hợp nhất hunk 6 làm rơi) → đã chèn lại; `node --check` sạch cho cả 14
+  block inline + bridge.
 
 ## Chưa làm
 
