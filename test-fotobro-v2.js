@@ -1,4 +1,4 @@
-/* Test FotoBro iOS v2.0 — chạy bằng jsdom, không cần trình duyệt.
+/* Test FotoBro iOS v2.1 — chạy bằng jsdom, không cần trình duyệt.
    Từ repo root: NODE_PATH=/tmp/film-verify/node_modules node test-fotobro-v2.js
    (trên CI: NODE_PATH=node_modules node test-fotobro-v2.js, sau npm ci + npm i --no-save jsdom)
    Base: www/index.html. Kỳ vọng:
@@ -47,7 +47,7 @@ async function loadDom(beforeParse) {
   const W = win;
   t('trang tải không lỗi jsdom', errors.length === 0, errors.slice(0, 3).join(' | '));
   eq('title là FotoBro', doc.title, 'FotoBro');
-  eq('APP_VERSION 2.0', W.APP_VERSION, '2.0');
+  eq('APP_VERSION 2.1', W.APP_VERSION, '2.1');
   eq('storage key giữ troLyXeo.v1', W.LS_KEY, 'troLyXeo.v1');
   // Phương án A (20/11/2026): 5 ô = 4 màn (home, jobs, money, depts/Thêm) + nút Ghi nhanh ở giữa
   t('đủ 5 ô thanh tab (4 màn + nút Ghi)', doc.querySelectorAll('.tabbar button').length === 5 &&

@@ -1,6 +1,6 @@
 # FotoBro — Changelog v2.1
 
-- **Phiên bản:** 2.1 (`APP_VERSION` vẫn `'2.0'` cho tới khi Việt chốt số phiên bản v2.1 — xem dưới)
+- **Phiên bản:** 2.1 (`APP_VERSION` `'2.1'`, `MARKETING_VERSION` `2.1` — đã chốt khi Việt duyệt chạy build thử 12:28 20/11/2026)
 - **Bundle ID:** `com.fotobro.app`
 - **Nền tảng:** iOS (Capacitor 8)
 - **Ngày phát hành:** _chưa chốt_ (điền khi bản TestFlight v2.1 được duyệt)
@@ -9,9 +9,9 @@
 
 > Ghi chú: bản v2.1 đang làm trong `~/workspace/fotobro-ios-v1/`, nhánh
 > `apple-signin`. Chưa build `.ipa`, chưa lên TestFlight, chưa kiểm chứng
-> trên iPhone thật. Số phiên bản v2.1 chưa chốt — `APP_VERSION` trong
-> `www/index.html` vẫn là `'2.0'` và `MARKETING_VERSION` trong pbxproj vẫn
-> là `2.0` cho tới khi Việt duyệt số phiên bản trước lúc build.
+> trên iPhone thật. Số phiên bản v2.1 đã chốt — `APP_VERSION` trong
+> `www/index.html` là `'2.1'` và `MARKETING_VERSION` trong pbxproj là
+> `2.1` (Việt duyệt chạy build thử 12:28 20/11/2026).
 
 ## Tính năng mới trong v2.1
 

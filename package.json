@@ -26,5 +26,5 @@
     "open:ios": "npx cap open ios",
     "sync": "npx cap sync ios"
   },
-  "version": "2.0.0"
+  "version": "2.1.0"
 }
