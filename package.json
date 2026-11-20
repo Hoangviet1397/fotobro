@@ -12,7 +12,8 @@
     "@capacitor/share": "^8.0.0",
     "@capacitor/splash-screen": "^8.0.0",
     "@capacitor/status-bar": "^8.0.0",
-    "@capawesome/capacitor-apple-sign-in": "0.1.5"
+    "@capawesome/capacitor-apple-sign-in": "0.1.5",
+    "@capgo/capacitor-native-biometric": "8.9.3"
   },
   "description": "FotoBro — trợ lý studio ảnh cho nhiếp ảnh gia tự do. Bản iOS v1 (Capacitor 8, com.fotobro.app), base web FotoBro v2.6 tối giản.",
   "devDependencies": {
@@ -26,5 +27,5 @@
     "open:ios": "npx cap open ios",
     "sync": "npx cap sync ios"
   },
-  "version": "2.1.0"
+  "version": "2.2.0"
 }
