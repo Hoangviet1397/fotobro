@@ -105,6 +105,7 @@
       .nav.solid .nav-t{ opacity:1; }
       .nav-r{ justify-self:end; display:flex; }
       .nav-btn{ width:44px; height:44px; border:0; background:none; color:var(--accent); display:grid; place-items:center; border-radius:50%; }
+      .nav-btn.txt{ width:auto; padding:0 14px 0 10px; display:inline-flex; align-items:center; gap:6px; font-size:0.9375rem; font-weight:600; border-radius:999px; } /* v2.3b: nút Cài đặt có chữ */
       .nav-btn svg{ width:26px; height:26px; }
       .nav-btn:active{ opacity:.5; }
 
@@ -635,6 +636,11 @@
         </div>
         <div class="tiles" id="homeStats"></div>
         <div class="list" style="margin-top:12px;">
+          <button class="row hidden" type="button" id="homeLoginRow">
+            <span class="ic bg-blue" data-i="person"></span>
+            <span class="txt"><span class="t1 b" style="display:block;">Đăng nhập</span><span class="t2" style="display:block;">Đăng nhập bằng Apple hoặc Google — chưa đăng nhập vẫn dùng app bình thường</span></span>
+            <span class="chev" data-i="chev"></span>
+          </button>
           <button class="row" type="button" id="homeAsk">
             <span class="ic bg-accent" data-i="bubble"></span>
             <span class="txt"><span class="t1 b" style="display:block;">Hỏi FotoBro</span><span class="t2" style="display:block;">“Ai chưa trả tiền?” · “Chi makeup 2 triệu”</span></span>
@@ -901,7 +907,7 @@
       pricesFilm:{ Portrait:0, Couple:0, Wedding:0, Lookbook:0, Event:0 },
       extraHour:0, extraLoc:0, retouch:0, album:0,
       depositPct:40, deliverDays:14,
-      equipment:[], fixed:[], checkExtra:{}, theme:'warm', petals:false, gCals:[], gFeat:{cal:true, bank:false, leads:false, contacts:false, drive:false, calw:false, send:false}, glass:true, notifAsked:false, locale:'vi', currency:'VND', logo:'', mailTpls:{}, apple:null, authAsked:false, appleLastError:null
+      equipment:[], fixed:[], checkExtra:{}, theme:'warm', petals:false, gCals:[], gFeat:{cal:true, bank:false, leads:false, contacts:false, drive:false, calw:false, send:false}, glass:true, notifAsked:false, locale:'vi', currency:'VND', logo:'', mailTpls:{}, apple:null, authAsked:false, appleLastError:null, googleEverLinked:false
     };
     function mergeCfg(c){
       var o = JSON.parse(JSON.stringify(DEFAULT_CFG));
@@ -930,6 +936,7 @@
       /* v2.2: cờ đã hỏi đăng nhập lúc vào app + lỗi Apple gần nhất (để hiện
          trong Cài đặt cho lần test sau chẩn đoán — xem aConnect). */
       o.authAsked = o.authAsked === true;
+    o.googleEverLinked = o.googleEverLinked === true; /* v2.3b: đã từng liên kết Google — cổng bỏ qua khi token hết hạn */
       o.appleLastError = (o.appleLastError && typeof o.appleLastError === 'object' && (o.appleLastError.code || o.appleLastError.message))
         ? { code:cleanStr(o.appleLastError.code || '', 40), message:cleanStr(o.appleLastError.message || '', 120), at:+o.appleLastError.at || 0 }
         : null;
@@ -1184,6 +1191,13 @@
     function unpricedJobs(){ return state.jobs.filter(function(j){ return !j.cancelled && !(+j.price > 0); }); }
     /* Tiền cọc đã ghi cho một job (khoản thu hạng mục "Cọc"). */
     function jobDep(j){ if (!j || j.id == null) return 0; return state.txs.filter(function(t){ return t.kind==='thu' && t.category==='Cọc' && String(t.jobId)===String(j.id); }).reduce(function(s,t){ return s+t.amount; },0); }
+    /* v2.3b: job đã huỷ mà cọc chưa hoàn — có khoản thu "Cọc" nhưng chưa có
+       khoản chi "Hoàn cọc" nào gắn job đó. */
+    function unrefundedCancels(){
+      return state.jobs.filter(function(j){
+        return j.cancelled && jobDep(j) > 0 && !state.txs.some(function(t){ return String(t.jobId) === String(j.id) && t.category === 'Hoàn cọc'; });
+      });
+    }
     function stageTag(j){
       if (j.cancelled) return '<span class="tagp tg-gray">Đã huỷ</span>';
       if (isStuck(j)) return '<span class="tagp tg-red">Kẹt ở ' + esc(j.stage) + '</span>';
@@ -1283,9 +1297,13 @@
       var r = $('#navR'); r.innerHTML = '';
       var nb = NAV_BTN[curView];
       if (nb){
-        var b = document.createElement('button'); b.type = 'button'; b.className = 'nav-btn';
+        var b = document.createElement('button'); b.type = 'button';
+        /* v2.3b: nút Cài đặt (bánh răng) thêm chữ để người mới nhận ra ngay —
+           các nút khác (thêm job / ghi tiền) giữ icon-only cho gọn. */
+        var isSettings = nb.label === 'Cài đặt';
+        b.className = 'nav-btn' + (isSettings ? ' txt' : '');
         b.setAttribute('aria-label', nb.label);
-        b.innerHTML = I(nb.icon, 1.8); b.addEventListener('click', nb.fn); r.appendChild(b);
+        b.innerHTML = I(nb.icon, 1.8) + (isSettings ? '<span>Cài đặt</span>' : ''); b.addEventListener('click', nb.fn); r.appendChild(b);
       }
       onScroll();
     }
@@ -1368,6 +1386,13 @@
       var lg = $('#studioLogo');
       if (lg){ if (state.cfg.logo){ lg.src = state.cfg.logo; lg.classList.remove('hidden'); } else { lg.removeAttribute('src'); lg.classList.add('hidden'); } }
       applyLocale();
+      /* v2.3b: chưa có tài khoản nào thì hiện hàng "Đăng nhập" trên Hôm nay —
+         bấm "Dùng thử" xong vẫn còn lối vào đăng nhập (Tuấn, Phong, Ngọc).
+         typeof: renderHome chạy cả trong init() lúc aLinked/gLinked chưa
+         được định nghĩa (script sau) — lúc đó mặc định hiện hàng (chưa có
+         tài khoản nào) là đúng. */
+      var hl = $('#homeLoginRow');
+      if (hl) hl.classList.toggle('hidden', (typeof aLinked === 'function' && aLinked()) || (typeof gLinked === 'function' && gLinked()));
       var hh = new Date().getHours(); $('#greetLine').textContent = (hh < 11 ? 'Buổi sáng an lành' : (hh < 18 ? 'Buổi chiều dịu dàng' : 'Buổi tối ấm áp')) + (myStudio() ? ' · ' + myStudio() : '');
       var active = state.jobs.filter(function(j){ return j.stage !== 'Xong'; }).length;
       var items = todayItems();
@@ -1522,7 +1547,7 @@
       {k:'baogia', t:'Báo giá & xin cọc', f:function(x){ return x.Ten + ' ơi, ' + (x.gia ? 'gói ' + (x.loai || 'chụp') + ' bên mình ' + x.gia + '. Bạn' : 'bạn') + ' cọc trước ' + x.pct + '%' + (x.coc ? ' (' + x.coc + ')' : '') + ' là mình giữ lịch' + (x.khi ? ' ' + x.khi : '') + ' nha.'; }},
       {k:'coc', t:'Đã nhận cọc', f:function(x){ return x.depPaid ? 'Mình nhận cọc ' + x.depPaid + ' rồi nha ' + x.ten + '! Lịch' + (x.khi ? ' ' + x.khi : '') + ' đã giữ chắc rồi, gần ngày mình nhắn nhắc chuẩn bị.' : x.Ten + ' ơi, bạn cọc trước ' + x.pct + '%' + (x.coc ? ' (' + x.coc + ')' : '') + ' là mình giữ lịch' + (x.khi ? ' ' + x.khi : '') + ' nha.'; }},
       {k:'nhac', t:'Nhắc lịch chụp', f:function(x){ return x.Ten + ' ơi, nhắc lịch chụp ' + (x.khi || 'sắp tới') + x.gio + x.noi + ' nha.' + (x.khi === 'hôm nay' ? ' Tới sớm 10 phút giúp mình nhé!' : ' Nhớ ngủ sớm, tới sớm 10 phút giúp mình nhé!'); }},
-      {k:'chon', t:'Mời chọn ảnh', f:function(x){ return x.drive ? x.Ten + ' ơi, ảnh đã lên link rồi nè: ' + x.drive + '. Bạn chọn tấm ưng rồi gửi số ảnh cho mình nha.' : x.Ten + ' ơi, ảnh mình đã chọn xong rồi nè. Bạn xem giúp mình rồi gửi số ảnh ưng cho mình nha.'; }},
+      {k:'chon', t:'Mời chọn ảnh', f:function(x){ return x.drive ? x.Ten + ' ơi, ảnh đã lên link rồi nè: ' + x.drive + '. Bạn chọn tấm ưng rồi gửi số ảnh cho mình nha.' : x.Ten + ' ơi, ảnh mình đã chọn xong rồi nè. Bạn chờ mình một chút, mình gửi ảnh cho bạn chọn ngay nhé.'; }}, /* v2.3b: chưa có link thì đừng bảo khách "xem giúp mình" — khách không có gì để xem; cũng không nhắc tới link khi chưa có link thật */
       {k:'giao', t:'Giao ảnh', f:function(x){ return 'Ảnh của ' + x.ten + ' xong rồi nè' + (x.drive ? ': ' + x.drive : '') + '. Cần chỉnh tấm nào cứ nói mình nha!'; }},
       {k:'tien', t:'Nhắc thanh toán', f:function(x){ return x.Ten + ' ơi, ' + (x.con ? 'buổi chụp' + (x.loai ? ' ' + x.loai : '') + ' còn ' + x.con + ' nha.' : 'mình nhắc phần thanh toán còn lại của buổi chụp' + (x.loai ? ' ' + x.loai : '') + ' nha.') + ' Bạn chuyển khi tiện giúp mình, cảm ơn bạn nhiều!'; }},
       {k:'camnhan', t:'Xin cảm nhận', f:function(x){ return 'Cảm ơn ' + x.ten + ' đã chọn mình! Nếu ưng ảnh, cho mình xin 1 câu cảm nhận và cho đăng vài tấm nhé.'; }}
@@ -1758,6 +1783,17 @@
       if (ti === cur) return;
       /* Nhảy xa (tiến hay lùi qua >1 bước) đều phải xác nhận — như nhảy tiến. */
       if (Math.abs(ti - cur) > 1){
+        /* v2.3b: nhảy xa tới Xong mà còn thiếu tiền thì GỘP cảnh báo thiếu
+           tiền vào luôn hộp xác nhận nhảy — một hộp duy nhất, khỏi 2 hộp
+           nối nhau (nhảy → cảnh báo thiếu). force:true để setStage khỏi
+           hiện lại cảnh báo lần nữa. */
+        if (STAGES[ti] === 'Xong' && jobOwe(j) > 0){
+          actionSheet({ title:'Nhảy tới “Xong”?', msg:'Từ “' + j.stage + '” tới thẳng “Xong”, bỏ qua các bước giữa chưa xong. Khách còn thiếu ' + fmt(jobOwe(j)) + ' — xong job mà chưa thu đủ thì sổ sẽ ghi thiếu.', actions:[
+            { label:'Thu nốt ' + fmt(jobOwe(j)) + ' trước', fn:function(){ openTxForm({ jobId:j.id, kind:'thu', category:'Tiền sau buổi chụp', amount:jobOwe(j), date:dstr(0), note:'Thu nốt trước khi xong job' }); } },
+            { label:'Vẫn nhảy tới “Xong”, thiếu sau', destructive:true, fn:function(){ setStage(j, STAGES[ti], { force:true }); } }
+          ]});
+          return;
+        }
         actionSheet({ title:'Nhảy qua ' + (Math.abs(ti - cur) - 1) + ' bước?', msg:'Từ “' + j.stage + '” tới thẳng “' + STAGES[ti] + '”, bỏ qua các bước giữa chưa xong. Vẫn nhảy?', actions:[
           { label:'Nhảy tới “' + STAGES[ti] + '”', fn:function(){ setStage(j, STAGES[ti]); } }
         ]});
@@ -1932,13 +1968,14 @@
       'Portrait': ['Sạc đầy pin + mang pin dự phòng','Thẻ nhớ đã format, mang thẻ dự phòng','Lens chân dung (85mm / 50mm)','Máy đã lau sensor, kiểm tra nhanh','Trang phục & phụ kiện đã hẹn với khách','Địa điểm + giờ ánh sáng đẹp đã chốt','Hoa / đạo cụ theo concept (sen, lồng đèn…)','Cọc đã nhận — kiểm tra trong tab Tiền bạc'],
       'Couple': ['Sạc đầy pin + pin dự phòng','Thẻ nhớ dự phòng','Lens 35mm + 85mm','Trang phục cặp đôi đã thống nhất','Địa điểm + tuyến di chuyển','Đạo cụ: hoa, ô trong, bóng bay…','Timeline hoàng hôn đã tính giờ','Cọc đã nhận — kiểm tra trong tab Tiền bạc'],
       'Wedding': ['2 thân máy sẵn sàng, pin sạc đầy hết','Thẻ nhớ nhiều + đã format','Đèn flash + pin đèn','Lens 24-70 + 85mm','Timeline ngày cưới + danh sách người nhà cần chụp','Hợp đồng + số điện thoại phù rể / người điều phối','Đồ dự phòng: kim chỉ, băng keo, sạc dự phòng','Cọc đã nhận — kiểm tra trong tab Tiền bạc','Thỏa thuận giờ ăn / nghỉ của ê-kíp'],
-      'Lookbook': ['Shot list từ shop đã in / lưu sẵn','Mẫu + makeup đã xác nhận giờ','Phông nền / studio đã đặt','Đèn studio + tản sáng','Sản phẩm đã ủi phẳng, đánh số thứ tự','Bàn là hơi / cây lăn bụi','Thỏa thuận số ảnh giao + hạn giao','Cọc đã nhận — kiểm tra trong tab Tiền bạc']
+      'Lookbook': ['Shot list từ shop đã in / lưu sẵn','Mẫu + makeup đã xác nhận giờ','Phông nền / studio đã đặt','Đèn studio + tản sáng','Sản phẩm đã ủi phẳng, đánh số thứ tự','Bàn là hơi / cây lăn bụi','Thỏa thuận số ảnh giao + hạn giao','Cọc đã nhận — kiểm tra trong tab Tiền bạc'],
+      'Event': ['2 thân máy sẵn sàng, pin sạc đầy hết','Đèn flash + pin đèn','Lens 24-70 + 35mm','Timeline chương trình + giờ các tiết mục chính','Danh sách khách VIP / người điều phối + số điện thoại','Thẻ nhớ nhiều + đã format','Pin dự phòng + sạc dự phòng','Cọc đã nhận — kiểm tra trong tab Tiền bạc']
     };
     var checkSel = null;   /* 'job:<id>' = riêng một buổi chụp, 'type:<Loại>' = danh sách chung */
     var checkPinned = false; /* true khi bạn tự bấm chọn; không thì luôn tự chọn buổi chụp gần nhất */
     function shortName(s){ s = String(s).split(/s*[&,]s*/)[0]; return s.length > 16 ? s.slice(0, 15) + "…" : s; }
     function listType(t){ return CHECKLISTS[t] ? t : 'Portrait'; }
-    function checkItems(t){ return CHECKLISTS[t].concat((state.cfg.checkExtra && state.cfg.checkExtra[t]) || []); }
+    function checkItems(t){ return (CHECKLISTS[t] || []).concat((state.cfg.checkExtra && state.cfg.checkExtra[t]) || []); }
     function upcomingShoots(){
       var t = dstr(0);
       return state.jobs.filter(function(j){ return j.shootDate && j.shootDate >= t && STAGES.indexOf(j.stage) <= 3; })
@@ -2108,11 +2145,26 @@
       var owes = state.jobs.filter(function(j){ return !j.cancelled && jobOwe(j) > 0; }).sort(function(a, b){ return jobOwe(b) - jobOwe(a); });
       var unpricedN = unpricedJobs().length;
       $('#oweTitle').textContent = 'Khách còn thiếu' + (owes.length ? ' · ' + fmt(totalOwe()) : '');
-      $('#oweList').innerHTML = owes.length ? owes.map(function(j){
+      var oweHtml = owes.length ? owes.map(function(j){
         var paid = jobThu(j.id);
-        return '<div class="row owe-row" data-job="' + j.id + '" role="button" tabindex="0"><span class="txt"><span class="t1 b wrap2" style="display:block;">' + esc(j.client) + '</span><span class="t2" style="display:block;">' + esc(jobTypeLabel(j)) + ' · ' + (paid ? 'đã nhận ' + fmt(paid) + ' / ' + fmt(j.price) : 'chưa nhận cọc') + '</span></span>' +
+        return '<div class="row owe-row" data-job="' + j.id + '" role="button" tabindex="0"><span class="txt"><span class="t1 b wrap2" style="display:block;">' + esc(j.client) + '</span><span class="t2" style="display:block;">' + esc(jobTypeLabel(j)) + ' · ' + (paid ? '<span style="white-space:nowrap;">đã nhận ' + fmt(paid) + ' / ' + fmt(j.price) + '</span>' : 'chưa nhận cọc') + '</span></span>' +
           '<span class="val num b red">' + fmt(jobOwe(j)) + '</span><button type="button" class="btn tint sm owe-nhac" data-nhac="' + j.id + '" aria-label="Chép tin nhắc thanh toán cho ' + esc(j.client) + '">Nhắc</button></div>';
       }).join('') : (unpricedN ? '<div class="empty-row muted">Có ' + unpricedN + ' buổi chụp chưa ghi giá — ghi giá để app tính khách còn thiếu.</div>' : '<div class="empty-row muted">Khách trả đủ hết rồi, không ai còn thiếu.</div>');
+      /* v2.3b (Phong): job chưa ghi giá phải nhắc LUÔN, kể cả khi đã có job
+         khác đang nợ — trước đây chỉ nhắc khi không còn ai nợ nên job 0đ
+         "tàng hình". */
+      if (owes.length && unpricedN) oweHtml += '<div class="empty-row muted">Ngoài ra có ' + unpricedN + ' buổi chụp chưa ghi giá — ghi giá để app tính khách còn thiếu.</div>';
+      /* v2.3b (Tuấn): job đã huỷ mà cọc chưa hoàn — cọc vẫn nằm trong Thu
+         tháng, nhắc hoàn ngay tại đây; bấm vào mở sẵn form hoàn cọc. */
+      var refunds = unrefundedCancels();
+      if (refunds.length) oweHtml += refunds.map(function(j){
+        return '<button type="button" class="row" data-refund="' + j.id + '"><span class="ic bg-red">' + I('outarrow') + '</span><span class="txt"><span class="t1 b wrap2" style="display:block;">' + esc(j.client) + ' — cọc chưa hoàn</span><span class="t2" style="display:block;">Job đã huỷ, còn cọc ' + fmt(jobDep(j)) + ' chưa trả khách</span></span><span class="val num b">Hoàn cọc</span></button>';
+      }).join('');
+      $('#oweList').innerHTML = oweHtml;
+      $$('#oweList [data-refund]').forEach(function(b){ b.addEventListener('click', function(){
+        var j = jobById(b.getAttribute('data-refund')); if (!j) return;
+        openTxForm({ jobId:j.id, kind:'chi', category:'Hoàn cọc', amount:jobDep(j), date:dstr(0), note:'Hoàn cọc cho ' + j.client });
+      }); });
       $$('#oweList [data-nhac]').forEach(function(b){ b.addEventListener('click', function(e){ e.stopPropagation(); var j = jobById(b.getAttribute('data-nhac')); if (j) copyText(chatMsg('tien', j), 'Đã chép tin nhắc — dán vào Zalo hoặc Messenger'); }); });
       $$('#oweList .owe-row').forEach(function(r){ r.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openJob(r.getAttribute('data-job')); } }); });
       /* Job đã huỷ không nằm trong "Lời theo từng job" — tiền của nó vẫn nằm trong
@@ -2177,7 +2229,7 @@
         lines.push(cc.length ? cc.length + ' job vừa chốt cọc, sẵn sàng lên lịch.' : 'Chưa có job mới chốt cọc.');
         var oweN = state.jobs.filter(function(j){ return !j.cancelled && jobOwe(j) > 0; }).length;
         var unpN = unpricedJobs().length;
-        lines.push(oweN ? oweN + ' khách còn thiếu tiền — tin nhắn nhắc khéo có sẵn trong từng buổi chụp.' : (unpN ? 'Có ' + unpN + ' buổi chụp chưa ghi giá — ghi giá để biết khách còn thiếu bao nhiêu.' : 'Khách đã trả đủ hết, vui quá!'));
+        lines.push(oweN ? oweN + ' khách còn thiếu tiền — tin nhắn nhắc khéo có sẵn trong từng buổi chụp.' + (unpN ? ' Ngoài ra có ' + unpN + ' buổi chụp chưa ghi giá.' : '') : (unpN ? 'Có ' + unpN + ' buổi chụp chưa ghi giá — ghi giá để biết khách còn thiếu bao nhiêu.' : 'Khách đã trả đủ hết, vui quá!'));
       }
       if (id === 'buoichup'){
         var st = state.jobs.filter(function(j){ return j.shootDate===today && j.stage!=='Xong'; });
@@ -2195,7 +2247,7 @@
       if (id === 'tienbac'){
         var sThu = sum(monthTxs('thu')), sChi = sum(monthTxs('chi'));
         lines.push('Tháng này thu ' + fmt(sThu) + ', chi ' + fmt(sChi) + ', lời ' + fmt(sThu - sChi) + '.');
-        lines.push(totalOwe() > 0 ? 'Khách còn thiếu tổng cộng ' + fmt(totalOwe()) + ' — chi tiết ở tab Tiền bạc.' : (unpricedJobs().length ? 'Có ' + unpricedJobs().length + ' buổi chụp chưa ghi giá — ghi giá để biết khách còn thiếu bao nhiêu.' : 'Không ai nợ đồng nào.'));
+        lines.push(totalOwe() > 0 ? 'Khách còn thiếu tổng cộng ' + fmt(totalOwe()) + ' — chi tiết ở tab Tiền bạc.' + (unpricedJobs().length ? ' Ngoài ra có ' + unpricedJobs().length + ' buổi chụp chưa ghi giá.' : '') : (unpricedJobs().length ? 'Có ' + unpricedJobs().length + ' buổi chụp chưa ghi giá — ghi giá để biết khách còn thiếu bao nhiêu.' : 'Không ai nợ đồng nào.'));
         var big = biggestChiCat();
         lines.push(big ? 'Khoản chi lớn nhất tháng này: ' + big.cat + ' — ' + fmt(big.total) + '.' : 'Tháng này chưa ghi khoản chi nào.');
         if (typeof totalDep === 'function' && totalDep() > 0) lines.push('Khấu hao thiết bị ' + fmt(totalDep()) + '/tháng' + (recordedThisMonth(DEP_NOTE) ? ' — đã ghi vào sổ tháng này.' : ' — chưa ghi vào sổ tháng này (vào Cài đặt bấm một nút là xong).'));
@@ -2350,7 +2402,8 @@
         if (unp) return 'Chưa thấy khách nào còn thiếu tiền trong các job đã ghi giá. Nhưng có ' + unp + ' buổi chụp chưa ghi giá nên app chưa tính được số thiếu — ghi giá vào là app tính ngay.';
         return 'Không ai nợ đồng nào hết, bạn ơi. Khách trả đủ hết rồi, vui quá!';
       }
-      return 'Danh sách khách còn thiếu tiền nè:\n' + list.map(function(j){ return '• ' + j.client + ' (' + jobTypeLabel(j) + ') — còn thiếu ' + fmt(jobOwe(j)) + ', đang ở bước ' + j.stage; }).join('\n') + '\nTổng cộng còn thiếu: ' + fmt(totalOwe()) + '. Tin nhắn nhắc khéo có sẵn trong từng buổi chụp đó.';
+      var unp2 = unpricedJobs().length; /* v2.3b: nhắc job chưa ghi giá LUÔN, kể cả khi đã có người nợ */
+      return 'Danh sách khách còn thiếu tiền nè:\n' + list.map(function(j){ return '• ' + j.client + ' (' + jobTypeLabel(j) + ') — còn thiếu ' + fmt(jobOwe(j)) + ', đang ở bước ' + j.stage; }).join('\n') + '\nTổng cộng còn thiếu: ' + fmt(totalOwe()) + '.' + (unp2 ? '\nNgoài ra có ' + unp2 + ' buổi chụp chưa ghi giá nên app chưa tính được số thiếu của các job đó — ghi giá vào là app tính ngay.' : '') + ' Tin nhắn nhắc khéo có sẵn trong từng buổi chụp đó.';
     }
     function answer(qRaw){
       var q = norm(qRaw);
@@ -2550,6 +2603,7 @@
       }catch(e){ stopListening(); toast('Giọng nói chưa dùng được trên máy này', 'warn'); }
     }
     $('#micBtn').addEventListener('click', startListening);
+    $('#homeLoginRow').addEventListener('click', function(){ openAuthGateForced(); });
     $('#homeAsk').addEventListener('click', function(){ go('ask'); });
     $('#qJob').addEventListener('click', function(){ openJobForm(); });
     $('#qThu').addEventListener('click', function(){ openTxForm({kind:'thu'}); });
@@ -2677,8 +2731,10 @@
       });
       inp.click();
     }
-    $('#exportBtn').addEventListener('click', async function(){
-      var btn = $('#exportBtn'); if (btn) btn.disabled = true;
+    /* v2.3b: tách thành hàm đặt tên để sheet Cài đặt dùng chung — không nhân
+       đôi logic sao lưu (Quân: nút sao lưu nằm ở Thêm, khó tìm). */
+    async function downloadBackup(btn){
+      if (btn) btn.disabled = true;
       try{
         var env = await buildBackupData();
         var dateStr = dstr(0), nPhotos = env.photos.length;
@@ -2700,12 +2756,13 @@
       }catch(e){
         toast('Chưa sao lưu được, bạn thử lại nha', 'warn');
       } finally { if (btn) btn.disabled = false; }
-    });
-    $('#importFile').addEventListener('change', function(e){
-      var input = e.target, file = input.files[0]; if (!file) return;
+    }
+    $('#exportBtn').addEventListener('click', function(){ downloadBackup($('#exportBtn')); });
+    /* v2.3b: tách thành hàm đặt tên để sheet Cài đặt dùng chung (xem downloadBackup). */
+    function restoreBackupFile(file){
+      if (!file) return;
       var r = new FileReader();
       r.onload = function(){
-        input.value = '';
         var d = null;
         try{ d = JSON.parse(r.result); }catch(err){ toast('Chưa đọc được file này, bạn thử lại nha', 'warn'); return; }
         var parsed = parseBackupFile(d);
@@ -2733,6 +2790,11 @@
           }}] });
       };
       r.readAsText(file);
+    }
+    $('#importFile').addEventListener('change', function(e){
+      var input = e.target, file = input.files[0]; if (!file) return;
+      input.value = '';
+      restoreBackupFile(file);
     });
     /* H5 (SECURITY-AUDIT): "Xoá toàn bộ dữ liệu" phải xoá THẬT — job/txs,
        ảnh trang chủ trong IndexedDB, token Google + dữ liệu Google đã tải,
@@ -2759,7 +2821,8 @@
         location.reload();
       });
     }
-    $('#clearSample').addEventListener('click', function(){
+    /* v2.3b: tách thành hàm đặt tên để sheet Cài đặt dùng chung (xem downloadBackup). */
+    function clearDataFlow(){
       if (state.sample){
         actionSheet({ title:'Xoá dữ liệu mẫu?', msg:'Xoá hết job và khoản thu chi mẫu để bắt đầu sổ trống. Cài đặt giá và thiết bị được giữ nguyên.',
           actions:[{label:'Xoá dữ liệu mẫu', destructive:true, fn:function(){ state.jobs = []; state.txs = []; state.sample = false; renderAll(); toast('Sổ đã trống, sẵn sàng cho job thật', 'del'); }}] });
@@ -2767,7 +2830,8 @@
       }
       actionSheet({ title:'Xoá toàn bộ dữ liệu?', msg:'Xoá hết ' + state.jobs.length + ' buổi chụp, ' + state.txs.length + ' khoản thu chi, ảnh trang chủ, cài đặt, logo, khoá app và ngắt kết nối Google trên máy này. File sao lưu bạn đã tải về máy KHÔNG xoá được từ trong app — tự xoá trong Files. Nên tải bản sao lưu trước.',
         actions:[{label:'Xoá tất cả', destructive:true, fn:function(){ wipeAll(); }}] });
-    });
+    }
+    $('#clearSample').addEventListener('click', clearDataFlow);
 
     /* ================= KHỞI TẠO ================= */
     /* Hiệu năng (PERFORMANCE.md): lưu debounce 300ms + chỉ render màn đang
@@ -2843,6 +2907,12 @@
       h += '<p class="sec-s">Liên hệ</p><div class="list"><a class="row" href="mailto:' + esc(sup) + '"><span class="ic bg-gray">' + I('mail') + '</span><span class="txt"><span class="t1" style="display:block;">Email hỗ trợ — ' + esc(sup) + '</span><span class="t2" style="display:block;">Gửi email cho đội hỗ trợ FotoBro — trả lời trong vòng 3 ngày làm việc.</span></span>' + chevSvg() + '</a></div>';
       h += '<p class="sec-s">Quyền riêng tư</p><div class="list"><button type="button" class="row" id="privacyRow"><span class="ic bg-gray">' + I('doc') + '</span><span class="txt"><span class="t1" style="display:block;">Quyền riêng tư</span><span class="t2" style="display:block;">Dữ liệu ở trên máy bạn, app không gửi dữ liệu lên máy chủ nào — xem chi tiết</span></span>' + chevSvg() + '</button></div>';
       h += '<p class="sec-s">Nhập dữ liệu</p><div class="list"><button type="button" class="row" id="cfgCal"><span class="ic bg-red">' + I('cal') + '</span><span class="txt"><span class="t1" style="display:block;">Nhập từ Lịch iPhone</span><span class="t2" style="display:block;">Lịch iPhone 30 ngày tới thành job</span></span>' + chevSvg() + '</button></div>';
+      /* v2.3b: sao lưu/khôi phục/xoá dữ liệu cũng có trong Cài đặt (trước chỉ
+         có ở tab Thêm — Quân mở nhầm). Dùng chung hàm với nút ở Thêm. */
+      h += '<p class="sec-s">Sao lưu &amp; dữ liệu</p><div class="list">' +
+        '<button type="button" class="row" id="setExportBtn"><span class="ic bg-green">' + I('download') + '</span><span class="txt"><span class="t1" style="display:block;">Tải bản sao lưu</span><span class="t2" style="display:block;">Job, tiền và ảnh — file JSON, lưu trên máy này</span></span>' + chevSvg() + '</button>' +
+        '<label class="row" style="cursor:pointer;"><span class="ic bg-blue">' + I('upload') + '</span><span class="txt"><span class="t1" style="display:block;">Mở bản sao lưu</span><span class="t2" style="display:block;">Khôi phục từ file đã tải về trước đó</span></span>' + chevSvg() + '<input type="file" id="setImportFile" accept=".json,application/json" class="hidden" /></label>' +
+        '<button type="button" class="row" id="setClearBtn"><span class="ic bg-red">' + I('trash') + '</span><span class="txt t1 red">' + (state.sample ? 'Xoá dữ liệu mẫu, bắt đầu trống' : 'Xoá toàn bộ dữ liệu') + '</span></button></div>';
       var gt = typeof gToken === 'function' ? gToken() : null, gc = typeof gcal !== 'undefined' ? gcal : null;
       /* Tài khoản Apple (v2.1, native iOS): chỉ hiện khi plugin có sẵn — bản web
          ẩn hẳn như cách mục Google ẩn khi chưa có Client ID. */
@@ -2866,11 +2936,11 @@
              hoặc lỗi nhất thời phía Apple. */
           (c.appleLastError ? '<p class="sec-f">Lỗi gần nhất: ' + esc((c.appleLastError.code || '') + (c.appleLastError.message ? ' — ' + String(c.appleLastError.message).slice(0, 120) : '')) + '</p>' + (String(c.appleLastError.code) === '1000' ? '<p class="sec-f">Thử kiểm tra trên iPhone: Cài đặt → [tên bạn] → Đăng nhập &amp; Bảo mật → bật Xác thực hai yếu tố, và chắc chắn đã đăng nhập iCloud. Nếu vẫn lỗi, thử tắt app mở lại rồi đăng nhập lại.</p>' : '') : '');
       }
-      h += '<p class="sec-s">Kết nối Google</p><div class="list">' +
+      h += '<p class="sec-s">Đăng nhập bằng Google</p><div class="list">' +
         (googleClientId() ? (gt || gc
-          ? '<div class="row"><span class="ic bg-green">' + I('check', 2.6) + '</span><span class="txt"><span class="t1" style="display:block;">' + (gt ? 'Đang kết nối' : 'Đã kết nối (hết hạn, bấm Kết nối lại)') + '</span><span class="t2" style="display:block;">' + (gc ? gc.events.length + ' sự kiện · cập nhật ' + agoText(gc.fetchedAt) : 'Chưa tải lịch') + '</span></span><button type="button" class="btn tint sm" id="gConnRow2">' + (gt ? 'Làm mới' : 'Kết nối lại') + '</button></div>' +
+          ? '<div class="row"><span class="ic bg-green">' + I('check', 2.6) + '</span><span class="txt"><span class="t1" style="display:block;">' + (gt ? 'Đã đăng nhập' : 'Đã đăng nhập (hết hạn, bấm Đăng nhập lại)') + '</span><span class="t2" style="display:block;">' + (gc ? gc.events.length + ' sự kiện · cập nhật ' + agoText(gc.fetchedAt) : 'Chưa tải lịch') + '</span></span><button type="button" class="btn tint sm" id="gConnRow2">' + (gt ? 'Làm mới' : 'Đăng nhập lại') + '</button></div>' +
             '<button type="button" class="row center destr" id="gDisc">Ngắt kết nối Google Lịch</button>'
-          : '<button type="button" class="row act" id="gConnRow"><span class="ic bg-blue">' + I('cal') + '</span><span class="txt t1">Kết nối Google</span></button>') : '<div class="row"><span class="ic bg-gray">' + I('doc') + '</span><span class="txt"><span class="t1" style="display:block;">Google chưa sẵn sàng ở bản v2.0</span><span class="t2" style="display:block;">Đang chờ tạo Client ID chung 1 lần — app vẫn dùng bình thường, không gửi dữ liệu nào lên Google.</span></span></div>') +
+          : '<button type="button" class="row act" id="gConnRow"><span class="ic bg-blue">' + I('cal') + '</span><span class="txt t1">Đăng nhập bằng Google</span></button>') : '<div class="row"><span class="ic bg-gray">' + I('doc') + '</span><span class="txt"><span class="t1" style="display:block;">Google chưa sẵn sàng ở bản v2.0</span><span class="t2" style="display:block;">Đang chờ tạo Client ID chung 1 lần — app vẫn dùng bình thường, không gửi dữ liệu nào lên Google.</span></span></div>') +
         (googleClientId() ? '<button type="button" class="row" id="gGuideRow"><span class="ic bg-gray">' + I('doc') + '</span><span class="txt"><span class="t1" style="display:block;">Đăng nhập Google để làm gì?</span><span class="t2" style="display:block;">Xem từng tính năng dùng quyền gì, bật/tắt trước khi kết nối</span></span>' + chevSvg() + '</button>' : '') + '</div>';
       var F = c.gFeat || {};
       var feat = function(key, icon, color, title, sub){
@@ -2879,9 +2949,12 @@
            không thì hiện mờ + chưa bật để khỏi tưởng đang chạy. */
         var off = key === 'cal' && !gt;
         var on = off ? false : !!F[key];
-        return '<label class="row"' + (off ? ' style="opacity:.55;"' : ' style="cursor:pointer;"') + '><span class="ic bg-' + color + '">' + I(icon) + '</span><span class="txt"><span class="t1" style="display:block;">' + title + '</span><span class="t2' + (miss ? ' orange' : '') + '" style="display:block;">' + (miss ? 'Chưa cấp quyền — bấm Kết nối lại' : (off ? 'Kết nối Google trước đã' : sub)) + '</span></span><input type="checkbox" class="switch" role="switch" aria-checked="' + (on ? 'true' : 'false') + '" data-gfeat="' + key + '"' + (on ? ' checked' : '') + (off ? ' disabled' : '') + ' /></label>';
+        return '<label class="row"' + (off ? ' style="opacity:.55;"' : ' style="cursor:pointer;"') + '><span class="ic bg-' + color + '">' + I(icon) + '</span><span class="txt"><span class="t1" style="display:block;">' + title + '</span><span class="t2' + (miss ? ' orange' : '') + '" style="display:block;">' + (miss ? 'Chưa cấp quyền — bấm Đăng nhập lại' : (off ? 'Đăng nhập Google trước đã' : sub)) + '</span></span><input type="checkbox" class="switch" role="switch" aria-checked="' + (on ? 'true' : 'false') + '" data-gfeat="' + key + '"' + (on ? ' checked' : '') + (off ? ' disabled' : '') + ' /></label>';
       };
-      h += '<p class="sec-s">Lấy gì từ Google</p><div class="list">' +
+      /* v2.3b: ẩn 7 công tắc khi chưa đăng nhập — chỉ hiện sau khi đã kết nối
+         (token còn hạn hoặc đã từng tải lịch); trước đó chỉ còn hàng
+         "Đăng nhập Google để làm gì?" để xem/bật tính năng (Phong, Mai). */
+      if (gt || gc) h += '<p class="sec-s">Lấy gì từ Google</p><div class="list">' +
         feat('cal', 'cal', 'red', 'Google Lịch', 'Xem lịch trong tab Buổi chụp → Lịch') +
         feat('bank', 'inarrow', 'green', 'Gmail · tiền về', 'Đọc email báo số dư của ngân hàng, gợi ý ghi khoản thu') +
         feat('leads', 'mail', 'purple', 'Gmail · khách hỏi chụp', 'Tìm email hỏi lịch / giá, gợi ý tạo buổi chụp') +
@@ -2901,8 +2974,8 @@
           if (F.send) lines.push('gửi email bạn đã duyệt');
           /* Không bật tính năng nào thì gScopes() rỗng và gConnect từ chối mở
              màn hình Google — nên KHÔNG được viết "chỉ xin quyền đọc Lịch". */
-          if (!lines.length) return '<p class="sec-f">Chưa bật tính năng nào — bật 1 tính năng ở trên rồi bấm Kết nối, Google sẽ chỉ hỏi quyền của tính năng đó. Không có gì tự ghi vào sổ — app chỉ gợi ý, bạn bấm mới ghi. Mã đăng nhập chỉ nằm trên máy này và tự hết hạn sau khoảng 1 giờ. Lịch đã tải được lưu lại để mất mạng vẫn xem.</p>';
-          return '<p class="sec-f">Khi bấm Kết nối, Google sẽ hỏi đúng các quyền của tính năng đang bật: <b>' + lines.join(' · ') + '</b>. Không có gì tự ghi vào sổ — app chỉ gợi ý, bạn bấm mới ghi. Mã đăng nhập chỉ nằm trên máy này và tự hết hạn sau khoảng 1 giờ. Lịch đã tải được lưu lại để mất mạng vẫn xem.</p>';
+          if (!lines.length) return '<p class="sec-f">Chưa bật tính năng nào — bật 1 tính năng ở trên rồi bấm Đăng nhập, Google sẽ chỉ hỏi quyền của tính năng đó. Không có gì tự ghi vào sổ — app chỉ gợi ý, bạn bấm mới ghi. Mã đăng nhập chỉ nằm trên máy này và tự hết hạn sau khoảng 1 giờ. Lịch đã tải được lưu lại để mất mạng vẫn xem.</p>';
+          return '<p class="sec-f">Khi bấm Đăng nhập, Google sẽ hỏi đúng các quyền của tính năng đang bật: <b>' + lines.join(' · ') + '</b>. Không có gì tự ghi vào sổ — app chỉ gợi ý, bạn bấm mới ghi. Mã đăng nhập chỉ nằm trên máy này và tự hết hạn sau khoảng 1 giờ. Lịch đã tải được lưu lại để mất mạng vẫn xem.</p>';
         })();
       if (gc && gc.cals && gc.cals.length){
         var chosenIds = gChosen(gc.cals).map(function(x){ return x.id; });
@@ -3026,6 +3099,7 @@
             var failed = rs.indexOf(false) >= 0;
             ssSet(GT_KEY, ''); lsSet(GC_KEY, ''); gcal = null; lsSet(GM_KEY, ''); gmail = null; lsSet(GCT_KEY, ''); gContacts = [];
             try{ localStorage.removeItem('troLyXeo.grefresh'); localStorage.removeItem('troLyXeo.ghadRefresh'); }catch(e){}
+            state.cfg.authAsked = false; state.cfg.googleEverLinked = false; saveLocal(); /* v2.3b: ngắt Google thì cổng có thể hiện lại lần sau */
             renderAll(); refreshSettings();
             if (failed) toast('Đã ngắt trên máy, nhưng Google chưa xác nhận thu hồi mã — kiểm tra lại tại myaccount.google.com → Bảo mật → Quyền truy cập của bên thứ ba → FotoBro', 'warn');
             else toast('Đã ngắt kết nối Google Lịch', 'del');
@@ -3037,9 +3111,13 @@
         var ids = (state.cfg.gCals && state.cfg.gCals.length) ? state.cfg.gCals.slice() : gChosen(gcal.cals).map(function(x){ return x.id; });
         var id = sw.getAttribute('data-gcal'), at = ids.indexOf(id);
         if (sw.checked && at < 0) ids.push(id); if (!sw.checked && at >= 0) ids.splice(at, 1);
-        state.cfg.gCals = ids; saveLocal(); if (gToken()) gFetch(false); else toast('Kết nối lại để tải lịch vừa chọn', 'warn');
+        state.cfg.gCals = ids; saveLocal(); if (gToken()) gFetch(false); else toast('Đăng nhập lại để tải lịch vừa chọn', 'warn');
       }); });
       var cc2 = $('#cfgCal', b); if (cc2) cc2.addEventListener('click', function(){ openCalImport(); });
+      /* v2.3b: sao lưu/khôi phục/xoá trong Cài đặt — gọi cùng hàm với tab Thêm. */
+      var seb = $('#setExportBtn', b); if (seb) seb.addEventListener('click', function(){ downloadBackup(seb); });
+      var sif = $('#setImportFile', b); if (sif) sif.addEventListener('change', function(){ var f = sif.files && sif.files[0]; if (f){ sif.value = ''; restoreBackupFile(f); } });
+      var scb = $('#setClearBtn', b); if (scb) scb.addEventListener('click', clearDataFlow);
       var lf = $('#logoFile', b);
       if (lf) lf.addEventListener('change', function(){
         var f = lf.files && lf.files[0]; if (!f) return;
@@ -3090,7 +3168,7 @@
         '<div class="list" id="tplEditBox"><label class="frow stack"><span>Tiêu đề</span><textarea id="tplSubj" rows="2" class="tpl-subj">' + esc(d.s) + '</textarea></label>' +
         '<label class="frow stack"><span>Nội dung</span><textarea id="tplBody">' + esc(d.b) + '</textarea></label></div>' +
         '<div style="margin-top:12px;display:flex;gap:10px;"><button type="button" class="btn tint" id="tplPrevBtn" style="flex:1;">Xem trước</button>' +
-        '<button type="button" class="btn gray" id="tplResetBtn" style="flex:1;">Khôi phục mẫu gốc</button></div>' +
+        '<button type="button" class="btn gray" id="tplResetBtn" style="flex:1;white-space:nowrap;">Khôi phục mẫu gốc</button></div>' +
         '<div id="tplPrevBox" class="tpl-preview hidden" style="margin-top:12px;"></div>',
         bind:function(api){
           var subj = $('#tplSubj', api.body), body = $('#tplBody', api.body), prev = $('#tplPrevBox', api.body), prevBtn = $('#tplPrevBtn', api.body),
@@ -3202,6 +3280,7 @@
       return '<path transform="translate(' + x + ' ' + y + ') rotate(' + ang + ')" d="' + p + '" stroke="#6E9F55" stroke-width="1.6" fill="none" stroke-linecap="round"/>';
     }
     function petalRain(container, n){
+      if (!petalsOn()) return; /* v2.3b: hoa bay đã bỏ — petalsOn() luôn false, không rơi nữa */
       if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       var html = '';
       for (var i = 0; i < n; i++){
@@ -3236,18 +3315,36 @@
        được 1 tài khoản hoặc bấm bỏ qua (cờ cfg.authAsked). Bản web không có
        plugin Apple nên chỉ hiện nút Google. */
     function googleLogo(){ return '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"/><path fill="#FBBC05" d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09C6.22 6.86 8.87 4.75 12 4.75z"/></svg>'; }
-    function maybeShowAuthGate(){
-      if (document.getElementById('authGate')) return;
-      if (state.cfg.authAsked || aLinked() || gLinked()) return;
+    function maybeShowAuthGate(force){
       var appleAv = (typeof isNativeApp === 'function' && isNativeApp() && typeof window.__fotobroAppleAvailable === 'function' && window.__fotobroAppleAvailable());
+      var g0 = document.getElementById('authGate');
+      if (g0){
+        /* v2.3b (lỗi Dũng): cổng dựng trước khi bridge tải xong thì nút Apple
+           chưa kịp hiện — bridge sẵn sàng rồi thì thêm nút vào ngay, khỏi
+           bắt user mở lại app. */
+        if (appleAv && !document.getElementById('agApple')){
+          var btn = document.createElement('button');
+          btn.type = 'button'; btn.className = 'btn ag-apple'; btn.id = 'agApple';
+          btn.innerHTML = appleLogo() + 'Đăng nhập bằng Apple';
+          btn.addEventListener('click', function(){ aConnect(); });
+          var btns = g0.querySelector('.ag-btns'), gg = document.getElementById('agGoogle', g0);
+          if (btns) btns.insertBefore(btn, gg || null);
+        }
+        return;
+      }
+      /* v2.3b: đã từng liên kết Google mà token hết hạn thì KHÔNG chặn ở cổng
+         nữa — vào thẳng app, đăng nhập lại im lặng ở nền (maybeSilentGoogle).
+         force=true: mở lại cổng từ màn Hôm nay sau khi đã bấm "Dùng thử". */
+      if (!force && (state.cfg.authAsked || aLinked() || gLinked() || state.cfg.googleEverLinked)) return;
       var g = document.createElement('div'); g.id = 'authGate'; g.className = 'authgate'; g.setAttribute('role', 'dialog'); g.setAttribute('aria-label', 'Đăng nhập');
       g.innerHTML = '<div class="ag-in"><img src="icon-192.png" alt="FotoBro" style="width:96px;height:96px;border-radius:22px;margin:0 auto;box-shadow:0 0 0 .5px var(--sep);" />' +
         '<h1>FotoBro</h1><p class="wl-sub">Trợ lý studio ảnh — việc giấy tờ, tiền bạc, nhắc việc để FotoBro lo, bạn chỉ việc chụp thật đẹp.</p>' +
         '<div class="ag-btns">' +
         (appleAv ? '<button type="button" class="btn ag-apple" id="agApple">' + appleLogo() + 'Đăng nhập bằng Apple</button>' : '') +
         '<button type="button" class="btn ag-google" id="agGoogle">' + googleLogo() + 'Đăng nhập bằng Google</button></div>' +
-        '<p class="sec-f ag-note">Tài khoản chỉ để nhận diện và đồng bộ sau này. Dữ liệu vẫn ở trên máy bạn.</p>' +
-        '<button type="button" class="btn plain ag-skip" id="agSkip">Dùng thử không cần tài khoản</button></div>';
+        '<p class="sec-f" style="text-align:center;">Sẽ mở trình duyệt để đăng nhập Google rồi quay lại app.</p>' +
+        '<p class="sec-f ag-note">Tài khoản chỉ để nhận diện bạn. Dữ liệu vẫn ở trên máy bạn.</p>' +
+        '<button type="button" class="btn gray ag-skip" id="agSkip">Dùng thử không cần tài khoản</button></div>';
       document.body.appendChild(g);
       document.documentElement.classList.add('locked');
       requestAnimationFrame(function(){ requestAnimationFrame(function(){ g.classList.add('on'); }); });
@@ -3255,12 +3352,18 @@
       $('#agGoogle', g).addEventListener('click', function(){ gConnect(false); });
       $('#agSkip', g).addEventListener('click', function(){ state.cfg.authAsked = true; saveLocal(); closeAuthGate(); });
     }
+    /* v2.3b: mở lại cổng từ màn Hôm nay sau khi đã bấm "Dùng thử" — bỏ qua
+       cờ authAsked (và cờ everLinked khi token hết hạn). */
+    function openAuthGateForced(){ state.cfg.authAsked = false; saveLocal(); maybeShowAuthGate(true); }
     function closeAuthGate(){
       var g = document.getElementById('authGate'); if (!g) return;
       g.classList.remove('on'); document.documentElement.classList.remove('locked');
       setTimeout(function(){ g.remove(); }, 420);
-      /* Đóng cổng rồi mới cho màn chào mừng hiện (nếu chưa chào bao giờ). */
-      if (lsGet('troLyXeo.welcomed') !== '2') setTimeout(function(){ openWelcome(); }, 450);
+      /* v2.3b: đóng cổng (bấm "Dùng thử" hay đăng nhập xong) thì vào thẳng
+         app, KHÔNG tự mở tour chào mừng nữa — tour chỉ mở khi user tự bấm
+         Thêm → Hướng dẫn sử dụng. Đặt welcomed='2' để tour không tự mở lại
+         khi mở app lần sau. */
+      try{ lsSet('troLyXeo.welcomed', '2'); }catch(e){}
     }
     function maybeCloseAuthGate(){ var g = document.getElementById('authGate'); if (g && (aLinked() || gLinked())) closeAuthGate(); }
 
@@ -3609,6 +3712,18 @@
        định nghĩa (không bọc bằng hàm cùng tên — sẽ tự đệ quy vô hạn). */
     function gToken(){ try{ var t = JSON.parse(ssGet(GT_KEY) || 'null'); return t && t.t && t.exp > Date.now() + 60000 ? t.t : null; }catch(e){ return null; } }
     function gLinked(){ return !!(googleClientId() && (gToken() || gcal)); }
+    /* v2.3b: đánh dấu "đã từng liên kết Google" — bền vững qua hết hạn
+       token, để cổng lúc vào app không chặn lại như user mới (Phong). */
+    function gMarkLinked(){ if (!state.cfg.googleEverLinked){ state.cfg.googleEverLinked = true; saveLocal(); } }
+    /* v2.3b: đã từng liên kết Google mà token hết hạn → thử đăng nhập lại
+       im lặng ở nền (prompt=none) khi khởi động, không chặn ở cổng. Chỉ
+       thử khi còn tính năng Google bật (có scope để xin). Thất bại im lặng
+       thì thôi — user vẫn dùng app bình thường, đăng nhập lại từ tab Lịch
+       hoặc Cài đặt khi cần. */
+    function maybeSilentGoogle(){
+      if (!state.cfg.googleEverLinked || gToken() || !googleClientId() || !gScopes()) return;
+      gConnect(true, true);
+    }
     /* Đăng nhập bằng Apple (v2.1, native iOS) — xem APPLE-SIGNIN-PLAN.md §4.4.
        Mirror cụm Google nhưng đơn giản hơn: không token hết hạn, không scope
        từng tính năng. Định danh chỉ lưu trên máy (cfg.apple), không có server. */
@@ -3643,7 +3758,7 @@
     }
     function aDisconnect(){
       actionSheet({ title:tr('apple_signout_title'), msg:tr('apple_signout_msg'), actions:[{ label:tr('apple_signout'), destructive:true, fn:function(){
-        state.cfg.apple = null; saveLocal(); renderAll(); refreshSettings();
+        state.cfg.apple = null; state.cfg.authAsked = false; saveLocal(); renderAll(); refreshSettings(); /* v2.3b: ngắt Apple thì cổng có thể hiện lại lần sau */
         toast(tr('apple_signout_ok'), 'del');
       } }] });
     }
@@ -3660,15 +3775,22 @@
       var d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v));
       return btoa(String.fromCharCode.apply(null, new Uint8Array(d))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
-    async function gConnect(silent){
+    async function gConnect(silent, auto){
       var cid = googleClientId();
-      if (!cid){ toast('Đăng nhập Google chưa sẵn sàng — FotoBro đang tạo Client ID chung, xong là bấm 1 cái là vào', 'warn'); return; }
+      if (!cid){ if (!auto) toast('Đăng nhập Google chưa sẵn sàng — FotoBro đang tạo Client ID chung, xong là bấm 1 cái là vào', 'warn'); return; }
       var scopes = gScopes();
-      if (!scopes){ toast('Chưa bật tính năng Google nào — bật 1 tính năng ở Cài đặt → Lấy gì từ Google rồi kết nối lại', 'warn'); return; }
+      if (!scopes){ if (!auto) toast('Chưa bật tính năng Google nào — mở "Đăng nhập Google để làm gì?" để bật 1 tính năng rồi đăng nhập lại', 'warn'); return; }
+      /* v2.3b (web): mở tab mới NGAY trong nhịp bấm (trước mọi await) để
+         không bị chặn popup, rồi mới tính PKCE; thất bại thì đóng tab lại.
+         Native dùng trình duyệt hệ thống, không đụng. Đăng nhập im lặng
+         (auto) thì giữ location.href như cũ để quay về đúng tab. */
+      var gTab = null;
+      if (!auto && !isNativeApp()){ try{ gTab = window.open('', '_blank'); }catch(e){ gTab = null; } }
+      function gCloseTab(){ if (gTab){ try{ gTab.close(); }catch(e){} gTab = null; } }
       var verifier = pkceVerifier(), challenge = await pkceChallenge(verifier);
-      if (!challenge){ toast('Máy này chưa hỗ trợ đăng nhập Google an toàn (PKCE)', 'warn'); return; }
+      if (!challenge){ if (!auto) toast('Máy này chưa hỗ trợ đăng nhập Google an toàn (PKCE)', 'warn'); gCloseTab(); return; }
       var nonce = Math.random().toString(36).slice(2) + Date.now().toString(36);
-      lsSet(GS_KEY, JSON.stringify({ state:nonce, verifier:verifier }));
+      lsSet(GS_KEY, JSON.stringify({ state:nonce, verifier:verifier, auto:auto ? 1 : 0 }));
       var p = { client_id:cid, redirect_uri:gRedirectUri(), response_type:'code', code_challenge:challenge, code_challenge_method:'S256', scope:scopes, include_granted_scopes:'true', state:nonce };
       if (silent) p.prompt = 'none';
       /* KHÔNG xin access_type:'offline': v1 không lưu refresh token (xem
@@ -3681,18 +3803,20 @@
         window.Capacitor.Plugins.Browser.open({ url:authUrl, presentationStyle:'fullscreen' }).catch(function(){ location.href = authUrl; });
         return;
       }
-      location.href = authUrl;
+      if (gTab){ try{ gTab.location = authUrl; }catch(e){ location.href = authUrl; } }
+      else location.href = authUrl;
     }
     /* Đổi authorization code lấy access token (PKCE, không cần client_secret). */
     async function gExchangeCode(code){
       var saved = null; try{ saved = JSON.parse(lsGet(GS_KEY) || 'null'); }catch(e){}
-      if (!saved || !saved.verifier){ toast('Kết nối Google không hợp lệ, thử lại nha', 'warn'); return; }
+      if (!saved || !saved.verifier){ toast('Đăng nhập Google không hợp lệ, thử lại nha', 'warn'); return; }
       lsSet(GS_KEY, '');
       var body = new URLSearchParams({ client_id:googleClientId(), code:code, code_verifier:saved.verifier, redirect_uri:gRedirectUri(), grant_type:'authorization_code' });
       var r = await fetch('https://oauth2.googleapis.com/token', { method:'POST', headers:{ 'Content-Type':'application/x-www-form-urlencoded' }, body:body.toString() });
       if (!r.ok){ toast('Google chưa đổi được mã đăng nhập, thử lại nha', 'warn'); return; }
       var d = await r.json();
       ssSet(GT_KEY, JSON.stringify({ t:d.access_token, exp:Date.now() + (+d.expires_in || 3600) * 1000, s:d.scope || '' }));
+      gMarkLinked(); /* v2.3b: đăng nhập thành công thì ghi cờ "đã từng liên kết" */
       /* H2 (SECURITY-AUDIT): CỐ TÌNH không lưu d.refresh_token. Refresh token
          là credential sống dài hạn; lưu plaintext trong localStorage mà code
          không hề dùng để làm mới token (không có grant_type=refresh_token)
@@ -3711,12 +3835,18 @@
       if (qs.get('code')){
         var st = qs.get('state') || '', saved = null;
         try{ saved = JSON.parse(lsGet(GS_KEY) || 'null'); }catch(e){}
-        if (!saved || saved.state !== st){ setTimeout(function(){ toast('Kết nối Google không hợp lệ, thử lại nha', 'warn'); }, 400); return true; }
+        if (!saved || saved.state !== st){ setTimeout(function(){ toast('Đăng nhập Google không hợp lệ, thử lại nha', 'warn'); }, 400); return true; }
         gExchangeCode(qs.get('code')); return true;
       }
       /* v2.2: Huỷ Google từ màn đăng nhập lúc vào app thì ở yên màn đó,
-         không toast lỗi (giống Huỷ Apple). */
-      if (qs.get('error')){ setTimeout(function(){ if (!document.getElementById('authGate')) toast('Chưa cho phép kết nối Google', 'warn'); }, 400); return true; }
+         không toast lỗi (giống Huỷ Apple).
+         v2.3b: lỗi từ lần đăng nhập im lặng tự động (prompt=none) thì im
+         luôn — không toast, không hỏi lại. Chỉ toast khi user tự bấm. */
+      if (qs.get('error')){
+        var sv = null; try{ sv = JSON.parse(lsGet(GS_KEY) || 'null'); }catch(e){}
+        if (!(sv && sv.auto)) setTimeout(function(){ if (!document.getElementById('authGate')) toast('Chưa cho phép đăng nhập Google', 'warn'); }, 400);
+        return true;
+      }
       return false;
     }
     window.handleGoogleReturnUrl = handleGoogleReturnUrl; // cho bridge gọi trực tiếp
@@ -3724,13 +3854,13 @@
     (function(){
       if (handleGoogleReturnUrl(location.href)){ try{ history.replaceState(null, '', location.pathname); }catch(e){} return; }
       var qs = new URLSearchParams(location.search || '');
-      if (qs.get('error')){ history.replaceState(null, '', location.pathname); setTimeout(function(){ if (!document.getElementById('authGate')) toast('Chưa cho phép kết nối Google', 'warn'); }, 400); return; }
+      if (qs.get('error')){ history.replaceState(null, '', location.pathname); setTimeout(function(){ if (!document.getElementById('authGate')) toast('Chưa cho phép đăng nhập Google', 'warn'); }, 400); return; }
       if (!/(^|[#&])(access_token|error)=/.test(location.hash)) return;
       var q = {};
       location.hash.slice(1).split('&').forEach(function(kv){ var i = kv.indexOf('='); if (i > 0){ try{ q[decodeURIComponent(kv.slice(0, i))] = decodeURIComponent(kv.slice(i + 1).replace(/\+/g, ' ')); }catch(e){} } });
       history.replaceState(null, '', location.pathname + location.search);
       var expect = lsGet(GS_KEY); lsSet(GS_KEY, '');
-      if (!q.state || q.state !== expect){ setTimeout(function(){ toast('Kết nối Google không hợp lệ, thử lại nha', 'warn'); }, 400); return; }
+      if (!q.state || q.state !== expect){ setTimeout(function(){ toast('Đăng nhập Google không hợp lệ, thử lại nha', 'warn'); }, 400); return; }
       if (q.access_token){
         ssSet(GT_KEY, JSON.stringify({ t:q.access_token, exp:Date.now() + (+q.expires_in || 3600) * 1000, s:cleanStr(q.scope, 1000) }));
         jobsMode = 'cal';
@@ -3784,7 +3914,7 @@
         lsSet(GC_KEY, JSON.stringify(gcal));
         if (manual) toast('Đã cập nhật ' + evs.length + ' sự kiện từ Google Lịch');
       }catch(err){
-        if (err.message !== 'auth') gState.error = navigator.onLine === false ? 'Đang mất mạng — đang xem lịch đã lưu lần trước.' : 'Chưa tải được lịch (' + err.message + ').';
+        if (err.message !== 'auth') gState.error = navigator.onLine === false ? 'Đang mất mạng — đang xem lịch đã lưu lần trước.' : 'Không tải được lịch mới — đang xem bản đã lưu.'; /* v2.3b: không lộ message gốc tiếng Anh */
       }
       gState.loading = false; renderAll(); refreshSettings();
     }
@@ -3793,7 +3923,7 @@
     function gEventById(id){ return gcal ? gcal.events.filter(function(e){ return e.id === id; })[0] : null; }
     function gRow(e){
       var sub = [e.time || 'Cả ngày', e.cal, e.location].filter(Boolean).join(' · ');
-      return '<button type="button" class="row" data-gev="' + esc(e.id) + '"><span class="ic round" style="background:' + e.color + '">' + I('cal') + '</span><span class="txt"><span class="t1 clip" style="display:block;">' + esc(e.summary) + '</span><span class="t2 wrap2" style="display:block;">' + esc(sub) + '</span></span><span class="tagp tg-blue">Google</span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button>';
+      return '<button type="button" class="row" data-gev="' + esc(e.id) + '"><span class="ic round" style="background:' + e.color + '">' + I('cal') + '</span><span class="txt"><span class="t1 wrap2" style="display:block;">' + esc(e.summary) + '</span><span class="t2" style="display:block;">' + esc(sub) + '</span></span><span class="tagp tg-blue">Google</span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button>';
     }
     function gOpenEvent(id){
       var e = gEventById(id); if (!e) return;
@@ -3824,8 +3954,8 @@
         h += googleClientId()
           ? '<div class="list" style="padding:20px 16px 12px;text-align:center;"><span class="ic lg bg-blue" style="margin:0 auto 10px;">' + I('cal') + '</span>' +
             '<div class="b" style="font-size:1.1875rem;">Xem Google Lịch ngay trong app</div>' +
-            '<p class="muted" style="font-size:0.9375rem;margin:6px 0 14px;">Kết nối một lần là thấy lịch hẹn chụp ở đây, không cần xuất file.' + (typeof gFeat === 'function' && gFeat('calw') ? ' App đọc lịch và ghi buổi chụp do app tạo lên lịch.' : ' App chỉ đọc lịch, không sửa gì.') + '</p>' +
-            '<button type="button" class="btn fill" id="gConnectBtn">' + (gState.loading ? 'Đang tải lịch…' : 'Kết nối Google Lịch') + '</button>' +
+            '<p class="muted" style="font-size:0.9375rem;margin:6px 0 14px;">Đăng nhập một lần là thấy lịch hẹn chụp ở đây, không cần xuất file.' + (typeof gFeat === 'function' && gFeat('calw') ? ' App đọc lịch và ghi buổi chụp do app tạo lên lịch.' : ' App chỉ đọc lịch, không sửa gì.') + '</p>' +
+            '<button type="button" class="btn fill" id="gConnectBtn">' + (gState.loading ? 'Đang tải lịch…' : 'Đăng nhập bằng Google') + '</button>' +
             '<a class="btn plain" href="https://calendar.google.com/" target="_blank" rel="noopener">Mở Google Lịch</a></div>'
           : '<div class="list" style="padding:20px 16px 12px;text-align:center;"><span class="ic lg bg-blue" style="margin:0 auto 10px;">' + I('cal') + '</span>' +
             '<div class="b" style="font-size:1.1875rem;">Google Lịch sẽ có ở bản sau</div>' +
@@ -3834,8 +3964,8 @@
       } else {
         var st = gState.loading ? 'Đang tải lịch…' : ('Google Lịch · cập nhật ' + agoText(gcal.fetchedAt));
         h += '<div class="list" style="padding:12px 14px;display:flex;align-items:center;gap:10px;"><span class="ic round bg-blue">' + I('cal') + '</span><div style="flex:1;min-width:0;"><div class="b" style="font-size:0.9375rem;">' + esc(st) + '</div>' +
-          (gState.error ? '<div class="red" style="font-size:0.8125rem;">' + esc(gState.error) + '</div>' : (!tok ? '<div class="muted" style="font-size:0.8125rem;">Kết nối đã hết hạn (Google chỉ cho giữ 1 giờ) — đang xem bản đã lưu.</div>' : '')) + '</div>' +
-          (tok ? '<button type="button" class="btn tint sm" id="gRefresh"' + (gState.loading ? ' disabled' : '') + '>Làm mới</button>' : '<button type="button" class="btn fill sm" id="gReconnect">Kết nối lại</button>') + '</div>';
+          (gState.error ? '<div class="red" style="font-size:0.8125rem;">' + esc(gState.error) + '</div>' : (!tok ? '<div class="muted" style="font-size:0.8125rem;">Phiên đăng nhập đã hết hạn (Google chỉ cho giữ 1 giờ) — đang xem bản đã lưu.</div>' : '')) + '</div>' +
+          (tok ? '<button type="button" class="btn tint sm" id="gRefresh"' + (gState.loading ? ' disabled' : '') + '>Làm mới</button>' : '<button type="button" class="btn fill sm" id="gReconnect">Đăng nhập lại</button>') + '</div>';
       }
       /* dòng thời gian 30 ngày: buổi chụp trong app + sự kiện Google */
       var days = [];
@@ -3899,9 +4029,9 @@
       ];
       var body = '<p class="muted" style="font-size:0.9375rem;margin:6px 0 10px;">Đăng nhập Google 1 lần, app chỉ xin quyền của tính năng bạn bật. Bật thêm tính năng sau thì Google hỏi thêm quyền đó.</p><div class="list">' + rows.map(function(r){
         var on = gFeat(r[0]), off = r[0] === 'cal' && !gToken();
-        return '<label class="row"' + (off ? ' style="opacity:.55;"' : ' style="cursor:pointer;"') + '><span class="txt"><span class="t1" style="display:block;">' + r[1] + '</span><span class="t2" style="display:block;">' + (off ? 'Kết nối Google trước đã' : r[2]) + '</span></span><input type="checkbox" class="switch" role="switch" data-gguide="' + r[0] + '"' + (on && !off ? ' checked' : '') + (off ? ' disabled' : '') + ' /></label>';
+        return '<label class="row"' + (off ? ' style="opacity:.55;"' : ' style="cursor:pointer;"') + '><span class="txt"><span class="t1" style="display:block;">' + r[1] + '</span><span class="t2" style="display:block;">' + (off ? 'Đăng nhập Google trước đã' : r[2]) + '</span></span><input type="checkbox" class="switch" role="switch" data-gguide="' + r[0] + '"' + (on && !off ? ' checked' : '') + (off ? ' disabled' : '') + ' /></label>';
       }).join('') + '</div>' +
-        '<div style="margin-top:16px;"><button type="button" class="btn fill" id="gGuideConn">' + (gToken() ? 'Cập nhật quyền trên Google' : 'Kết nối Google') + '</button></div>' +
+        '<div style="margin-top:16px;"><button type="button" class="btn fill" id="gGuideConn">' + (gToken() ? 'Cập nhật quyền trên Google' : 'Đăng nhập bằng Google') + '</button></div>' +
         '<p class="sec-f">Tắt tính năng thì app không xin quyền đó nữa. Quyền đã cấp trước đó vẫn còn trên tài khoản Google — thu hồi tại myaccount.google.com → Bảo mật → Quyền truy cập của bên thứ ba.</p>';
       openSheet({ title:'Đăng nhập Google để làm gì?', tall:true, body:body, bind:function(api){
         $$('[data-gguide]', api.body).forEach(function(sw){ sw.addEventListener('change', function(){
@@ -4165,7 +4295,7 @@
     /* ---------- Drive: chọn thư mục của job ---------- */
     function openDrivePicker(j){
       if (!googleClientId()){ toast('Google Drive sẽ có ở bản sau', 'warn'); return; }
-      if (!gToken() || !gHas(SC.drive)){ actionSheet({ title:'Cần cho phép xem tên thư mục Drive', msg:'App chỉ xem tên và link thư mục, không mở hay sửa file.', actions:[{ label:'Kết nối Google', fn:function(){ if (!gFeat('drive')){ state.cfg.gFeat.drive = true; saveLocal(); } gConnect(false); } }] }); return; }
+      if (!gToken() || !gHas(SC.drive)){ actionSheet({ title:'Cần cho phép xem tên thư mục Drive', msg:'App chỉ xem tên và link thư mục, không mở hay sửa file.', actions:[{ label:'Đăng nhập bằng Google', fn:function(){ if (!gFeat('drive')){ state.cfg.gFeat.drive = true; saveLocal(); } gConnect(false); } }] }); return; }
       var body = '<form id="drvForm" autocomplete="off"><div class="list" style="margin-top:8px;"><label class="frow full"><input name="q" value="' + esc(cleanClient(j.client).split(/\s*[&,]\s*/)[0]) + '" placeholder="Tìm thư mục theo tên…" enterkeyhint="search" /></label></div></form><div id="drvList" style="margin-top:12px;"></div>';
       openSheet({ title:'Chọn thư mục Drive', left:'Huỷ', tall:true, body:body, bind:function(api){
         var f = $('#drvForm', api.body), box = $('#drvList', api.body), seq = 0;
@@ -4182,7 +4312,7 @@
               var x = files[+b.getAttribute('data-drv')]; var link = safeUrl(x.webViewLink);
               if (!link) return; j.driveLink = link; saveLocal(); api.close(); refreshJobSheet(); toast('Đã gắn thư mục “' + x.name + '”');
             }); });
-          }catch(err){ if (my === seq) box.innerHTML = '<p class="sec-f red">' + (err.message === 'auth' ? 'Kết nối Google đã hết hạn — bấm Kết nối lại trong Cài đặt.' : 'Chưa tìm được (' + esc(err.message) + ').') + '</p>'; }
+          }catch(err){ if (my === seq) box.innerHTML = '<p class="sec-f red">' + (err.message === 'auth' ? 'Đăng nhập Google đã hết hạn — bấm Đăng nhập lại trong Cài đặt.' : 'Chưa tìm được (' + esc(err.message) + ').') + '</p>'; }
         }
         f.addEventListener('submit', function(e){ e.preventDefault(); search(); });
         var tmr; f.elements.q.addEventListener('input', function(){ clearTimeout(tmr); tmr = setTimeout(search, 450); });
@@ -4245,7 +4375,7 @@
     }
     async function gCalSave(j, quiet){
       if (!j || !j.shootDate){ if (!quiet) toast('Job này chưa có ngày chụp', 'warn'); return; }
-      if (!gToken() || !gHas(FEAT_SCOPE.calw)){ if (!quiet) actionSheet({ title:'Cần cho phép ghi Google Lịch', msg:'App chỉ thêm / sửa / xoá sự kiện buổi chụp do chính app tạo.', actions:[{ label:'Kết nối Google', fn:function(){ state.cfg.gFeat.calw = true; saveLocal(); gConnect(false); } }] }); return; }
+      if (!gToken() || !gHas(FEAT_SCOPE.calw)){ if (!quiet) actionSheet({ title:'Cần cho phép ghi Google Lịch', msg:'App chỉ thêm / sửa / xoá sự kiện buổi chụp do chính app tạo.', actions:[{ label:'Đăng nhập bằng Google', fn:function(){ state.cfg.gFeat.calw = true; saveLocal(); gConnect(false); } }] }); return; }
       try{
         var res, base = 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
         if (j.gEventId){
@@ -4256,7 +4386,7 @@
         j.gEventId = cleanStr(res.id, 200); if (res.iCalUID) j.calUid = cleanStr(res.iCalUID, 200);
         saveLocal(); renderAll();
         if (!quiet) toast('Đã lưu “' + j.client + '” vào Google Lịch');
-      }catch(err){ if (!quiet || err.message !== 'auth') toast(err.message === 'auth' ? 'Kết nối Google hết hạn — kết nối lại rồi thử nha' : 'Chưa ghi được Google Lịch (' + err.message + ')', 'warn'); }
+      }catch(err){ if (!quiet || err.message !== 'auth') toast(err.message === 'auth' ? 'Đăng nhập Google hết hạn — đăng nhập lại rồi thử nha' : 'Chưa ghi được Google Lịch (' + err.message + ')', 'warn'); }
     }
     function gCalDelete(eventId){
       if (!eventId || !gToken() || !gHas(FEAT_SCOPE.calw)) return;
@@ -4355,7 +4485,7 @@
           actionSheet({ title:'Gửi email này?', msg:'Tới: ' + to + '\nTiêu đề: ' + f.elements.subject.value, actions:[{ label:'Gửi', fn:async function(){
             sb.disabled = true; sb.textContent = 'Đang gửi…';
             try{ await gmailSendMail(to, f.elements.subject.value, f.elements.body.value); keepEmail(); api.close(); toast('Đã gửi email cho ' + j.client); celebrate('Đã báo cho khách rồi!', 'party'); }
-            catch(err){ sb.disabled = false; sb.innerHTML = I('send', 2.4) + 'Gửi bằng Gmail'; toast(err.message === 'auth' ? 'Kết nối Google hết hạn — kết nối lại rồi gửi nha' : 'Chưa gửi được (' + err.message + ')', 'warn'); }
+            catch(err){ sb.disabled = false; sb.innerHTML = I('send', 2.4) + 'Gửi bằng Gmail'; toast(err.message === 'auth' ? 'Đăng nhập Google hết hạn — đăng nhập lại rồi gửi nha' : 'Chưa gửi được (' + err.message + ')', 'warn'); }
           } }] });
         });
         $('#mailApp', api.body).addEventListener('click', function(){
@@ -4424,19 +4554,20 @@
         authenticatorSelection:{ authenticatorAttachment:'platform', userVerification:'required', residentKey:'discouraged' }, timeout:60000, attestation:'none' } });
       lsSet(LOCK_KEY, JSON.stringify({ id:b64u(cred.rawId), salt:salt, pin:await sha256hex(salt + ':' + pin) }));
     }
-    async function bioCheck(){
+    async function bioCheck(signal){
       var c = lockCfg(); if (!c) return true;
       if (bioNative() && c.id === 'native'){
         var ok = await window.__fotobroBiometricVerify('Mở khoá FotoBro');
         if (!ok) throw new Error('bio-failed');
         return true;
       }
-      await navigator.credentials.get({ publicKey:{ challenge:crypto.getRandomValues(new Uint8Array(32)), rpId:location.hostname, timeout:60000, userVerification:'required',
+      await navigator.credentials.get({ signal:signal, publicKey:{ challenge:crypto.getRandomValues(new Uint8Array(32)), rpId:location.hostname, timeout:60000, userVerification:'required',
         allowCredentials:[{ type:'public-key', id:unb64u(c.id), transports:['internal', 'hybrid'] }] } });
       return true;
     }
+    var BIO_AUTO_TIMEOUT_MS = 9000; /* v2.3b: kẹp giờ cho lần thử Face ID TỰ ĐỘNG trên web — trình duyệt không có authenticator thì get() có thể treo vô hạn, nuốt cả chạm thật. Bấm tay thì không kẹp. */
     async function pinCheck(pin){ var c = lockCfg(); return !!c && (await sha256hex(c.salt + ':' + pin)) === c.pin; }
-    function unlockApp(){ var s = $('#lockScreen'); if (s){ s.classList.add('out'); setTimeout(function(){ s.remove(); }, 300); } document.documentElement.classList.remove('app-locked'); if (typeof maybeShowAuthGate === 'function') maybeShowAuthGate(); }
+    function unlockApp(){ var s = $('#lockScreen'); if (s){ s.classList.add('out'); setTimeout(function(){ s.remove(); }, 300); } document.documentElement.classList.remove('app-locked'); if (typeof maybeShowAuthGate === 'function') maybeShowAuthGate(); if (typeof maybeSilentGoogle === 'function') maybeSilentGoogle(); /* v2.3b: mở khoá xong mới đăng nhập Google im lặng (khi token hết hạn) */ }
     function showLock(auto){
       if (!lockCfg()) { document.documentElement.classList.remove('app-locked'); return; }
       document.documentElement.classList.add('app-locked');
@@ -4449,8 +4580,19 @@
         '<button type="button" class="btn plain" id="lkUsePin">Dùng mã PIN</button><p class="sec-f" id="lkMsg" style="text-align:center;"></p></div>';
       document.body.appendChild(d);
       var msg = $('#lkMsg', d);
-      async function tryBio(){ try{ await bioCheck(); unlockApp(); }catch(e){ msg.textContent = 'Chưa mở được bằng Face ID — thử lại hoặc dùng mã PIN.'; } }
-      $('#lkBio', d).addEventListener('click', tryBio);
+      /* v2.3b (Quân, web): lần thử Face ID TỰ ĐỘNG lúc mở màn khoá kẹp 9 giây —
+         trình duyệt không có authenticator thì get() có thể treo vô hạn mà
+         không báo gì, nút PIN cũng bị nuốt chạm. Hết giờ thì huỷ yêu cầu
+         (AbortController) để giao diện bấm được trở lại. Bấm tay thì không
+         kẹp giờ (user đang cầm máy, tự chủ động). Native dùng plugin, không
+         qua nhánh này. */
+      async function tryBio(isAuto){
+        var ctl = null, timer = null;
+        if (isAuto && typeof AbortController !== 'undefined'){ ctl = new AbortController(); timer = setTimeout(function(){ try{ ctl.abort(); }catch(e){} }, BIO_AUTO_TIMEOUT_MS); }
+        try{ await bioCheck(ctl ? ctl.signal : undefined); if (timer) clearTimeout(timer); unlockApp(); }
+        catch(e){ if (timer) clearTimeout(timer); msg.textContent = 'Chưa mở được bằng Face ID — thử lại hoặc dùng mã PIN.'; }
+      }
+      $('#lkBio', d).addEventListener('click', function(){ tryBio(false); });
       $('#lkUsePin', d).addEventListener('click', function(){ $('#lkPinForm', d).classList.remove('hidden'); $('#lkUsePin', d).classList.add('hidden'); $('#lkPin', d).focus(); });
       $('#lkPinForm', d).addEventListener('submit', async function(e){
         e.preventDefault();
@@ -4458,7 +4600,7 @@
         if (await pinCheck($('#lkPin', d).value)){ lockTries = 0; lockUntil = 0; lockStateSave(); unlockApp(); }
         else { lockTries++; $('#lkPin', d).value = ''; if (lockTries >= 5){ lockUntil = Date.now() + 30000 * Math.pow(2, lockTries - 5); msg.textContent = 'Sai ' + lockTries + ' lần — tạm khoá một lúc.'; } else msg.textContent = 'Mã PIN chưa đúng.'; lockStateSave(); }
       });
-      if (auto) setTimeout(tryBio, 350);
+      if (auto) setTimeout(function(){ tryBio(true); }, 350);
     }
     document.addEventListener('visibilitychange', function(){
       if (document.hidden) hiddenAt = Date.now();
@@ -4498,8 +4640,9 @@
     if (lockCfg()) showLock(true); else document.documentElement.classList.remove('app-locked');
     renderAll();
     /* v2.2: màn đăng nhập lúc vào app — chỉ khi không bị khoá (đang khoá thì
-       unlockApp sẽ gọi lại sau khi mở khoá). */
-    if (!lockCfg()) maybeShowAuthGate();
+       unlockApp sẽ gọi lại sau khi mở khoá).
+       v2.3b: KHÔNG gọi maybeShowAuthGate() ở đây nữa — gọi sau thẻ
+       capacitor-bridge.js cuối trang để nút Apple kịp hiện (tránh race). */
     </script>
 
     <script>
@@ -4656,5 +4799,12 @@
     Array.prototype.forEach.call(document.querySelectorAll('.foot p'), function(p){ if (/^FotoBro v/.test(p.textContent)) p.textContent = 'FotoBro v' + APP_VERSION; });
     </script>
     <script src="capacitor-bridge.js"></script>
+    <script>
+    /* v2.3b: cổng đăng nhập lúc vào app — gọi SAU khi bridge tải xong để
+       window.__fotobroAppleAvailable() đã có, nút Apple hiện ngay lần mở
+       đầu không khoá. Có khoá thì unlockApp() gọi lại sau khi mở khoá.
+       Đăng nhập Google im lặng cũng chỉ chạy khi không khoá. */
+    if (!lockCfg()){ maybeShowAuthGate(); if (typeof maybeSilentGoogle === 'function') maybeSilentGoogle(); }
+    </script>
   </body>
 </html>

@@ -575,7 +575,7 @@ async function loadDom(beforeParse) {
   t('Cài đặt có hàm openGGuide', typeof W.openGGuide === 'function');
   t('Cài đặt có hàm openPrivacy', typeof W.openPrivacy === 'function');
   const calSw = st22.querySelector('[data-gfeat="cal"]');
-  t('cal switch mờ/vô hiệu khi chưa kết nối', !!(calSw && calSw.disabled === true));
+  t('v2.3b: chưa kết nối -> Cài đặt ẩn hẳn công tắc tính năng Google', !calSw && st22.querySelectorAll('[data-gfeat]').length === 0, String(st22.querySelectorAll('[data-gfeat]').length));
   await saveSheet();
 
   console.log('\n[23] fix-01 — B1: nợ job Xong vẫn tính, job huỷ loại, job chưa ghi giá');
@@ -1394,23 +1394,21 @@ async function loadDom(beforeParse) {
     t('trong sheet: hàng Google Lịch vô hiệu khi chưa kết nối', !!(gCal && gCal.disabled === true));
     const gBank = g.querySelector('[data-gguide="bank"]');
     t('trong sheet: hàng Gmail bật/tắt được trước khi kết nối', !!(gBank && gBank.disabled === false));
-    t('sheet có nút Kết nối Google', !!(g.querySelector('#gGuideConn') && g.querySelector('#gGuideConn').textContent.includes('Kết nối Google')));
+    t('sheet có nút Đăng nhập bằng Google', !!(g.querySelector('#gGuideConn') && g.querySelector('#gGuideConn').textContent.includes('Đăng nhập bằng Google')));
     // đóng sheet hướng dẫn, quay lại Cài đặt
     gSheets[gSheets.length - 1].querySelector('.sh-l').click();
     await sleep(500);
 
-    console.log('\n[4] Công tắc Google Lịch vô hiệu khi chưa kết nối (trong Cài đặt)');
+    console.log('\n[4] v2.3b: công tắc Google ẩn khỏi Cài đặt khi chưa kết nối (bật/tắt ở sheet giải thích)');
     sheets = doc.querySelectorAll('.sheet .sheet-body');
     st = sheets[sheets.length - 1];
-    const calSw = st.querySelector('[data-gfeat="cal"]');
-    t('công tắc Google Lịch bị disabled', !!(calSw && calSw.disabled === true));
-    t('công tắc Google Lịch ghi "Kết nối Google trước đã"', st.textContent.includes('Kết nối Google trước đã'));
-    ['bank', 'leads', 'contacts', 'drive', 'calw', 'send'].forEach(k => {
-      const sw = st.querySelector('[data-gfeat="' + k + '"]');
-      t('công tắc ' + k + ' bật/tắt được trước khi kết nối', !!(sw && sw.disabled === false));
-    });
+    t('chưa kết nối: Cài đặt không còn công tắc tính năng Google nào', st.querySelectorAll('[data-gfeat]').length === 0, String(st.querySelectorAll('[data-gfeat]').length));
+    t('chưa kết nối: vẫn có hàng "Đăng nhập Google để làm gì?"', !!st.querySelector('#gGuideRow'));
 
     console.log('\n[5] Chân trang Cài đặt khớp 100% với scope thật');
+    /* v2.3b: chân trang nằm trong cụm công tắc, chỉ hiện khi đã kết nối —
+       gieo token để kiểm chứng logic chân trang (không test kết nối thật). */
+    W.sessionStorage.setItem('troLyXeo.gtoken', JSON.stringify({ t: 'tok30', exp: Date.now() + 3600000, s: '' }));
     setFeat08(W, { cal: true });
     W.refreshSettings();
     await sleep(150);
@@ -2106,6 +2104,398 @@ async function loadDom(beforeParse) {
   const sbBlock = (cfgSrc.match(/StatusBar:\s*\{[^}]*\}/) || [''])[0];
   t('config: StatusBar không còn backgroundColor trắng', !sbBlock.includes('#FFFFFF'));
   t('config: SplashScreen giữ nguyên (không đụng)', cfgSrc.includes('SplashScreen') && cfgSrc.includes("backgroundColor: '#FFFFFF'"));
+  }
+
+  console.log('\n[35] v2.3b — fix batch theo 10 báo cáo test v2.2');
+  {
+  const closeSheet35 = async (d) => { const els = d.querySelectorAll('.sheet .sh-l'); if (els.length) els[els.length - 1].click(); await sleep(500); };
+  const loadDom35 = async function (opts) {
+    opts = opts || {};
+    const sbCalls = [];
+    const vc = new VirtualConsole();
+    const errors = [];
+    vc.on('jsdomError', e => errors.push(String((e && e.message) || e)));
+    const dom = new JSDOM(html, {
+      url: 'http://localhost/', runScripts: 'dangerously', pretendToBeVisual: true,
+      virtualConsole: vc,
+      beforeParse(win) {
+        win.__fotobroStatusBarStyle = (isDark) => { sbCalls.push(isDark); };
+        if (opts.native) win.Capacitor = { isNativePlatform: () => true };
+        if (opts.appleAvailable) win.__fotobroAppleAvailable = opts.appleAvailable;
+        if (opts.appleSignIn) win.__fotobroAppleSignIn = opts.appleSignIn;
+        if (opts.seedLS) for (const k of Object.keys(opts.seedLS)) win.localStorage.setItem(k, opts.seedLS[k]);
+      },
+    });
+    await new Promise(r => dom.window.addEventListener('load', r));
+    await new Promise(r => setTimeout(r, 50));
+    return { dom, win: dom.window, doc: dom.window.document, errors, sbCalls };
+  };
+  const mkJ35 = (W, client, price, stage, paid) => {
+    const j = { id: W.nid(), client, type: 'Portrait', medium: 'Digital', stage,
+      stageSince: W.dstr(0), shootDate: '2026-11-21', shootTime: '08:00', location: '', deadline: '',
+      price, phone: '', email: '', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false };
+    W.state.jobs.unshift(j);
+    if (paid) W.state.txs.unshift({ id: W.nid(), kind: 'thu', category: 'Cọc', jobId: j.id, amount: paid, date: W.dstr(0), method: 'Chuyển khoản', note: '', src: '' });
+    return j;
+  };
+  const TOK35 = () => JSON.stringify({ t: 'tok35', exp: Date.now() + 3600000, s: '' });
+
+  // [35a] Mục 1 — nút Apple trên cổng: gọi cổng sau thẻ bridge + tự chữa khi bridge tải muộn
+  const bridgeIdx = html.indexOf('<script src="capacitor-bridge.js">');
+  const postGateIdx = html.indexOf('if (!lockCfg()){ maybeShowAuthGate();');
+  t('1: lời gọi cổng lúc khởi động nằm SAU thẻ capacitor-bridge.js', bridgeIdx > 0 && postGateIdx > bridgeIdx, 'bridge=' + bridgeIdx + ' gate=' + postGateIdx);
+  t('1: không còn lời gọi cổng cũ trong script inline trước bridge', !html.slice(0, bridgeIdx).includes('if (!lockCfg()) maybeShowAuthGate();'));
+  const g1 = await loadDom35();
+  t('1: cổng lúc mở lần đầu (chưa có bridge) vẫn hiện, chỉ thiếu nút Apple', !!g1.doc.querySelector('#authGate') && !g1.doc.querySelector('#agApple'));
+  g1.win.Capacitor = { isNativePlatform: () => true };
+  g1.win.__fotobroAppleAvailable = () => true;
+  g1.win.maybeShowAuthGate();
+  t('1: bridge tải muộn -> gọi lại cổng thì nút Apple xuất hiện (tự chữa)', !!g1.doc.querySelector('#agApple'));
+  const g1b = await loadDom35({ native: true, appleAvailable: () => true });
+  t('1: mở lần đầu không khoá, có bridge -> nút Apple hiện ngay', !!g1b.doc.querySelector('#agApple'));
+  t('1: trang tải không lỗi jsdom', g1.errors.length === 0 && g1b.errors.length === 0, (g1.errors[0] || '') + ' | ' + (g1b.errors[0] || ''));
+
+  // [35b] Mục 2 — bấm "Dùng thử" thì vào thẳng Hôm nay, không tour; tour vẫn mở được tay
+  const g2 = await loadDom35();
+  g2.doc.querySelector('#agSkip').click();
+  await sleep(800);
+  t('2: bấm Dùng thử -> không có màn chào mừng', !g2.doc.querySelector('.welcome'));
+  eq('2: bấm Dùng thử -> welcomed=2 (tour không tự mở lại)', g2.win.localStorage.getItem('troLyXeo.welcomed'), '2');
+  g2.win.openWelcome();
+  t('2: tour vẫn mở được bằng tay (Thêm -> Hướng dẫn)', !!g2.doc.querySelector('.welcome'));
+
+  // [35c] Mục 3 — cờ googleEverLinked: cổng bỏ qua khi token hết hạn, user mới vẫn thấy cổng
+  const g3 = await loadDom35();
+  const W3 = g3.win, doc3 = g3.doc;
+  W3.FOTOBRO_CONFIG = { googleClientId: 'test.apps.googleusercontent.com' };
+  t('3: user mới (chưa liên kết) vẫn thấy cổng', !!doc3.querySelector('#authGate'));
+  W3.state.cfg.googleEverLinked = true; W3.saveLocal();
+  doc3.querySelector('#authGate').remove();
+  W3.maybeShowAuthGate();
+  t('3: đã từng liên kết Google -> cổng không hiện lại (dù token hết hạn)', !doc3.querySelector('#authGate'));
+  W3.state.cfg.googleEverLinked = false; W3.saveLocal();
+  W3.maybeShowAuthGate();
+  t('3: chưa từng liên kết -> cổng hiện lại', !!doc3.querySelector('#authGate'));
+  let gcArgs = null;
+  W3.gConnect = function (s, a) { gcArgs = [s, a]; };
+  W3.state.cfg.googleEverLinked = true;
+  W3.maybeSilentGoogle();
+  t('3: everLinked + hết token -> thử đăng nhập im lặng (silent, auto)', gcArgs && gcArgs[0] === true && gcArgs[1] === true, JSON.stringify(gcArgs));
+  gcArgs = null; W3.state.cfg.googleEverLinked = false;
+  W3.maybeSilentGoogle();
+  t('3: user mới thật -> không thử đăng nhập im lặng', gcArgs === null);
+  W3.state.cfg.googleEverLinked = true;
+  W3.sessionStorage.setItem('troLyXeo.gtoken', TOK35());
+  gcArgs = null; W3.maybeSilentGoogle();
+  t('3: token còn hạn -> không thử đăng nhập im lặng', gcArgs === null);
+  W3.sessionStorage.removeItem('troLyXeo.gtoken');
+  W3.state.cfg.googleEverLinked = false; W3.saveLocal(); W3.gMarkLinked();
+  t('3: gMarkLinked ghi cờ bền', W3.state.cfg.googleEverLinked === true && (W3.localStorage.getItem('troLyXeo.v1') || '').includes('"googleEverLinked":true'));
+
+  // [35d] Mục 4 — job 0đ nhắc luôn khi đã có job khác nợ (Tiền bạc + Trợ lý + phòng)
+  const g4 = await loadDom35();
+  const W4 = g4.win, doc4 = g4.doc;
+  mkJ35(W4, 'Khách Nợ', 2500000, 'Sắp chụp', 1000000);
+  mkJ35(W4, 'Khách Chưa Giá', 0, 'Đã giao', 0);
+  W4.renderMoney();
+  t('4: Tiền bạc vẫn liệt kê Khách Nợ', doc4.querySelector('#oweList').textContent.includes('Khách Nợ'));
+  t('4: Tiền bạc nhắc job chưa ghi giá dù đã có người nợ', doc4.querySelector('#oweList').textContent.includes('chưa ghi giá'));
+  t('4: Trợ lý (debtorsText) nhắc job chưa ghi giá dù đã có người nợ', W4.debtorsText().includes('Khách Nợ') && W4.debtorsText().includes('chưa ghi giá'));
+  t('4: Trợ lý "ai chưa trả tiền?" nhắc job chưa ghi giá', W4.answer('ai chưa trả tiền?').includes('chưa ghi giá'));
+  t('4: Phòng Đón khách nhắc job chưa ghi giá dù đã có người nợ', W4.deptLines('donkhach').join(' ').includes('chưa ghi giá'));
+  t('4: Phòng Tiền bạc nhắc job chưa ghi giá dù đã có người nợ', W4.deptLines('tienbac').join(' ').includes('chưa ghi giá'));
+
+  // [35e] Mục 5 — CHECKLISTS.Event + checkItems phòng thủ
+  const g5c = await loadDom35();
+  const W5c = g5c.win;
+  t('5: CHECKLISTS.Event có đồ event', Array.isArray(W5c.CHECKLISTS.Event) && W5c.CHECKLISTS.Event.length >= 6, JSON.stringify(W5c.CHECKLISTS.Event));
+  t('5: checklist Event nhắc timeline chương trình', W5c.checkItems('Event').join(' ').includes('Timeline chương trình'));
+  t('5: checklist Event nhắc khách VIP', W5c.checkItems('Event').join(' ').includes('khách VIP'));
+  let noCrash = true; let unk = null;
+  try { unk = W5c.checkItems('Kiểu lạ'); } catch (e) { noCrash = false; }
+  t('5: checkItems loại lạ không crash, trả mảng rỗng', noCrash && Array.isArray(unk) && unk.length === 0);
+  eq('5: listType Event không rơi về Portrait', W5c.listType('Event'), 'Event');
+
+  // [35f] Mục 6 — hàng Đăng nhập trên Hôm nay + reset authAsked khi ngắt kết nối
+  const g6 = await loadDom35();
+  const W6 = g6.win, doc6 = g6.doc;
+  t('6: chưa có tài khoản -> Hôm nay hiện hàng Đăng nhập', !doc6.querySelector('#homeLoginRow').classList.contains('hidden'));
+  doc6.querySelector('#agSkip').click();
+  await sleep(700);
+  t('6: sau Dùng thử hàng Đăng nhập vẫn còn', !doc6.querySelector('#homeLoginRow').classList.contains('hidden'));
+  doc6.querySelector('#homeLoginRow').click();
+  t('6: bấm hàng Đăng nhập -> cổng mở lại', !!doc6.querySelector('#authGate'));
+  W6.state.cfg.apple = { user: 'test-user-123', name: 'Test', email: '', at: Date.now() };
+  W6.state.cfg.authAsked = true; W6.saveLocal();
+  W6.aDisconnect();
+  await sleep(100);
+  const asBtn6 = doc6.querySelectorAll('.asheet [data-a]');
+  t('6: ngắt Apple hiện sheet xác nhận', asBtn6.length === 1, String(asBtn6.length));
+  if (asBtn6.length) { asBtn6[0].click(); await sleep(150); }
+  t('6: ngắt Apple xong -> apple null + authAsked=false', W6.state.cfg.apple === null && W6.state.cfg.authAsked === false);
+  // Ngắt Google: cần token để hiện nút Ngắt, stub fetch cho bước thu hồi
+  const g6b = await loadDom35();
+  const W6b = g6b.win, doc6b = g6b.doc;
+  W6b.FOTOBRO_CONFIG = { googleClientId: 'test.apps.googleusercontent.com' };
+  W6b.sessionStorage.setItem('troLyXeo.gtoken', TOK35());
+  W6b.state.cfg.googleEverLinked = true; W6b.state.cfg.authAsked = true; W6b.saveLocal();
+  W6b.fetch = async () => ({ ok: true });
+  const ag6b = doc6b.querySelector('#authGate'); if (ag6b) ag6b.remove();
+  W6b.openSettings(); await sleep(150);
+  const gd6b = doc6b.querySelector('#gDisc');
+  t('6: đã đăng nhập Google -> Cài đặt có nút Ngắt', !!gd6b);
+  if (gd6b) { gd6b.click(); await sleep(100); }
+  const asBtn6b = doc6b.querySelectorAll('.asheet [data-a]');
+  if (asBtn6b.length) { asBtn6b[0].click(); await sleep(300); }
+  t('6: ngắt Google xong -> authAsked=false + everLinked=false', W6b.state.cfg.authAsked === false && W6b.state.cfg.googleEverLinked === false);
+  t('6: ngắt Google xong -> cổng có thể hiện lại', (function () { W6b.maybeShowAuthGate(); return !!doc6b.querySelector('#authGate'); })());
+  await closeSheet35(doc6b);
+
+  // [35g] Mục 7 — theme trong Cài đặt đổi ngay (đã có sẵn trong v2.3 — chỉ thêm test)
+  const g7 = await loadDom35({ native: true });
+  const W7 = g7.win, doc7 = g7.doc;
+  const ag7 = doc7.querySelector('#authGate'); if (ag7) ag7.remove();
+  W7.openSettings(); await sleep(150);
+  const thBtn7 = doc7.querySelector('#themeSeg button[data-th="dark"]');
+  t('7: Cài đặt có nút chọn theme Tối', !!thBtn7);
+  if (thBtn7) { thBtn7.click(); await sleep(100); }
+  eq('7: bấm Tối -> data-theme đổi ngay, không cần chuyển tab', doc7.documentElement.getAttribute('data-theme'), 'dark');
+  t('7: bấm Tối -> StatusBar được gọi theme tối', g7.sbCalls[g7.sbCalls.length - 1] === true, JSON.stringify(g7.sbCalls));
+  await closeSheet35(doc7);
+
+  // [35h] Mục 8 — job đã huỷ còn cọc chưa hoàn: nhắc ở Tiền bạc, bấm mở form hoàn cọc
+  const g8 = await loadDom35();
+  const W8 = g8.win, doc8 = g8.doc;
+  const jCx8 = mkJ35(W8, 'Khách Huỷ', 15000000, 'Đã giao', 2000000); jCx8.cancelled = true;
+  W8.renderMoney();
+  t('8: Tiền bạc nhắc cọc chưa hoàn của job đã huỷ', doc8.querySelector('#oweList').textContent.includes('cọc chưa hoàn') && doc8.querySelector('#oweList').textContent.includes('Khách Huỷ'));
+  const rf8 = doc8.querySelector('#oweList [data-refund]');
+  t('8: có nút hoàn cọc cho job đã huỷ', !!rf8);
+  if (rf8) { rf8.click(); await sleep(150); }
+  const txF8 = doc8.querySelector('#txForm');
+  t('8: bấm nhắc hoàn -> mở form ghi chi', !!txF8);
+  if (txF8) eq('8: form hoàn cọc điền sẵn hạng mục Hoàn cọc', txF8.elements.category ? txF8.elements.category.value : '', 'Hoàn cọc');
+  // Job đã huỷ nhưng ĐÃ hoàn cọc thì không nhắc nữa
+  const g8b = await loadDom35();
+  const W8b = g8b.win, doc8b = g8b.doc;
+  const jCx8b = mkJ35(W8b, 'Khách Đã Hoàn', 15000000, 'Đã giao', 2000000); jCx8b.cancelled = true;
+  W8b.state.txs.unshift({ id: W8b.nid(), kind: 'chi', category: 'Hoàn cọc', jobId: jCx8b.id, amount: 2000000, date: W8b.dstr(0), method: 'Chuyển khoản', note: '', src: '' });
+  W8b.renderMoney();
+  t('8: job đã hoàn cọc thì không nhắc nữa', !doc8b.querySelector('#oweList').textContent.includes('cọc chưa hoàn'));
+
+  // [35i] Mục 9 — "đã nhận X / Y" không ngắt dòng
+  const g9 = await loadDom35();
+  const W9 = g9.win, doc9 = g9.doc;
+  mkJ35(W9, 'Khách Nợ', 2500000, 'Sắp chụp', 1000000);
+  W9.renderMoney();
+  const nw9 = doc9.querySelector('#oweList [style*="white-space:nowrap"]');
+  t('9: cụm "đã nhận X / Y" bọc trong span nowrap', !!nw9 && nw9.textContent.includes('đã nhận') && nw9.textContent.includes('1.000.000') && nw9.textContent.includes('2.500.000'), nw9 ? nw9.textContent : 'không có span');
+
+  // [35j] Mục 10 — tiêu đề/địa chỉ sự kiện Google xuống dòng đầy đủ
+  const g10 = await loadDom35();
+  const h10 = g10.win.gRow({ id: 'ev1', summary: 'Chụp Couple — Hoàng + Thảo My', time: '08:00 – 10:00', cal: 'Lịch chụp', location: 'Số 12 đường Lạch Tray, Hải Phòng', color: '#e11d48' });
+  t('10: tiêu đề sự kiện dùng wrap2 (2 dòng), không clip 1 dòng', h10.includes('t1 wrap2') && !h10.includes('t1 clip'));
+  t('10: tiêu đề hiện đủ tên khách', h10.includes('Hoàng + Thảo My') && !h10.includes('…'));
+  t('10: địa chỉ hiện đủ, không cắt sau 2 dòng', h10.includes('Số 12 đường Lạch Tray, Hải Phòng') && !h10.includes('t2 wrap2'));
+
+  // [35k] Mục 11 — lỗi tải lịch bằng tiếng Việt, không lộ message tiếng Anh
+  const g11 = await loadDom35();
+  const W11 = g11.win;
+  W11.FOTOBRO_CONFIG = { googleClientId: 'test.apps.googleusercontent.com' };
+  W11.sessionStorage.setItem('troLyXeo.gtoken', TOK35());
+  W11.fetch = undefined;
+  await W11.gFetch(true);
+  eq('11: lỗi tải lịch dịch sang tiếng Việt', W11.gState.error, 'Không tải được lịch mới — đang xem bản đã lưu.');
+  t('11: không lộ message gốc tiếng Anh', !/Failed|fetch|Error/i.test(W11.gState.error || ''));
+
+  // [35l] Mục 12 — mẫu "Mời chọn ảnh" khi chưa có link
+  const g12 = await loadDom35();
+  const chon12 = g12.win.CHAT_TPLS.find(function (x) { return x.k === 'chon'; });
+  t('12: mẫu chon tồn tại', !!chon12);
+  if (chon12) {
+    const noLink = chon12.f({ Ten: 'Mai', drive: '' });
+    t('12: chưa có link -> không bảo khách "xem giúp mình"', !noLink.includes('Bạn xem giúp mình'));
+    t('12: chưa có link -> không nhắc tới link khi chưa có link thật', !noLink.includes('link'), noLink);
+    t('12: chưa có link -> hẹn gửi ảnh cho khách chọn ngay', noLink.includes('gửi ảnh cho bạn chọn ngay'));
+    const withLink = chon12.f({ Ten: 'Mai', drive: 'https://drive/x' });
+    t('12: có link -> vẫn gửi link như cũ', withLink.includes('https://drive/x') && withLink.includes('gửi số ảnh'));
+  }
+
+  // [35m] Mục 13 — nút "Khôi phục mẫu gốc" không ngắt dòng
+  const g13 = await loadDom35();
+  const W13 = g13.win, doc13 = g13.doc;
+  const ag13 = doc13.querySelector('#authGate'); if (ag13) ag13.remove();
+  W13.openSettings(); await sleep(150);
+  const cards13 = [...doc13.querySelectorAll('.tpl-card')];
+  t('13: Cài đặt có card mẫu để mở editor', cards13.length >= 1, String(cards13.length));
+  if (cards13.length) { cards13[0].click(); await sleep(150); }
+  const rb13 = doc13.querySelector('#tplResetBtn');
+  t('13: nút Khôi phục mẫu gốc có white-space:nowrap', !!rb13 && (rb13.style.whiteSpace === 'nowrap' || (rb13.getAttribute('style') || '').includes('white-space:nowrap')));
+  await closeSheet35(doc13); await closeSheet35(doc13);
+
+  // [35n] Mục 14+15+16 — chữ trên cổng: bỏ hứa đồng bộ, nút Dùng thử rõ ràng, chú thích Google
+  const g14 = await loadDom35();
+  const doc14 = g14.doc;
+  const note14 = doc14.querySelector('.ag-note');
+  t('14: cổng không còn hứa "đồng bộ sau này"', !!note14 && !note14.textContent.includes('đồng bộ'));
+  t('14: cổng vẫn giữ ý dữ liệu ở trên máy', !!note14 && note14.textContent.includes('trên máy bạn'));
+  const skip14 = doc14.querySelector('#agSkip');
+  t('15: nút Dùng thử là nút phụ gray rõ ràng, không còn chữ đỏ plain', !!skip14 && skip14.classList.contains('gray') && !skip14.classList.contains('plain'));
+  t('16: cổng có chú thích Google mở trình duyệt', doc14.body.textContent.includes('mở trình duyệt để đăng nhập Google'));
+
+  // [35o] Mục 17 — thống nhất "Đăng nhập bằng Google" (nguồn + Cài đặt)
+  t('17: nguồn không còn "Kết nối Google" (chỗ hành động)', !html.includes('Kết nối Google'));
+  t('17: nguồn không còn "Kết nối lại"', !html.includes('Kết nối lại'));
+  const g17 = await loadDom35();
+  const W17 = g17.win, doc17 = g17.doc;
+  const ag17 = doc17.querySelector('#authGate'); if (ag17) ag17.remove();
+  W17.openSettings(); await sleep(150);
+  const stTxt17 = doc17.querySelector('.sheet').textContent;
+  t('17: Cài đặt ghi "Đăng nhập bằng Google"', stTxt17.includes('Đăng nhập bằng Google'));
+  t('17: Cài đặt không còn "Kết nối Google" (chỗ hành động)', !stTxt17.includes('Kết nối Google'));
+  await closeSheet35(doc17);
+
+  // [35p] Mục 18 — 7 công tắc Google ẩn khi chưa kết nối, hiện khi đã kết nối
+  const g18 = await loadDom35();
+  const W18 = g18.win, doc18 = g18.doc;
+  W18.FOTOBRO_CONFIG = { googleClientId: 'test.apps.googleusercontent.com' };
+  const ag18 = doc18.querySelector('#authGate'); if (ag18) ag18.remove();
+  W18.openSettings(); await sleep(150);
+  t('18: chưa kết nối -> không hiện công tắc tính năng Google', doc18.querySelectorAll('[data-gfeat]').length === 0, String(doc18.querySelectorAll('[data-gfeat]').length));
+  t('18: chưa kết nối -> vẫn có hàng "Đăng nhập Google để làm gì?"', !!doc18.querySelector('#gGuideRow'));
+  await closeSheet35(doc18);
+  const g18b = await loadDom35();
+  const W18b = g18b.win, doc18b = g18b.doc;
+  W18b.FOTOBRO_CONFIG = { googleClientId: 'test.apps.googleusercontent.com' };
+  W18b.sessionStorage.setItem('troLyXeo.gtoken', TOK35());
+  const ag18b = doc18b.querySelector('#authGate'); if (ag18b) ag18b.remove();
+  W18b.openSettings(); await sleep(150);
+  eq('18: đã kết nối -> đủ 7 công tắc tính năng Google', doc18b.querySelectorAll('[data-gfeat]').length, 7);
+  await closeSheet35(doc18b);
+
+  // [35q] Mục 19 — nút Cài đặt có chữ (nav chỉ dựng 1 nút cho màn hiện tại)
+  const g19 = await loadDom35();
+  const W19 = g19.win, doc19 = g19.doc;
+  const navBtns19 = doc19.querySelectorAll('.nav-btn');
+  t('19: nav Hôm nay chỉ có 1 nút (Cài đặt)', navBtns19.length === 1, String(navBtns19.length));
+  const navSet19 = doc19.querySelector('.nav-btn.txt');
+  t('19: nút Cài đặt có chữ bên cạnh icon', !!navSet19 && navSet19.textContent.includes('Cài đặt'));
+  W19.go('jobs');
+  await sleep(100);
+  const navJob19 = doc19.querySelector('.nav-btn');
+  t('19: nút ở màn Buổi chụp vẫn icon-only (không chữ)', !!navJob19 && !navJob19.classList.contains('txt') && navJob19.textContent.trim() === '');
+
+  // [35r] Mục 20 — nút lưu form job dính ở header (đã có sẵn — kiểm chứng)
+  const g20 = await loadDom35();
+  const W20 = g20.win, doc20 = g20.doc;
+  const ag20 = doc20.querySelector('#authGate'); if (ag20) ag20.remove();
+  W20.openJobForm(null);
+  await sleep(150);
+  const saveBtn20 = doc20.querySelector('.sheet-head .sh-r');
+  t('20: form tạo job có nút lưu ở header', !!saveBtn20 && saveBtn20.textContent === 'Thêm', saveBtn20 ? saveBtn20.textContent : 'không có nút');
+  t('20: css sheet-head flex:none (dính trên)', /\.sheet-head\{[^}]*flex:none/.test(html));
+  t('20: css sheet-body flex:1 + overflow-y:auto (cuộn riêng phần thân)', /\.sheet-body\{[^}]*overflow-y:auto[^}]*flex:1/.test(html) || /\.sheet-body\{[^}]*flex:1[^}]*overflow-y:auto/.test(html));
+  await closeSheet35(doc20);
+
+  // [35s] Mục 21 — nhảy tới Xong còn thiếu tiền: một hộp duy nhất
+  const closeAsheet35 = async (d) => { const els = d.querySelectorAll('.asheet .cancel'); if (els.length) els[els.length - 1].click(); await sleep(500); };
+  const lastAsheetBtns35 = (d) => { const ss = d.querySelectorAll('.asheet'); const last = ss[ss.length - 1]; return last ? last.querySelectorAll('[data-a]') : []; };
+  const g21 = await loadDom35();
+  const W21 = g21.win, doc21 = g21.doc;
+  const j21 = mkJ35(W21, 'Khách Xong Xa', 15000000, 'Tư vấn', 0);
+  W21.jumpToStage(j21.id, 7);
+  const as21 = doc21.querySelector('.asheet');
+  t('21: nhảy xa tới Xong còn thiếu tiền -> hiện 1 hộp xác nhận', !!as21);
+  if (as21) {
+    t('21: hộp gộp cả cảnh báo thiếu tiền', as21.textContent.includes('còn thiếu') && as21.textContent.includes('15.000.000'));
+    t('21: hộp có nút "Thu nốt" và "Vẫn nhảy"', as21.textContent.includes('Thu nốt') && as21.textContent.includes('Vẫn nhảy'));
+    const btns21 = lastAsheetBtns35(doc21);
+    t('21: hộp chỉ có 2 lựa chọn', btns21.length === 2, String(btns21.length));
+    if (btns21.length === 2) { btns21[1].click(); await sleep(500); }
+  }
+  eq('21: bấm "Vẫn nhảy" -> sang Xong ngay', j21.stage, 'Xong');
+  t('21: không hiện thêm hộp cảnh báo thiếu tiền lần 2', !doc21.querySelector('.asheet'));
+  // Nhánh "Thu nốt" mở form ghi tiền
+  const j21b = mkJ35(W21, 'Khách Thu Nốt', 15000000, 'Tư vấn', 0);
+  W21.jumpToStage(j21b.id, 7);
+  const btns21b = lastAsheetBtns35(doc21);
+  if (btns21b.length === 2) { btns21b[0].click(); await sleep(200); }
+  t('21: bấm "Thu nốt" -> mở form ghi tiền', !!doc21.querySelector('#txForm'));
+  eq('21: bấm "Thu nốt" -> job vẫn ở Tư vấn', j21b.stage, 'Tư vấn');
+  await closeSheet35(doc21);
+  // Nhảy xa không phải tới Xong: hộp cũ, không nhắc thiếu tiền
+  const j21c = mkJ35(W21, 'Khách Hậu Kỳ', 15000000, 'Tư vấn', 0);
+  W21.jumpToStage(j21c.id, 5);
+  const as21c = doc21.querySelector('.asheet');
+  t('21: nhảy xa tới Hậu kỳ -> hộp xác nhận cũ (không nhắc thiếu tiền)', !!as21c && as21c.textContent.includes('Nhảy qua') && !as21c.textContent.includes('còn thiếu'));
+  await closeAsheet35(doc21);
+
+  // [35t] Mục 22 — petalRain tôn trọng petalsOn (đã tắt)
+  const g22 = await loadDom35();
+  const W22 = g22.win, doc22 = g22.doc;
+  W22.petalRain(doc22.body, 5);
+  t('22: petalRain không tạo cánh hoa nào khi petals đã tắt', doc22.querySelectorAll('.petal').length === 0);
+  W22.renderAmbient();
+  t('22: renderAmbient không tạo lớp hoa khi petals đã tắt', !doc22.querySelector('.ambient'));
+
+  // [35u] Q1 — khoá tự thử Face ID trên web kẹp 9 giây; bấm tay không kẹp
+  const gQ1 = await loadDom35();
+  const WQ1 = gQ1.win, docQ1 = gQ1.doc;
+  const credId = Buffer.from('test-credential-id-1').toString('base64url');
+  WQ1.localStorage.setItem('troLyXeo.lock', JSON.stringify({ id: credId, salt: 'testsalt', pin: 'testpin' }));
+  let capturedQ1 = null;
+  const mockCreds = { get: function (opts) { capturedQ1 = opts; return new Promise(function (res, rej) { if (opts && opts.signal) opts.signal.addEventListener('abort', function () { rej(new Error('aborted')); }); }); } };
+  try { WQ1.navigator.credentials = mockCreds; } catch (e) { Object.defineProperty(WQ1.navigator, 'credentials', { value: mockCreds, configurable: true }); }
+  t('Q1: mock navigator.credentials đã gắn được', WQ1.navigator.credentials === mockCreds);
+  WQ1.BIO_AUTO_TIMEOUT_MS = 60;
+  WQ1.showLock(true);
+  await sleep(700);
+  t('Q1: lần thử tự động bị huỷ sau timeout -> hiện thông báo Face ID', (docQ1.querySelector('#lkMsg') || { textContent: '' }).textContent.includes('Face ID'));
+  t('Q1: signal của lần thử tự động đã aborted', !!(capturedQ1 && capturedQ1.signal && capturedQ1.signal.aborted));
+  docQ1.querySelector('#lkUsePin').click();
+  t('Q1: sau timeout vẫn bấm được "Dùng mã PIN"', !docQ1.querySelector('#lkPinForm').classList.contains('hidden'));
+  // Bấm tay: không kẹp giờ (signal undefined)
+  docQ1.querySelector('#lockScreen').remove();
+  let capturedQ1b = null;
+  const mockCreds2 = { get: function (opts) { capturedQ1b = opts; return new Promise(function () {}); } };
+  try { WQ1.navigator.credentials = mockCreds2; } catch (e) { Object.defineProperty(WQ1.navigator, 'credentials', { value: mockCreds2, configurable: true }); }
+  WQ1.showLock(false);
+  await sleep(100);
+  docQ1.querySelector('#lkBio').click();
+  await sleep(100);
+  t('Q1: bấm tay -> get() gọi không kèm signal (không kẹp giờ)', !!capturedQ1b && capturedQ1b.signal === undefined, capturedQ1b ? String(capturedQ1b.signal) : 'không gọi get');
+
+  // [35v] Q2 — sao lưu/khôi phục/xoá dữ liệu có trong sheet Cài đặt, dùng chung hàm cũ
+  const gQ2 = await loadDom35();
+  const WQ2 = gQ2.win, docQ2 = gQ2.doc;
+  const agQ2 = docQ2.querySelector('#authGate'); if (agQ2) agQ2.remove();
+  WQ2.openSettings(); await sleep(150);
+  const setSheetQ2 = docQ2.querySelector('.sheet');
+  t('Q2: Cài đặt có nút Tải bản sao lưu', !!(setSheetQ2 && setSheetQ2.querySelector('#setExportBtn')));
+  t('Q2: Cài đặt có mục Mở bản sao lưu', !!(setSheetQ2 && setSheetQ2.querySelector('#setImportFile')));
+  t('Q2: Cài đặt có nút Xoá dữ liệu', !!(setSheetQ2 && setSheetQ2.querySelector('#setClearBtn')));
+  let dlCalled = false;
+  WQ2.downloadBackup = function () { dlCalled = true; };
+  const sebQ2 = docQ2.querySelector('#setExportBtn');
+  if (sebQ2) sebQ2.click();
+  t('Q2: bấm Tải bản sao lưu trong Cài đặt -> gọi cùng hàm downloadBackup', dlCalled);
+  t('Q2: nút sao lưu ở tab Thêm vẫn còn (không dời hẳn)', !!docQ2.querySelector('#exportBtn'));
+  t('Q2: hàm dùng chung tồn tại (downloadBackup/restoreBackupFile/clearDataFlow)', typeof WQ2.downloadBackup === 'function' && typeof WQ2.restoreBackupFile === 'function' && typeof WQ2.clearDataFlow === 'function');
+  await closeSheet35(docQ2);
+
+  // [35w] Mục 16 — gConnect trên web mở tab mới trong nhịp bấm, thất bại thì đóng tab
+  const g16 = await loadDom35();
+  const W16 = g16.win;
+  W16.FOTOBRO_CONFIG = { googleClientId: 'test.apps.googleusercontent.com' };
+  W16.state.cfg.gFeat = { cal: true, bank: false, leads: false, contacts: false, drive: false, calw: false, send: false };
+  let opened16 = false, closed16 = false, nav16 = '';
+  W16.open = function () { opened16 = true; return { set location(u) { nav16 = u; }, close: function () { closed16 = true; } }; };
+  await W16.gConnect(false);
+  t('16: bấm Google trên web -> mở tab mới ngay trong nhịp bấm', opened16);
+  t('16: PKCE không hỗ trợ (jsdom) -> đóng tab đã mở, không để tab trắng', closed16);
+  opened16 = false; closed16 = false;
+  await W16.gConnect(true, true);
+  t('16: đăng nhập im lặng (auto) -> không mở tab mới', !opened16 && !closed16);
   }
 
   console.log('\n===== KẾT QUẢ: ' + pass + ' đạt / ' + (pass + fail) + ' =====');
