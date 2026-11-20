@@ -144,7 +144,7 @@ async function loadDom(beforeParse) {
   eq('sổ trống: 0 job mẫu', W.state.jobs.length, 0);
   t('sổ trống: không job nào sai medium', W.state.jobs.every(j => W.jobMedium(j) === 'Digital'));
   const cd = W.cleanData({ jobs: [
-    { id: 1, client: 'Cu', type: 'Wedding', stage: 'Tư vấn', price: 15000000 },
+    { id: 1, client: 'Cu', type: 'Wedding', stage: 'Khách hỏi', price: 15000000 },
     { id: 2, client: 'Moi', type: 'Portrait', medium: 'Film', price: 3500000 },
     { id: 3, client: 'La', type: 'Couple', medium: 'Analog', price: 4000000 },
   ], txs: [] });
@@ -257,7 +257,7 @@ async function loadDom(beforeParse) {
   W.loadLocal();
   eq('save/load giữ giá film Event 7tr', W.state.cfg.pricesFilm.Event, 7000000);
   const oldBackup = JSON.stringify({
-    jobs: [{ id: 1, client: 'Cu', type: 'Wedding', stage: 'Tư vấn', shootDate: '', shootTime: '', location: '', deadline: '', price: 15000000, phone: '', email: '', fbLink: '', msLink: '', driveLink: '', note: '' }],
+    jobs: [{ id: 1, client: 'Cu', type: 'Wedding', stage: 'Khách hỏi', shootDate: '', shootTime: '', location: '', deadline: '', price: 15000000, phone: '', email: '', fbLink: '', msLink: '', driveLink: '', note: '' }],
     txs: [], sample: false,
     cfg: { name: 'Xèo', studio: 'Sadako Photography', prices: { Portrait: 2500000, Couple: 4000000, Wedding: 15000000, Lookbook: 8000000, Event: 5000000 } },
   });
@@ -272,44 +272,44 @@ async function loadDom(beforeParse) {
 
   console.log('\n[13] Pipeline v2.0: nhảy bước, cọc, xong-thiếu-tiền, huỷ/khôi phục, sổ trống');
   function mkJob(client, price) {
-    const j = { id: W.nid(), client: client, type: 'Wedding', medium: 'Digital', stage: 'Tư vấn',
+    const j = { id: W.nid(), client: client, type: 'Wedding', medium: 'Digital', stage: 'Khách hỏi',
       stageSince: W.dstr(0), shootDate: '2026-11-21', shootTime: '08:00', location: 'Studio', deadline: '',
       price: price, phone: '', email: 'khach@vd.vn', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false };
     W.state.jobs.unshift(j); return j;
   }
-  // (a) Nhảy kề Tư vấn -> Chốt cọc: không xác nhận, mở form cọc điền sẵn 40% của 15tr = 6tr
+  // (a) Nhảy kề Khách hỏi -> Đã chốt: không xác nhận, mở form cọc điền sẵn 40% của 15tr = 6tr
   const ja = mkJob('Khách A', 15000000);
   W.jumpToStage(ja.id, 1);
-  eq('nhảy kề: sang Chốt cọc ngay', ja.stage, 'Chốt cọc');
+  eq('nhảy kề: sang Đã chốt ngay', ja.stage, 'Đã chốt');
   await sleep(700);
   const txForm = doc.querySelector('#txForm');
-  t('nhảy Chốt cọc: mở form ghi cọc', !!txForm);
+  t('nhảy Đã chốt: mở form ghi cọc', !!txForm);
   if (txForm) eq('form cọc điền sẵn 6.000.000', txForm.elements.amount.value, '6.000.000');
   await closeSheet();
-  // (a2) Nhảy xa Tư vấn -> Hậu kỳ: có xác nhận, bấm Nhảy thì sang
+  // (a2) Nhảy xa Khách hỏi -> Đang làm ảnh: có xác nhận, bấm Nhảy thì sang
   const jb = mkJob('Khách B', 15000000);
-  W.jumpToStage(jb.id, 5);
-  eq('nhảy xa: chưa xác nhận thì vẫn Tư vấn', jb.stage, 'Tư vấn');
+  W.jumpToStage(jb.id, 3); /* v2.7: 6 bước — 3 = Đang làm ảnh */
+  eq('nhảy xa: chưa xác nhận thì vẫn Khách hỏi', jb.stage, 'Khách hỏi');
   t('nhảy xa: hiện sheet xác nhận', !!lastAsheetBtn('[data-a="0"]'));
   lastAsheetBtn('[data-a="0"]').click(); await sleep(200);
-  eq('nhảy xa: bấm Nhảy thì sang Hậu kỳ', jb.stage, 'Hậu kỳ');
+  eq('nhảy xa: bấm Nhảy thì sang Đang làm ảnh', jb.stage, 'Đang làm ảnh');
   // (b) Xong khi còn thiếu tiền: chặn, bấm "Vẫn xong, thiếu sau" mới xong
   eq('job B còn thiếu 15tr', W.jobOwe(jb), 15000000);
   W.setStage(jb, 'Xong');
-  eq('xong-thiếu-tiền: chưa xác nhận thì vẫn Hậu kỳ', jb.stage, 'Hậu kỳ');
+  eq('xong-thiếu-tiền: chưa xác nhận thì vẫn Đang làm ảnh', jb.stage, 'Đang làm ảnh');
   t('xong-thiếu-tiền: hiện sheet cảnh báo', !!lastAsheetBtn('[data-a="1"]'));
   lastAsheetBtn('[data-a="1"]').click(); await sleep(200);
   eq('xong-thiếu-tiền: bấm "Vẫn xong" thì sang Xong', jb.stage, 'Xong');
-  // (c) Huỷ -> khôi phục về Tư vấn
+  // (c) Huỷ -> khôi phục về Khách hỏi
   const jc = mkJob('Khách C', 5000000);
   W.jobAction('cancel', jc.id);
   lastAsheetBtn('[data-a="0"]').click(); await sleep(200);
   eq('huỷ: cancelled = true', jc.cancelled, true);
-  t('huỷ: jobAction next bị chặn', (W.jobAction('next', jc.id), jc.stage === 'Tư vấn'));
+  t('huỷ: jobAction next bị chặn', (W.jobAction('next', jc.id), jc.stage === 'Khách hỏi'));
   W.jobFilter = 'Đã huỷ';
   W.jobAction('restore', jc.id);
   eq('khôi phục: cancelled = false', jc.cancelled, false);
-  eq('khôi phục: về Tư vấn', jc.stage, 'Tư vấn');
+  eq('khôi phục: về Khách hỏi', jc.stage, 'Khách hỏi');
   eq('khôi phục: jobFilter về Tất cả', W.jobFilter, 'Tất cả');
   // (e) Mở mới hoàn toàn: banner mẫu ẩn, sample false, 0 job
   const w3 = await loadDom();
@@ -444,7 +444,7 @@ async function loadDom(beforeParse) {
     return j;
   }
   const jDone = mk16('Khách Xong', 2500000, 'Xong', 1000000);   // thiếu 1.5tr
-  const jRun = mk16('Khách Chạy', 4000000, 'Sắp chụp', 0);       // thiếu 4tr
+  const jRun = mk16('Khách Chạy', 4000000, 'Đã chốt', 0);       // thiếu 4tr
   const jCx = mk16('Khách Huỷ', 15000000, 'Đã giao', 0); jCx.cancelled = true;
   const jNoPrice = mk16('Khách Chưa Giá', 0, 'Đã giao', 0);
   eq('B1: totalOwe gồm Xong 1.5tr + Chạy 4tr = 5.5tr', W.totalOwe(), 5500000);
@@ -471,7 +471,7 @@ async function loadDom(beforeParse) {
   t('B2: "tháng này thu bao nhiêu" đáp về thu', a2.includes('Thu tháng này') && !a2.includes('hạn giao'), a2);
   const a3 = W.answer('tháng này chi bao nhiêu');
   t('B2: "tháng này chi bao nhiêu" đáp về chi', a3.includes('Chi tháng này') && !a3.includes('hạn giao'), a3);
-  const jDebt = mk16('Khách Nợ', 2500000, 'Sắp chụp', 1000000);
+  const jDebt = mk16('Khách Nợ', 2500000, 'Đã chốt', 1000000);
   const a4 = W.answer('khách nào chưa thanh toán');
   t('B2: "khách nào chưa thanh toán" đáp về nợ', a4.includes('Khách Nợ') && a4.includes('1.500.000') && !a4.includes('hạn giao'), a4);
   const a5 = W.answer('Job nào sắp tới hạn giao?');
@@ -496,7 +496,7 @@ async function loadDom(beforeParse) {
   console.log('\n[19] Sao lưu v2: envelope, phân loại file, khôi phục tròn');
   eq('backupFileName', W.backupFileName('2026-11-20'), 'fotobro-backup-20261120.json');
   eq('photosFileName', W.photosFileName('2026-11-20'), 'fotobro-photos-20261120.json');
-  W.state.jobs = [mk16('Khách Backup', 2500000, 'Sắp chụp', 1000000)];
+  W.state.jobs = [mk16('Khách Backup', 2500000, 'Đã chốt', 1000000)];
   W.state.txs = W.state.txs.filter(t => t.jobId === W.state.jobs[0].id);
   const env = await W.buildBackupData();
   eq('backup: format', env.format, 'fotobro-backup');
@@ -512,14 +512,14 @@ async function loadDom(beforeParse) {
   eq('parse file ảnh riêng', W.parseBackupFile({ format: 'fotobro-photos', version: 1, photos: [] }).kind, 'photos');
   eq('parse file rác', W.parseBackupFile({ foo: 1 }).kind, 'invalid');
   eq('parse null', W.parseBackupFile(null).kind, 'invalid');
-  W.state.jobs = [mk16('Khách Hiện Tại', 1000000, 'Tư vấn', 0)];
+  W.state.jobs = [mk16('Khách Hiện Tại', 1000000, 'Khách hỏi', 0)];
   const res = await W.restoreBackupData(env);
   eq('restore: jobs về lại 1', res.jobs, 1);
   eq('restore: txs về lại 1', res.txs, 1);
   eq('restore: state.jobs[0] là Khách Backup', W.state.jobs[0].client, 'Khách Backup');
   t('restore: bản dự phòng giữ job hiện tại', (W.localStorage.getItem('troLyXeo.backupSafety') || '').includes('Khách Hiện Tại'));
   W.checkDone = { 'job:1': { 'Sạc đầy pin': true } };
-  const v1env = { jobs: [{ id: 1, client: 'Khách V1', type: 'Portrait', stage: 'Tư vấn', price: 2500000 }], txs: [], cfg: { name: 'V1' } };
+  const v1env = { jobs: [{ id: 1, client: 'Khách V1', type: 'Portrait', stage: 'Khách hỏi', price: 2500000 }], txs: [], cfg: { name: 'V1' } };
   await W.restoreBackupData(v1env);
   eq('restore v1: job về', W.state.jobs[0].client, 'Khách V1');
   t('restore v1: checkDone hiện tại giữ nguyên', !!(W.checkDone['job:1'] && W.checkDone['job:1']['Sạc đầy pin'] === true));
@@ -537,15 +537,16 @@ async function loadDom(beforeParse) {
   console.log('\n[21] Cọc thống nhất depFor + mẫu không khẳng định sai');
   W.state.cfg.depositPct = 40;
   eq('depFor 2.535.000đ = 1.010.000 (10.000đ)', W.depFor({ price: 2535000 }), 1010000);
-  const jTpl = mk16('Khách Mẫu', 2535000, 'Chốt cọc', 0);
+  const jTpl = mk16('Khách Mẫu', 2535000, 'Đã chốt', 0);
   eq('chatCtx coc dùng depFor = 1.010.000₫', W.chatCtx(jTpl).coc, '1.010.000₫');
-  eq('suggestKey Chốt cọc chưa cọc -> baogia', W.suggestKey(jTpl), 'baogia');
+  eq('suggestKey Đã chốt chưa cọc -> baogia', W.suggestKey(jTpl), 'baogia');
   W.pickMsg(jTpl);
   const pickLabels = [...doc.querySelectorAll('.asheet [data-a]')].map(b => b.textContent);
   t('pickMsg chưa cọc: không có mẫu "Đã nhận cọc"', !pickLabels.some(l => l.includes('Đã nhận cọc')), pickLabels.join(' | '));
   const pickCancel = doc.querySelector('.asheet .cancel'); if (pickCancel) pickCancel.click();
   W.state.txs.unshift({ id: W.nid(), kind: 'thu', category: 'Cọc', jobId: jTpl.id, amount: 1010000, date: W.dstr(0), method: 'Chuyển khoản', note: '', src: '' });
-  eq('suggestKey Chốt cọc đã cọc -> coc', W.suggestKey(jTpl), 'coc');
+  jTpl.shootDate = W.dstr(20); /* còn xa ngày chụp: mẫu "Đã nhận cọc"; gần ngày thì "Nhắc lịch" */
+  eq('suggestKey Đã chốt đã cọc -> coc', W.suggestKey(jTpl), 'coc');
   t('chat "Đã nhận cọc" dùng số cọc thật 1.010.000₫', W.chatMsg('coc', jTpl).includes('1.010.000'));
   t('chat "Đã nhận cọc" không nói "Đã nhận 0₫"', !W.chatMsg('coc', jTpl).includes('Đã nhận 0₫'));
   eq('mailCtx depPaid = 1.010.000₫', W.mailCtx(jTpl).depPaid, '1.010.000₫');
@@ -561,7 +562,7 @@ async function loadDom(beforeParse) {
   t('calcPkgOptions Digital hiện giá digital 15tr', W.calcPkgOptions('Digital').includes('Wedding — 15.000.000'));
   const cdDep = W.cleanData({ jobs: [{ id: 5, client: 'X', depPrompted: true }], txs: [] });
   eq('cleanData giữ cờ depPrompted', cdDep.jobs[0].depPrompted, true);
-  W.state.jobs = [mk16('Khách Xa', 2500000, 'Tư vấn', 0)];
+  W.state.jobs = [mk16('Khách Xa', 2500000, 'Khách hỏi', 0)];
   W.state.jobs[0].shootDate = W.dstr(10);
   W.renderHome();
   t('Hôm nay có mục Sắp tới', !!doc.querySelector('#upcomingSec'));
@@ -601,7 +602,7 @@ async function loadDom(beforeParse) {
     console.log('\n[A] Job Xong còn thiếu 2.4tr vẫn hiện khắp nơi');
     reset01();
     const jDone = mk01('Khách Xong', 4000000, 'Xong', 1600000);
-    const jRun = mk01('Khách Chạy', 4000000, 'Sắp chụp', 0);
+    const jRun = mk01('Khách Chạy', 4000000, 'Đã chốt', 0);
     eq('A1: totalOwe = 2.4tr (Xong) + 4tr (chạy) = 6.4tr', W.totalOwe(), 6400000);
     t('A2: debtorsText có Khách Xong + 2.400.000', W.debtorsText().includes('Khách Xong') && W.debtorsText().includes('2.400.000'), W.debtorsText());
     t('A3: trợ lý "ai chưa trả tiền?" có Khách Xong', W.answer('ai chưa trả tiền?').includes('Khách Xong'));
@@ -625,7 +626,7 @@ async function loadDom(beforeParse) {
     console.log('\n[C] Job đã huỷ không hiện thiếu');
     reset01();
     const jCx = mk01('Khách Huỷ', 15000000, 'Đã giao', 0, true);
-    mk01('Khách Chạy', 4000000, 'Sắp chụp', 0);
+    mk01('Khách Chạy', 4000000, 'Đã chốt', 0);
     eq('C1: totalOwe chỉ tính job chạy = 4tr (loại 15tr của job huỷ)', W.totalOwe(), 4000000);
     t('C2: debtorsText không có Khách Huỷ', !W.debtorsText().includes('Khách Huỷ'));
     t('C3: trợ lý "ai chưa trả tiền?" không có Khách Huỷ', !W.answer('ai chưa trả tiền?').includes('Khách Huỷ'));
@@ -668,7 +669,7 @@ async function loadDom(beforeParse) {
     W.state.cfg.depositPct = 40;
 
     const mkJob02 = function (client, price, stage, shootDate, deposit, driveLink, depCategory) {
-      const j = { id: W.nid(), client, type: 'Portrait', medium: 'Digital', stage: stage || 'Tư vấn',
+      const j = { id: W.nid(), client, type: 'Portrait', medium: 'Digital', stage: stage || 'Khách hỏi',
         stageSince: W.dstr(0), shootDate: shootDate || '', shootTime: '15:00', location: 'Studio Quận 1', deadline: '',
         price: price || 0, phone: '', email: 'khach@example.com', fbLink: '', msLink: '', driveLink: driveLink || '', note: '', cancelled: false };
       W.state.jobs.unshift(j);
@@ -678,8 +679,8 @@ async function loadDom(beforeParse) {
 
     console.log('\n[A] B2: trợ lý với "tháng" / "thanh toán"');
     W.state.jobs = []; W.state.txs = [];
-    const jDebt = mkJob02('Khách Nợ', 2500000, 'Sắp chụp', W.dstr(2), 1000000); // còn thiếu 1.500.000
-    const jDl = mkJob02('Khách Hạn', 2500000, 'Hậu kỳ', W.dstr(5), 0); jDl.deadline = W.dstr(3);
+    const jDebt = mkJob02('Khách Nợ', 2500000, 'Đã chốt', W.dstr(2), 1000000); // còn thiếu 1.500.000
+    const jDl = mkJob02('Khách Hạn', 2500000, 'Đang làm ảnh', W.dstr(5), 0); jDl.deadline = W.dstr(3);
     let a = W.answer('Tháng này lời bao nhiêu?');
     t('B2: "Tháng này lời bao nhiêu?" đáp về lời, không về hạn', a.includes('lời') && !a.includes('hạn giao'), a);
     a = W.answer('tháng này thu bao nhiêu');
@@ -699,8 +700,8 @@ async function loadDom(beforeParse) {
 
     console.log('\n[B] Mẫu "Đã nhận cọc" (chat) — chỉ khi có tx Cọc thật');
     W.state.jobs = []; W.state.txs = [];
-    const jNoDep = mkJob02('Khách Chưa Cọc', 2535000, 'Chốt cọc', W.dstr(5), 0);
-    eq('coc: suggestKey Chốt cọc chưa cọc -> baogia', W.suggestKey(jNoDep), 'baogia');
+    const jNoDep = mkJob02('Khách Chưa Cọc', 2535000, 'Đã chốt', W.dstr(5), 0);
+    eq('coc: suggestKey Đã chốt chưa cọc -> baogia', W.suggestKey(jNoDep), 'baogia');
     t('coc: chat "Đã nhận cọc" khi chưa cọc thì xin cọc, không khẳng định đã nhận',
       !W.chatMsg('coc', jNoDep).includes('nhận cọc') && W.chatMsg('coc', jNoDep).includes('cọc trước'), W.chatMsg('coc', jNoDep));
     t('coc: msgFor job chưa cọc không khẳng định đã nhận', !W.msgFor(jNoDep).includes('nhận cọc'), W.msgFor(jNoDep));
@@ -709,13 +710,13 @@ async function loadDom(beforeParse) {
     t('coc: pickMsg chưa cọc không liệt kê "Đã nhận cọc"', !pickLabels.some(l => l.includes('Đã nhận cọc')), pickLabels.join(' | '));
     closeAsheet02();
     // Cọc ghi ở hạng mục khác (không phải "Cọc") thì KHÔNG tính là đã nhận cọc.
-    const jWrongCat = mkJob02('Khách Cọc Sai Mục', 2535000, 'Chốt cọc', W.dstr(5), 1010000, '', 'Tiền sau buổi chụp');
+    const jWrongCat = mkJob02('Khách Cọc Sai Mục', 2535000, 'Đã chốt', W.dstr(5), 1010000, '', 'Tiền sau buổi chụp');
     eq('coc: cọc ghi sai hạng mục -> suggestKey vẫn baogia', W.suggestKey(jWrongCat), 'baogia');
     eq('coc: cọc ghi sai hạng mục -> depPaid rỗng', W.chatCtx(jWrongCat).depPaid, '');
     t('coc: cọc ghi sai hạng mục -> chat không khẳng định đã nhận', !W.chatMsg('coc', jWrongCat).includes('nhận cọc'), W.chatMsg('coc', jWrongCat));
     // Cọc thật (tx hạng mục "Cọc") thì dùng được, dùng đúng số cọc thật.
-    const jDep = mkJob02('Khách Đã Cọc', 2535000, 'Chốt cọc', W.dstr(5), 1010000);
-    eq('coc: suggestKey Chốt cọc đã cọc -> coc', W.suggestKey(jDep), 'coc');
+    const jDep = mkJob02('Khách Đã Cọc', 2535000, 'Đã chốt', W.dstr(5), 1010000);
+    eq('coc: suggestKey Đã chốt đã cọc -> coc', W.suggestKey(jDep), 'coc');
     t('coc: chat "Đã nhận cọc" dùng số cọc thật 1.010.000₫', W.chatMsg('coc', jDep).includes('1.010.000'), W.chatMsg('coc', jDep));
     t('coc: chat "Đã nhận cọc" không nói "Đã nhận 0₫"', !W.chatMsg('coc', jDep).includes('Đã nhận 0₫'));
     W.pickMsg(jDep);
@@ -728,15 +729,17 @@ async function loadDom(beforeParse) {
     W.state.jobs = []; W.state.txs = [];
     const jNoDrive = mkJob02('Khách Không Link', 2500000, 'Đã chụp', W.dstr(0), 0);
     t('chon: không link thì không nhắc link', !W.chatMsg('chon', jNoDrive).includes('link'), W.chatMsg('chon', jNoDrive));
+    eq('v2.7: vừa chụp xong thì gợi ý gửi ảnh xem trước', W.suggestKey(jNoDrive), 'sneak');
+    jNoDrive.sneakSent = true;
     eq('chon: không link vẫn gợi ý chon ở bước Đã chụp', W.suggestKey(jNoDrive), 'chon');
     const jDrive = mkJob02('Khách Có Link', 2500000, 'Đã chụp', W.dstr(0), 0, 'https://drive.google.com/drive/folders/abc123');
     t('chon: có link thì nhắc link + kèm đúng link', W.chatMsg('chon', jDrive).includes('https://drive.google.com/drive/folders/abc123'), W.chatMsg('chon', jDrive));
 
     console.log('\n[D] "Nhắc lịch chụp" — hôm nay bỏ "ngủ sớm", ngày mai giữ');
     W.state.jobs = []; W.state.txs = [];
-    const jToday = mkJob02('Khách Hôm Nay', 2500000, 'Sắp chụp', W.dstr(0), 0);
-    const jTmr = mkJob02('Khách Ngày Mai', 2500000, 'Sắp chụp', W.dstr(1), 0);
-    const jLater = mkJob02('Khách Xa', 2500000, 'Sắp chụp', W.dstr(5), 0);
+    const jToday = mkJob02('Khách Hôm Nay', 2500000, 'Đã chốt', W.dstr(0), 0);
+    const jTmr = mkJob02('Khách Ngày Mai', 2500000, 'Đã chốt', W.dstr(1), 0);
+    const jLater = mkJob02('Khách Xa', 2500000, 'Đã chốt', W.dstr(5), 0);
     t('nhac: chat job hôm nay KHÔNG có "ngủ sớm"', !W.chatMsg('nhac', jToday).includes('ngủ sớm'), W.chatMsg('nhac', jToday));
     t('nhac: chat job hôm nay vẫn dặn tới sớm', W.chatMsg('nhac', jToday).includes('Tới sớm 10 phút'), W.chatMsg('nhac', jToday));
     t('nhac: chat job ngày mai CÓ "ngủ sớm"', W.chatMsg('nhac', jTmr).includes('ngủ sớm'), W.chatMsg('nhac', jTmr));
@@ -750,8 +753,8 @@ async function loadDom(beforeParse) {
 
     console.log('\n[E] Email "Đã nhận cọc" — composer chặn khi chưa có cọc');
     W.state.jobs = []; W.state.txs = [];
-    const jMailNoDep = mkJob02('Khách Mail Chưa Cọc', 2535000, 'Chốt cọc', W.dstr(5), 0);
-    const jMailDep = mkJob02('Khách Mail Đã Cọc', 2535000, 'Chốt cọc', W.dstr(5), 1010000);
+    const jMailNoDep = mkJob02('Khách Mail Chưa Cọc', 2535000, 'Đã chốt', W.dstr(5), 0);
+    const jMailDep = mkJob02('Khách Mail Đã Cọc', 2535000, 'Đã chốt', W.dstr(5), 1010000);
     eq('mail: mailCtx depPaid rỗng khi chưa cọc', W.mailCtx(jMailNoDep).depPaid, '');
     t('mail: email deposit đã điền, job đã cọc dùng số thật 1.010.000₫',
       W.fillTpl(W.MAIL_TPLS_DEFAULT.deposit.b, W.mailCtx(jMailDep)).includes('1.010.000'));
@@ -843,7 +846,7 @@ async function loadDom(beforeParse) {
 
     console.log('\n[5] Cọc làm tròn thống nhất depFor (10.000đ) ở mẫu chat báo giá');
     eq('depFor(2.535.000đ) = 1.010.000', W.depFor({ price: 2535000 }), 1010000);
-    const jLe = { id: 999001, client: 'Khách Lẻ', type: 'Portrait', medium: 'Digital', stage: 'Tư vấn', price: 2535000, shootDate: '', shootTime: '', location: '' };
+    const jLe = { id: 999001, client: 'Khách Lẻ', type: 'Portrait', medium: 'Digital', stage: 'Khách hỏi', price: 2535000, shootDate: '', shootTime: '', location: '' };
     eq('chatCtx coc = 1.010.000₫', W.chatCtx(jLe).coc, '1.010.000₫');
     const msgBaoGia = W.chatMsg('baogia', jLe);
     t('mẫu chat báo giá ghi cọc 1.010.000', msgBaoGia.includes('1.010.000'), msgBaoGia);
@@ -971,10 +974,10 @@ async function loadDom(beforeParse) {
   const T0300_NEXT05 = new Date(2026, 10, 21, 3, 0, 0).getTime();
   const T0800_NEXT05 = new Date(2026, 10, 21, 8, 0, 0).getTime();
 
-  const jobToday05 = { id: 1, client: 'Lan Anh', type: 'Portrait', medium: 'Digital', stage: 'Sắp chụp',
+  const jobToday05 = { id: 1, client: 'Lan Anh', type: 'Portrait', medium: 'Digital', stage: 'Đã chốt',
     shootDate: '2026-11-20', shootTime: '15:00', location: 'Studio Quận 1',
     deadline: '2026-11-21', price: 2500000, note: '', phone: '', email: '', driveLink: '', cancelled: false };
-  const jobTomorrow05 = { id: 2, client: 'Minh Tuấn', type: 'Couple', medium: 'Digital', stage: 'Tư vấn',
+  const jobTomorrow05 = { id: 2, client: 'Minh Tuấn', type: 'Couple', medium: 'Digital', stage: 'Khách hỏi',
     shootDate: '2026-11-21', shootTime: '15:00', location: '',
     deadline: '2026-11-28', price: 4000000, note: '', phone: '', email: '', driveLink: '', cancelled: false };
 
@@ -1079,12 +1082,12 @@ async function loadDom(beforeParse) {
     eq('bridge [16:00]: giờ chụp đã qua, không ngày giao → không đặt nhắc nào',
       b4.recorded.length, 0);
   }
-  console.log('\n[28] fix-06 — Pipeline UX: "Để sau" form cọc, tạo job Chốt cọc, khôi phục, nhãn nút');
+  console.log('\n[28] fix-06 — Pipeline UX: "Để sau" form cọc, tạo job Đã chốt, khôi phục, nhãn nút');
   {
   const lastSheetEl06 = function (doc, sel) { const els = doc.querySelectorAll('.sheet ' + sel); return els[els.length - 1]; }
   const lastAsheetBtn06 = function (doc, sel) { const els = doc.querySelectorAll('.asheet ' + sel); return els[els.length - 1]; }
   const mkJob06 = function (W, client, price) {
-    const j = { id: W.nid(), client: client, type: 'Wedding', medium: 'Digital', stage: 'Tư vấn',
+    const j = { id: W.nid(), client: client, type: 'Wedding', medium: 'Digital', stage: 'Khách hỏi',
       stageSince: W.dstr(0), shootDate: W.dstr(20), shootTime: '08:00', location: 'Studio', deadline: '',
       price: price, phone: '', email: 'khach@vd.vn', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false };
     W.state.jobs.unshift(j); return j;
@@ -1094,9 +1097,9 @@ async function loadDom(beforeParse) {
     t('trang tải không lỗi jsdom', errors.length === 0, errors.slice(0, 3).join(' | '));
     const ja = mkJob06(W, 'Khách A', 15000000);
     W.jumpToStage(ja.id, 1);
-    eq('nhảy kề: sang Chốt cọc ngay', ja.stage, 'Chốt cọc');
+    eq('nhảy kề: sang Đã chốt ngay', ja.stage, 'Đã chốt');
     await sleep(700);
-    t('vào Chốt cọc: mở form ghi cọc', !!doc.querySelector('#txForm'));
+    t('vào Đã chốt: mở form ghi cọc', !!doc.querySelector('#txForm'));
     const deferBtn = doc.querySelector('#txDefer');
     t('form cọc có nút "Để sau"', !!deferBtn && deferBtn.textContent.toLowerCase().includes('để sau'), deferBtn ? deferBtn.textContent : 'không có nút');
     eq('nút trái form cọc là "Đóng" (không phải "Huỷ")', lastSheetEl06(doc, '.sh-l').textContent, 'Đóng');
@@ -1105,23 +1108,23 @@ async function loadDom(beforeParse) {
     await sleep(500);
     eq('bấm "Để sau": depPrompted = true', ja.depPrompted, true);
     t('bấm "Để sau": form cọc đã đóng', !doc.querySelector('#txForm'));
-    eq('bấm "Để sau": vẫn ở Chốt cọc (chuyển bước không bị huỷ)', ja.stage, 'Chốt cọc');
+    eq('bấm "Để sau": vẫn ở Đã chốt (chuyển bước không bị huỷ)', ja.stage, 'Đã chốt');
     eq('bấm "Để sau": chưa ghi cọc nào', W.jobDep(ja), 0);
-    W.setStage(ja, 'Sắp chụp');
-    eq('rời sang Sắp chụp', ja.stage, 'Sắp chụp');
+    W.setStage(ja, 'Đã chốt');
+    eq('rời sang Đã chốt', ja.stage, 'Đã chốt');
     await sleep(200);
-    W.setStage(ja, 'Chốt cọc');
-    eq('vào lại Chốt cọc', ja.stage, 'Chốt cọc');
+    W.setStage(ja, 'Đã chốt');
+    eq('vào lại Đã chốt', ja.stage, 'Đã chốt');
     await sleep(700);
-    t('vào lại Chốt cọc: form cọc KHÔNG mở lại', !doc.querySelector('#txForm'));
+    t('vào lại Đã chốt: form cọc KHÔNG mở lại', !doc.querySelector('#txForm'));
     // Cờ bền qua reload (localStorage -> cleanData -> loadLocal)
     const saved = W.localStorage.getItem('troLyXeo.v1');
     const w2 = await loadDom(w => { w.localStorage.setItem('troLyXeo.v1', saved); });
     const reloaded = w2.win.state.jobs.find(j => j.id === ja.id);
     eq('reload: depPrompted vẫn true', reloaded && reloaded.depPrompted, true);
-    eq('reload: job vẫn ở Chốt cọc', reloaded && reloaded.stage, 'Chốt cọc');
+    eq('reload: job vẫn ở Đã chốt', reloaded && reloaded.stage, 'Đã chốt');
 
-    console.log('\n[A2] Job đã có cọc thì vào Chốt cọc không mở form');
+    console.log('\n[A2] Job đã có cọc thì vào Đã chốt không mở form');
     ({ win: W, doc } = await loadDom());
     const jd = mkJob06(W, 'Khách Đã Cọc', 15000000);
     W.state.txs.unshift({ id: W.nid(), kind: 'thu', category: 'Cọc', jobId: jd.id, amount: 6000000, date: W.dstr(0), method: 'Chuyển khoản', note: '', src: '' });
@@ -1130,7 +1133,7 @@ async function loadDom(beforeParse) {
     await sleep(700);
     t('đã có cọc: form cọc KHÔNG mở', !doc.querySelector('#txForm'));
 
-    console.log('\n[B] Tạo job mới ở bước Chốt cọc chưa có cọc -> hỏi nhập cọc sau khi lưu');
+    console.log('\n[B] Tạo job mới ở bước Đã chốt chưa có cọc -> hỏi nhập cọc sau khi lưu');
     ({ win: W, doc } = await loadDom());
     W.openJobForm(null);
     let form = doc.querySelector('#jobForm');
@@ -1138,14 +1141,14 @@ async function loadDom(beforeParse) {
     form.elements.client.value = 'Khách Mới';
     setSel(form.querySelector('select[name="type"]'), 'Wedding');
     eq('chọn Wedding -> giá tự điền 15tr', form.elements.price.value, '15.000.000');
-    setSel(form.querySelector('select[name="stage"]'), 'Chốt cọc');
-    form.elements.shootDate.value = W.dstr(5); form.elements.shootTime.value = '08:00'; form.elements.location.value = 'Studio'; form.elements.phone.value = '0901234567'; // v2.4: qua Tư vấn cần đủ thông tin
+    setSel(form.querySelector('select[name="stage"]'), 'Đã chốt');
+    form.elements.shootDate.value = W.dstr(5); form.elements.shootTime.value = '08:00'; form.elements.location.value = 'Studio'; form.elements.phone.value = '0901234567'; // v2.4: qua Khách hỏi cần đủ thông tin
     eq('ô cọc để trống', form.elements.deposit.value, '');
     lastSheetEl06(doc, '.sh-r').click();
     await sleep(900);
     const jm = W.state.jobs[0];
     eq('job mới đã lưu, client Khách Mới', jm && jm.client, 'Khách Mới');
-    eq('job mới ở bước Chốt cọc', jm && jm.stage, 'Chốt cọc');
+    eq('job mới ở bước Đã chốt', jm && jm.stage, 'Đã chốt');
     eq('job mới giá 15tr', jm && jm.price, 15000000);
     t('sau khi lưu: mở form hỏi nhập cọc', !!doc.querySelector('#txForm'));
     if (doc.querySelector('#txForm')) eq('form cọc gợi ý 6.000.000 (40% của 15tr)', doc.querySelector('#txForm').elements.amount.value, '6.000.000');
@@ -1166,7 +1169,7 @@ async function loadDom(beforeParse) {
     t('lọc "Đã huỷ": thấy job đã huỷ trong danh sách', doc.querySelector('#jobList').textContent.includes('Khách C'));
     W.jobAction('restore', jc.id);
     eq('khôi phục: cancelled = false', jc.cancelled, false);
-    eq('khôi phục: về Tư vấn', jc.stage, 'Tư vấn');
+    eq('khôi phục: về Khách hỏi', jc.stage, 'Khách hỏi');
     eq('khôi phục: jobFilter về "Tất cả"', W.jobFilter, 'Tất cả');
     W.renderJobs();
     t('sau khôi phục: thấy job trong danh sách "Tất cả"', doc.querySelector('#jobList').textContent.includes('Khách C'));
@@ -1175,13 +1178,13 @@ async function loadDom(beforeParse) {
     console.log('\n[D] Nhãn nút chuyển bước ghi rõ bước hiện tại và bước tới');
     ({ win: W, doc } = await loadDom());
     const jn = mkJob06(W, 'Khách N', 10000000);
-    t('nhãn nút ở Tư vấn: "Xong: Tư vấn → Chốt cọc"', W.jobDetailHTML(jn).includes('Xong: Tư vấn → Chốt cọc'));
+    t('nhãn nút ở Khách hỏi: "Xong: Khách hỏi → Đã chốt"', W.jobDetailHTML(jn).includes('Xong: Khách hỏi → Đã chốt'));
     t('source không còn nhãn cũ "Xong bước này"', !html.includes('Xong bước này'));
     W.openJob(jn.id);
     await sleep(100);
     const nextBtn = doc.querySelector('[data-act="next"]');
     t('nút chuyển bước hiển thị trong sheet chi tiết', !!nextBtn);
-    if (nextBtn) eq('nút trong sheet ghi đúng bước tới', nextBtn.textContent, 'Xong: Tư vấn → Chốt cọc');
+    if (nextBtn) eq('nút trong sheet ghi đúng bước tới', nextBtn.textContent, 'Xong: Khách hỏi → Đã chốt');
     const jg = mkJob06(W, 'Khách G', 10000000); jg.stage = 'Đã giao';
     t('nhãn nút ở Đã giao: "Xong: Đã giao → Xong"', W.jobDetailHTML(jg).includes('Xong: Đã giao → Xong'));
     const jx = mkJob06(W, 'Khách X', 10000000); jx.stage = 'Xong';
@@ -1210,11 +1213,11 @@ async function loadDom(beforeParse) {
     W.state.jobs = [
       mkJob07(W, 'j1', 'Lan Anh', 'Đã chụp', 22),                       // Sắp tới (đang ở bước Đã chụp)
       mkJob07(W, 'j2', 'Quốc Bảo', 'Xong', 22, { price: 0 }),          // Sắp tới (kể cả job đã Xong)
-      mkJob07(W, 'j3', 'Hương', 'Tư vấn', 3),                           // mục 7 ngày
-      mkJob07(W, 'j4', 'Tuấn', 'Sắp chụp', 7),                          // biên: đúng 7 ngày -> mục 7 ngày
-      mkJob07(W, 'j5', 'Ngọc', 'Tư vấn', 8),                            // biên: 8 ngày -> Sắp tới
-      mkJob07(W, 'j6', 'Dũng', 'Tư vấn', 31),                           // ngoài 30 ngày -> không mục nào
-      mkJob07(W, 'j7', 'Mai', 'Tư vấn', 22, { cancelled: true }),       // đã huỷ -> không mục nào
+      mkJob07(W, 'j3', 'Hương', 'Khách hỏi', 3),                           // mục 7 ngày
+      mkJob07(W, 'j4', 'Tuấn', 'Đã chốt', 7),                          // biên: đúng 7 ngày -> mục 7 ngày
+      mkJob07(W, 'j5', 'Ngọc', 'Khách hỏi', 8),                            // biên: 8 ngày -> Sắp tới
+      mkJob07(W, 'j6', 'Dũng', 'Khách hỏi', 31),                           // ngoài 30 ngày -> không mục nào
+      mkJob07(W, 'j7', 'Mai', 'Khách hỏi', 22, { cancelled: true }),       // đã huỷ -> không mục nào
     ];
     W.state.txs = [];
     W.renderHome();
@@ -1503,7 +1506,7 @@ async function loadDom(beforeParse) {
   }
   const mkJob09 = function (W, client, price) {
     return {
-      id: W.nid(), client, type: 'Portrait', medium: 'Digital', stage: 'Tư vấn',
+      id: W.nid(), client, type: 'Portrait', medium: 'Digital', stage: 'Khách hỏi',
       shootDate: W.dstr(0), shootTime: '09:00', location: 'Studio', deadline: W.dstr(14),
       price, phone: '', email: 'khach@vd.vn', fbLink: '', msLink: '', driveLink: '', note: '',
       cancelled: false, stageSince: W.dstr(0),
@@ -1723,7 +1726,7 @@ async function loadDom(beforeParse) {
     await closeSheet();
 
     console.log('\n[F10-4] Form cọc: ô "Buổi chụp" full-width');
-    const j0 = { id: W.nid(), client: 'Nguyễn Thị Mai Anh', type: 'Wedding', medium: 'Digital', stage: 'Sắp chụp',
+    const j0 = { id: W.nid(), client: 'Nguyễn Thị Mai Anh', type: 'Wedding', medium: 'Digital', stage: 'Đã chốt',
       stageSince: W.dstr(0), shootDate: W.dstr(0), shootTime: '15:00', location: 'Studio Quận 1', deadline: '',
       price: 15000000, phone: '', email: '', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false };
     W.state.jobs.unshift(j0);
@@ -1736,7 +1739,7 @@ async function loadDom(beforeParse) {
     await closeSheet();
 
     console.log('\n[F10-5] Huỷ job có cọc -> gợi ý hoàn cọc, form điền sẵn');
-    const j1 = { id: W.nid(), client: 'Khách Có Cọc', type: 'Wedding', medium: 'Digital', stage: 'Chốt cọc',
+    const j1 = { id: W.nid(), client: 'Khách Có Cọc', type: 'Wedding', medium: 'Digital', stage: 'Đã chốt',
       stageSince: W.dstr(0), shootDate: W.dstr(0), shootTime: '08:00', location: '', deadline: '',
       price: 15000000, phone: '', email: '', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false };
     W.state.jobs.unshift(j1);
@@ -1764,7 +1767,7 @@ async function loadDom(beforeParse) {
     await closeSheet();
 
     console.log('\n[F10-6] Huỷ job KHÔNG cọc -> không hỏi hoàn cọc');
-    const j2 = { id: W.nid(), client: 'Khách Không Cọc', type: 'Portrait', medium: 'Digital', stage: 'Tư vấn',
+    const j2 = { id: W.nid(), client: 'Khách Không Cọc', type: 'Portrait', medium: 'Digital', stage: 'Khách hỏi',
       stageSince: W.dstr(0), shootDate: W.dstr(0), shootTime: '08:00', location: 'Studio', deadline: '',
       price: 2500000, phone: '', email: 'khach@vd.vn', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false };
     W.state.jobs.unshift(j2);
@@ -2200,7 +2203,7 @@ async function loadDom(beforeParse) {
   // [35d] Mục 4 — job 0đ nhắc luôn khi đã có job khác nợ (Tiền bạc + Trợ lý + phòng)
   const g4 = await loadDom35();
   const W4 = g4.win, doc4 = g4.doc;
-  mkJ35(W4, 'Khách Nợ', 2500000, 'Sắp chụp', 1000000);
+  mkJ35(W4, 'Khách Nợ', 2500000, 'Đã chốt', 1000000);
   mkJ35(W4, 'Khách Chưa Giá', 0, 'Đã giao', 0);
   W4.renderMoney();
   t('4: Tiền bạc vẫn liệt kê Khách Nợ', doc4.querySelector('#oweList').textContent.includes('Khách Nợ'));
@@ -2290,7 +2293,7 @@ async function loadDom(beforeParse) {
   // [35i] Mục 9 — "đã nhận X / Y" không ngắt dòng
   const g9 = await loadDom35();
   const W9 = g9.win, doc9 = g9.doc;
-  mkJ35(W9, 'Khách Nợ', 2500000, 'Sắp chụp', 1000000);
+  mkJ35(W9, 'Khách Nợ', 2500000, 'Đã chốt', 1000000);
   W9.renderMoney();
   const nw9 = doc9.querySelector('#oweList [style*="white-space:nowrap"]');
   t('9: cụm "đã nhận X / Y" bọc trong span nowrap', !!nw9 && nw9.textContent.includes('đã nhận') && nw9.textContent.includes('1.000.000') && nw9.textContent.includes('2.500.000'), nw9 ? nw9.textContent : 'không có span');
@@ -2406,8 +2409,8 @@ async function loadDom(beforeParse) {
   const lastAsheetBtns35 = (d) => { const ss = d.querySelectorAll('.asheet'); const last = ss[ss.length - 1]; return last ? last.querySelectorAll('[data-a]') : []; };
   const g21 = await loadDom35();
   const W21 = g21.win, doc21 = g21.doc;
-  const j21 = mkJ35(W21, 'Khách Xong Xa', 15000000, 'Tư vấn', 0);
-  W21.jumpToStage(j21.id, 7);
+  const j21 = mkJ35(W21, 'Khách Xong Xa', 15000000, 'Khách hỏi', 0);
+  W21.jumpToStage(j21.id, 5);
   const as21 = doc21.querySelector('.asheet');
   t('21: nhảy xa tới Xong còn thiếu tiền -> hiện 1 hộp xác nhận', !!as21);
   if (as21) {
@@ -2420,18 +2423,18 @@ async function loadDom(beforeParse) {
   eq('21: bấm "Vẫn nhảy" -> sang Xong ngay', j21.stage, 'Xong');
   t('21: không hiện thêm hộp cảnh báo thiếu tiền lần 2', !doc21.querySelector('.asheet'));
   // Nhánh "Thu nốt" mở form ghi tiền
-  const j21b = mkJ35(W21, 'Khách Thu Nốt', 15000000, 'Tư vấn', 0);
-  W21.jumpToStage(j21b.id, 7);
+  const j21b = mkJ35(W21, 'Khách Thu Nốt', 15000000, 'Khách hỏi', 0);
+  W21.jumpToStage(j21b.id, 5);
   const btns21b = lastAsheetBtns35(doc21);
   if (btns21b.length === 2) { btns21b[0].click(); await sleep(200); }
   t('21: bấm "Thu nốt" -> mở form ghi tiền', !!doc21.querySelector('#txForm'));
-  eq('21: bấm "Thu nốt" -> job vẫn ở Tư vấn', j21b.stage, 'Tư vấn');
+  eq('21: bấm "Thu nốt" -> job vẫn ở Khách hỏi', j21b.stage, 'Khách hỏi');
   await closeSheet35(doc21);
   // Nhảy xa không phải tới Xong: hộp cũ, không nhắc thiếu tiền
-  const j21c = mkJ35(W21, 'Khách Hậu Kỳ', 15000000, 'Tư vấn', 0);
-  W21.jumpToStage(j21c.id, 5);
+  const j21c = mkJ35(W21, 'Khách Hậu Kỳ', 15000000, 'Khách hỏi', 0);
+  W21.jumpToStage(j21c.id, 3);
   const as21c = doc21.querySelector('.asheet');
-  t('21: nhảy xa tới Hậu kỳ -> hộp xác nhận cũ (không nhắc thiếu tiền)', !!as21c && as21c.textContent.includes('Nhảy qua') && !as21c.textContent.includes('còn thiếu'));
+  t('21: nhảy xa tới Đang làm ảnh -> hộp xác nhận cũ (không nhắc thiếu tiền)', !!as21c && as21c.textContent.includes('Nhảy qua') && !as21c.textContent.includes('còn thiếu'));
   await closeAsheet35(doc21);
 
   // [35t] Mục 22 — petalRain tôn trọng petalsOn (đã tắt)
@@ -2524,7 +2527,7 @@ async function loadDom(beforeParse) {
   // dữ liệu kiểm soát: job tuần trả đủ (không phải nợ), chỉ Khach No còn thiếu 3tr
   W36.state.jobs = []; W36.state.txs = [];
   const mk36 = (client, shootDate, price, paid) => {
-    const j = { id: W36.nid(), client, type: 'Portrait', medium: 'Digital', stage: 'Tư vấn',
+    const j = { id: W36.nid(), client, type: 'Portrait', medium: 'Digital', stage: 'Khách hỏi',
       stageSince: W36.dstr(0), shootDate, shootTime: '08:00', location: 'Studio', deadline: '', price,
       phone: '', email: 'khach@vd.vn', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false };
     W36.state.jobs.unshift(j);
@@ -2578,7 +2581,7 @@ async function loadDom(beforeParse) {
   }
 
 
-  console.log('\n[37] v2.4–v2.5 — demo, chuẩn bị đồ, Tư vấn, Excel, hợp đồng, Cài đặt nhóm, thiết lập lần đầu');
+  console.log('\n[37] v2.4–v2.5 — demo, chuẩn bị đồ, Khách hỏi, Excel, hợp đồng, Cài đặt nhóm, thiết lập lần đầu');
   {
   const g = await loadDom();
   const W = g.win, d = g.doc;
@@ -2586,16 +2589,16 @@ async function loadDom(beforeParse) {
   d.querySelector('#agSkip').click(); await sleep(500);
   t('37: demo nạp dữ liệu mẫu', W.state.sample === true && W.state.jobs.length >= 5);
   t('37: thiết lập lần đầu KHÔNG mở khi đang xem demo', !W.setupSheet);
-  const jj = W.state.jobs.find(x => x.stage === 'Sắp chụp');
+  const jj = W.state.jobs.find(x => x.stage === 'Đã chốt');
   W.openJob(jj.id); await sleep(300);
   const sb = [...d.querySelectorAll('.sheet .sheet-body')].pop();
   t('37: chi tiết job có Chuẩn bị đồ', !!sb.querySelector('#prepList'));
   const inp = sb.querySelector('#prepAdd input'); inp.value = 'Quạt test 37'; sb.querySelector('#prepAdd button').click(); await sleep(100);
   t('37: thêm món đọc đúng ô nhập (không trùng elements.item)', (jj.prep || []).includes('Quạt test 37'));
   t('37: chi tiết job có nút Hợp đồng', !![...d.querySelectorAll('.sheet [data-act="contract"]')].length);
-  const tv = W.state.jobs.find(x => x.stage === 'Tư vấn');
-  W.setStage(tv, 'Chốt cọc');
-  eq('37: Tư vấn thiếu thông tin -> không cho sang bước', tv.stage, 'Tư vấn');
+  const tv = W.state.jobs.find(x => x.stage === 'Khách hỏi');
+  W.setStage(tv, 'Đã chốt');
+  eq('37: Khách hỏi thiếu thông tin -> không cho sang bước', tv.stage, 'Khách hỏi');
   eq('37: số tiền bằng chữ 2.500.000', W.vnWords(2500000), 'Hai triệu năm trăm nghìn đồng');
   eq('37: số tiền bằng chữ 1.005.000', W.vnWords(1005000), 'Một triệu không trăm lẻ năm nghìn đồng');
   eq('37: số tiền bằng chữ 15.000.000', W.vnWords(15000000), 'Mười lăm triệu đồng');
@@ -2628,19 +2631,44 @@ async function loadDom(beforeParse) {
   t('37: đi hết các bước -> đánh dấu đã thiết lập', W2.state.cfg.setupDone === true && !W2.setupSheet);
   }
 
-  console.log('\n[38] v2.6 — tự sang Sắp chụp, xác nhận tiền 2 lần, hợp đồng, nhắc thanh toán, thẻ studio, tổng kết tối');
+  console.log('\n[38] v2.6 — tự sang Đã chốt, xác nhận tiền 2 lần, hợp đồng, nhắc thanh toán, thẻ studio, tổng kết tối');
   {
   const { win: W, doc: d } = await loadDom();
   const ag = d.querySelector('#authGate'); if (ag) ag.remove();
-  const mk = (o) => { const j = Object.assign({ id: W.nid(), client: 'K', type: 'Portrait', medium: 'Digital', stage: 'Chốt cọc', stageSince: W.dstr(0), shootDate: W.dstr(2), shootTime: '09:00', location: 'Hồ Gươm', deadline: '', price: 3000000, phone: '0901', email: '', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false }, o); W.state.jobs.unshift(j); return j; };
-  const near = mk({ client: 'Gần Ngày' }), far = mk({ client: 'Xa Ngày', shootDate: W.dstr(20) });
-  eq('38: autoAdvanceSoon chuyển 1 job', W.autoAdvanceSoon(), 1);
-  eq('38: Chốt cọc còn 2 ngày -> Sắp chụp', near.stage, 'Sắp chụp');
-  eq('38: còn 20 ngày -> giữ Chốt cọc', far.stage, 'Chốt cọc');
+  const mk = (o) => { const j = Object.assign({ id: W.nid(), client: 'K', type: 'Portrait', medium: 'Digital', stage: 'Đã chốt', stageSince: W.dstr(0), shootDate: W.dstr(2), shootTime: '09:00', location: 'Hồ Gươm', deadline: '', price: 3000000, phone: '0901', email: '', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false }, o); W.state.jobs.unshift(j); return j; };
+  const near = mk({ client: 'Gần Ngày' }), far = mk({ client: 'Xa Ngày', shootDate: W.dstr(20) }), noDep = mk({ client: 'Chưa Cọc' });
+  [near, far].forEach(j => W.state.txs.unshift({ id: W.nid(), kind: 'thu', category: 'Cọc', jobId: j.id, amount: 1000000, date: W.dstr(0), method: 'Chuyển khoản', note: '', src: '' }));
+  /* v2.7: luồng 6 bước tự chuyển theo việc thật */
+  near.stage = 'Khách hỏi'; noDep.stage = 'Khách hỏi';
+  const shot = mk({ client: 'Chụp Rồi', stage: 'Đã chốt', shootDate: W.dstr(-1) });
+  W.state.txs.unshift({ id: W.nid(), kind: 'thu', category: 'Cọc', jobId: shot.id, amount: 1000000, date: W.dstr(-5), method: 'Chuyển khoản', note: '', src: '' });
+  const paid = mk({ client: 'Trả Đủ', stage: 'Đã giao', shootDate: W.dstr(-20), price: 2000000 });
+  W.state.txs.unshift({ id: W.nid(), kind: 'thu', category: 'Cọc', jobId: paid.id, amount: 2000000, date: W.dstr(-20), method: 'Chuyển khoản', note: '', src: '' });
+  W.autoFlow();
+  eq('38: Khách hỏi + đã cọc -> tự sang Đã chốt', near.stage, 'Đã chốt');
+  eq('38: Khách hỏi chưa cọc -> đứng yên (Việt: cọc rồi mới nhảy)', noDep.stage, 'Khách hỏi');
+  eq('38: Đã chốt qua ngày chụp -> tự sang Đã chụp', shot.stage, 'Đã chụp');
+  eq('38: Đã giao thu đủ -> tự sang Xong', paid.stage, 'Xong');
+  eq('38: Đã chốt còn 20 ngày -> giữ nguyên', far.stage, 'Đã chốt');
+  paid.stage = 'Đã giao'; W.setStage(paid, 'Đang làm ảnh'); W.autoFlow();
+  eq('38: lùi tay thì không tự nhảy lại', paid.stage, 'Đang làm ảnh');
+  shot.stage = 'Đang làm ảnh';
+  W.markProofSent(shot); eq('38: gửi link chọn ảnh ghi ngày', shot.proofSentAt, W.dstr(0));
+  t('38: chưa chọn xong thì chưa có hạn giao', !shot.deadline);
+  W.markSelected(shot);
+  const dl = new W.Date(); dl.setDate(dl.getDate() + (+W.state.cfg.deliverDays || 7));
+  eq('38: khách chọn xong -> hạn giao = hôm nay + số ngày giao', shot.deadline, W.dstr(+W.state.cfg.deliverDays || 7));
+  { const dv = d.createElement('div'); dv.innerHTML = W.jobDetailHTML(shot); const main = [...dv.children].filter(x => !x.matches('details')).map(x => x.outerHTML).join('');
+    t('38: Đang làm ảnh — phần chính KHÔNG có Tiền và nút Facebook', !main.includes('>Tiền<') && !main.includes('data-act="fb"'));
+    t('38: Đang làm ảnh — phần chính có Ảnh + nhắn khách', main.includes('driveInp') && main.includes('jd-chips'));
+    t('38: không còn nút Lùi về', !W.jobDetailHTML(shot).includes('data-act="prev"'));
+  { const st0 = shot.stage; W.jumpToStage(shot.id, 1); eq('38: chạm số bước lùi -> hỏi lại, chưa lùi ngay', shot.stage, st0);
+    const lb = [...d.querySelectorAll('.asheet [data-a="0"]')].pop(); t('38: hộp hỏi lùi có nút xác nhận', !!lb && lb.textContent.includes('Lùi về')); if (lb) lb.click(); await sleep(100); eq('38: xác nhận thì lùi', shot.stage, 'Đã chốt'); }
+  t('38: Tiền vẫn còn trong Xem thêm', !!dv.querySelector('details.jd-more') && dv.querySelector('details.jd-more').innerHTML.includes('>Tiền<')); }
   await sleep(700);
   const msg = W.chatMsg('tien', near);
   t('38: nhắc thanh toán có ngày giờ địa điểm', msg.includes('09:00') && msg.includes('Hồ Gươm'), msg);
-  const both = mk({ client: 'Hai Máy', medium: 'Cả hai', stage: 'Tư vấn', shootDate: W.dstr(30) });
+  const both = mk({ client: 'Hai Máy', medium: 'Cả hai', stage: 'Khách hỏi', shootDate: W.dstr(30) });
   const ct = W.contractBlocks(both).map(b => b.s).join('\n');
   t('38: hợp đồng ghi rõ "ảnh số + ảnh film", không còn "Cả hai"', ct.includes('ảnh số + ảnh film') && !ct.includes('Cả hai'));
   d.querySelectorAll('.asheet .cancel').forEach(b => b.click()); await sleep(300);
