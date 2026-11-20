@@ -1014,7 +1014,7 @@ async function loadDom(beforeParse) {
 
     const a2 = ri(jobTomorrow05, NOON05);
     eq('job ngày mai 15:00, trưa hôm nay → mode 12h', a2 && a2.mode, '12h');
-    eq('job ngày mai 15:00 → nhắc 03:00 ngày mai', a2 && a2.at, T0300_NEXT05);
+    eq('job ngày mai 15:00 → nhắc trước 1 ngày (15:00 hôm nay)', a2 && a2.at, NOON05 + 3 * 3600000);
 
     const a3 = ri(jobToday05, SOON05);
     eq('job hôm nay 15:00, lúc 14:30 → mode now', a3 && a3.mode, 'now');
@@ -1030,16 +1030,16 @@ async function loadDom(beforeParse) {
     W.Date.now = () => NOON05; // giả lập "bây giờ" là trưa 20/11
     const hToday = W.jobDetailHTML(jobToday05);
     t('chi tiết job gấp hôm nay có cảnh báo mốc 12h đã qua',
-      hToday.indexOf('Mốc nhắc 12 tiếng trước đã qua') >= 0);
+      hToday.indexOf('Mốc nhắc trước 1 ngày đã qua') >= 0);
     t('chi tiết job gấp hôm nay ghi rõ nhắc 60 phút trước, lúc 14:00',
       hToday.indexOf('60 phút trước giờ chụp, lúc 14:00') >= 0);
     const hTomorrow = W.jobDetailHTML(jobTomorrow05);
     t('chi tiết job ngày mai (nhắc 12h bình thường) KHÔNG hiện cảnh báo',
-      hTomorrow.indexOf('Mốc nhắc 12 tiếng trước đã qua') < 0 &&
+      hTomorrow.indexOf('Mốc nhắc trước 1 ngày đã qua') < 0 &&
       hTomorrow.indexOf('Buổi chụp trong chưa tới 60 phút') < 0);
     const hCancelled = W.jobDetailHTML(Object.assign({}, jobToday05, { cancelled: true }));
     t('job đã huỷ KHÔNG hiện cảnh báo nhắc lịch',
-      hCancelled.indexOf('Mốc nhắc 12 tiếng trước đã qua') < 0);
+      hCancelled.indexOf('Mốc nhắc trước 1 ngày đã qua') < 0);
     W.Date.now = realNow;
 
     /* ============ [B] Cầu nối bridge đặt lịch nhắc thật ============ */
@@ -1061,8 +1061,8 @@ async function loadDom(beforeParse) {
     const b2 = runBridge05(NOON05);
     await b2.win.__trolyxeoScheduleReminder(jobTomorrow05);
     const shoot2 = b2.recorded.filter(n => n.title.indexOf('lịch chụp') >= 0);
-    eq('bridge [trưa]: job ngày mai 15:00 nhắc đúng 12h trước (03:00 ngày mai)',
-      shoot2[0] && shoot2[0].schedule.at.getTime(), T0300_NEXT05);
+    eq('bridge [trưa]: job ngày mai 15:00 nhắc trước 1 ngày (15:00 hôm nay)',
+      shoot2[0] && shoot2[0].schedule.at.getTime(), NOON05 + 3 * 3600000);
 
     const b3 = runBridge05(SOON05);
     await b3.win.__trolyxeoScheduleReminder(jobToday05);
@@ -1352,7 +1352,7 @@ async function loadDom(beforeParse) {
       eq('auth URL: include_granted_scopes=true (xin thêm quyền sau vẫn giữ quyền cũ)', u.searchParams.get('include_granted_scopes'), 'true');
       t('auth URL: không có gmail.send', !u.searchParams.get('scope').includes(SC08.send));
       t('auth URL: response_type=code (PKCE, không token ngầm)', u.searchParams.get('response_type') === 'code');
-      t('auth URL: không xin access_type=offline (không lưu refresh token)', u.searchParams.get('access_type') !== 'offline');
+      t('auth URL: xin access_type=offline (giữ đăng nhập bằng refresh token)', u.searchParams.get('access_type') === 'offline');
     }
     setFeat08(W, { cal: true, bank: true, leads: true, contacts: true, drive: true, calw: true, send: true });
     capturedUrl = null;
@@ -1668,7 +1668,9 @@ async function loadDom(beforeParse) {
     e.openedUrls.length = 0;
     pr.click();
     await sleep(50);
-    eq('bấm hàng Quyền riêng tư mở đúng URL PRIVACY.html', e.openedUrls[0], 'https://hoangviet1397.github.io/fotobro/PRIVACY.html');
+    const pvs = doc5.querySelectorAll('.sheet .pv'); const pv = pvs[pvs.length - 1];
+    t('bấm hàng Quyền riêng tư mở trang ngay trong app (không mở web)', !!pv && e.openedUrls.length === 0);
+    t('trang Quyền riêng tư có đủ mục Google + Xoá dữ liệu + Liên hệ', !!pv && pv.textContent.includes('Đăng nhập Google') && pv.textContent.includes('Xoá dữ liệu') && pv.textContent.includes('supportfotobro@gmail.com'));
   }
   console.log('\n[32] fix-10 — Hiển thị nhỏ + hạng mục chi Thuê đèn/Hoàn cọc, hoàn cọc, .tx-note');
   {
@@ -1677,7 +1679,7 @@ async function loadDom(beforeParse) {
     t('"Giọng nói sẽ có ở bản sau" có trong code', html.includes('Giọng nói sẽ có ở bản sau'));
     t('html lang="vi"', html.includes('<html lang="vi">'));
     t('câu dài "Nhập từ Lịch iPhone" đã rút ngắn', !html.includes('Bấm 1 chạm trong app iOS — sự kiện 30 ngày tới thành buổi chụp; hoặc đăng nhập Google để đọc Lịch Google'));
-    t('câu ngắn mới có trong code', html.includes('1 chạm trong app iOS — sự kiện 30 ngày tới thành buổi chụp, hoặc đăng nhập Google'));
+    t('câu ngắn mới có trong code', html.includes('Đăng nhập Google là buổi chụp tự lưu vào Google Lịch'));
 
     console.log('\n[F10-2] Tab bar + celebrate (kiểm tra trên source/CSS)');
     t('tabbar dùng nền đặc --bar-strong', /\.tabbar\{[^}]*background:var\(--bar-strong\)/.test(html));
@@ -1846,7 +1848,7 @@ async function loadDom(beforeParse) {
     t('gate (web): không có nút Apple', !doc0.querySelector('#agApple'));
     t('gate: có nút Google', !!doc0.querySelector('#agGoogle'));
     t('gate: có link dùng thử không cần tài khoản', !!doc0.querySelector('#agSkip'));
-    t('gate: có ghi chú dữ liệu ở trên máy', (doc0.querySelector('#authGate') || { textContent: '' }).textContent.includes('Dữ liệu vẫn ở trên máy bạn'));
+    t('gate: có ghi chú dữ liệu ở trên máy', (doc0.querySelector('#authGate') || { textContent: '' }).textContent.includes('Dữ liệu vẫn nằm trên máy bạn'));
     doc0.querySelector('#agSkip').click();
     eq('gate: bấm bỏ qua -> authAsked = true', W0.state.cfg.authAsked, true);
     await sleep(500);

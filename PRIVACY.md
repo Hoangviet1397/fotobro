@@ -63,10 +63,10 @@ nhập, app xin đủ các quyền sau **trong 1 lần** (không xin lẻ từng
 - Drive: chỉ đọc tên + link thư mục ảnh của job.
 
 Cơ chế: app dùng OAuth 2.0 của Google (PKCE, mở bằng trình duyệt hệ thống).
-Mã đăng nhập (access token) chỉ giữ trong phiên làm việc trên máy bạn
-(sessionStorage) và tự hết hạn sau khoảng 1 giờ; hết hạn thì app đăng nhập
-lại im lặng. **App v2.0 cố tình KHÔNG lưu refresh token** (mã sống dài hạn)
-trên máy — vì vậy không có mã dài hạn nào nằm trong app sau khi bạn tắt app.
+Để bạn không phải đăng nhập lại, app **giữ đăng nhập**: mã đăng nhập (access
+token, hết hạn sau khoảng 1 giờ) và mã làm mới (refresh token) chỉ lưu trong
+vùng nhớ riêng của app trên máy bạn; app tự dùng mã làm mới để lấy mã mới,
+không gửi mã này cho chúng tôi hay ai khác.
 Bạn bấm "Ngắt kết nối" là mã đăng nhập được thu hồi tại Google và toàn bộ
 dữ liệu Google đã tải (lịch, email gợi ý, danh bạ) bị xoá khỏi máy. Sự kiện
 đã ghi trên Google Lịch vẫn còn — xoá trong app Lịch nếu muốn. Dữ liệu Google
@@ -98,7 +98,7 @@ dẫn mở app ngoài** — bạn bấm mới mở, app không tự gửi gì đ
 
 ## 4. Thông báo
 
-App có thể gửi thông báo nhắc lịch chụp (trước giờ chụp **12 tiếng**) và nhắc
+App có thể gửi thông báo nhắc lịch chụp (trước giờ chụp **1 ngày**) và nhắc
 hạn giao ảnh (trước 1 ngày) — chỉ từ dữ liệu job trên máy bạn, không qua
 máy chủ. Thông báo hiện tên khách + giờ chụp trên màn hình khoá nếu iPhone
 của bạn đang bật hiện nội dung thông báo. Bạn tắt được trong Cài đặt iPhone
@@ -149,9 +149,9 @@ studio in Settings; there is no shared account and no data sharing between users
   only connect when you tap "Sign in with Google" once and grant
   permission; the app requests all six scopes at once and only reads what
   you allowed, on your device. Sign-in uses Google OAuth 2.0 (PKCE, system
-  browser); the access token lives only in the session on your device and
-  expires after about 1 hour. **v2.0 deliberately does not store a refresh
-  token.** Tapping "Disconnect" revokes the token at Google and deletes
+  browser). To keep you signed in, the access token (about 1 hour) and a
+  refresh token are stored only in the app's private storage on your device
+  and are never sent to us or anyone else. Tapping "Disconnect" revokes the token at Google and deletes
   downloaded Google data from the device.
 - iPhone Calendar import only runs when you tap "Import from iPhone
   Calendar" and grant Calendar access. CloudKit sync/backup (Tier 2, paid)
@@ -160,7 +160,7 @@ studio in Settings; there is no shared account and no data sharing between users
   when enabled.
 - Voice input is **not in v2.0** (moved to v2.1); v2.0 uses typed commands only,
   no audio is recorded.
-- Reminders fire 12 hours before a shoot and 1 day before a delivery
+- Reminders fire 1 day before a shoot and 1 day before a delivery
   deadline; the lock-screen notification shows the client's name and shoot
   time. You can turn notifications off in iPhone Settings → Notifications
   → FotoBro.

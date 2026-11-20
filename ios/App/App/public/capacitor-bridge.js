@@ -99,11 +99,12 @@
         // Job gấp trong ngày: mốc 12 tiếng đã qua thì nhắc 60 phút trước,
         // 60 phút cũng qua rồi thì nhắc ngay sau ~30 giây — không lặng lẽ
         // bỏ nhắc. Chỉ nhắc khi giờ chụp còn ở phía trước.
-        var at = d.getTime() - 12 * 3600000;
-        if (at <= Date.now()) at = d.getTime() - 3600000;
-        if (at <= Date.now()) at = Date.now() + 30000;
+        // 20/11/2026: đổi sang nhắc trước 1 NGÀY (24 tiếng) theo yêu cầu.
+        var at = d.getTime() - 24 * 3600000, ttl = 'Mai có lịch chụp 📷';
+        if (at <= Date.now()) { at = d.getTime() - 3600000; ttl = 'Sắp tới lịch chụp 📷'; }
+        if (at <= Date.now()) { at = Date.now() + 30000; ttl = 'Sắp tới lịch chụp 📷'; }
         if (d.getTime() > Date.now()) {
-          notes.push({ id: notifId('shoot', job.id), title: 'Hôm nay có lịch chụp 📷',
+          notes.push({ id: notifId('shoot', job.id), title: ttl,
             body: (job.client || 'Khách') + ' — ' + (job.type || 'chụp') + (job.shootTime ? ' lúc ' + job.shootTime : ''),
             schedule: { at: new Date(at) } });
         }

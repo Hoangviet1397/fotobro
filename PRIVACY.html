@@ -82,12 +82,12 @@ Bản tiếng Anh tóm tắt ở cuối trang.</p>
 <h2>2. Kết nối Google — chỉ khi bạn tự bật</h2>
 <p>Tính năng Google (Lịch, Gmail, Drive, Danh bạ) <strong>mặc định TẮT</strong>. Chỉ khi bạn vào app bấm <strong>“Đăng nhập Google”</strong> một lần và cho phép, app mới kết nối bằng tài khoản Google của chính bạn — bạn không cần tự tạo Google Cloud project hay dán Client ID, app dùng Client ID chung của FotoBro. Khi đăng nhập, app xin đủ các quyền sau <strong>trong 1 lần</strong> (không xin lẻ từng tính năng):</p>
 <ul>
-  <li><strong>Lịch:</strong> chỉ đọc lịch để hiện lịch chụp; và ghi sự kiện buổi chụp vào Google Lịch nếu bạn bật (nhắc trước 12 tiếng).</li>
+  <li><strong>Lịch:</strong> chỉ đọc lịch để hiện lịch chụp; và ghi sự kiện buổi chụp vào Google Lịch nếu bạn bật (nhắc trước 1 ngày).</li>
   <li><strong>Gmail:</strong> chỉ đọc mail báo tiền về và mail khách hỏi chụp (để gợi ý ghi sổ — app không tự ghi, bạn bấm đồng ý mới ghi); và gửi email cho khách bằng mẫu có sẵn nếu bạn bật.</li>
   <li><strong>Danh bạ:</strong> chỉ đọc tên + email / số điện thoại để gợi ý khách.</li>
   <li><strong>Drive:</strong> chỉ đọc tên + link thư mục ảnh của job.</li>
 </ul>
-<p>Cơ chế: app dùng OAuth 2.0 của Google (PKCE, mở bằng trình duyệt hệ thống), mã đăng nhập (access token) chỉ giữ trong phiên làm việc trên máy bạn và tự hết hạn sau khoảng 1 giờ; hết hạn thì app đăng nhập lại im lặng. <strong>App v2.0 cố tình KHÔNG lưu refresh token</strong> (mã sống dài hạn) trên máy — vì vậy không có mã dài hạn nào nằm trong app sau khi bạn tắt app. Bạn bấm “Ngắt kết nối” là mã đăng nhập được thu hồi tại Google và toàn bộ dữ liệu Google đã tải (lịch, email gợi ý, danh bạ) bị xoá khỏi máy. Sự kiện đã ghi trên Google Lịch vẫn còn — xoá trong app Lịch nếu muốn. Dữ liệu Google của bạn chỉ được xử lý trên máy bạn — app không có máy chủ trung gian, không gửi dữ liệu Google của bạn cho chúng tôi hay bên thứ ba nào.</p>
+<p>Cơ chế: app dùng OAuth 2.0 của Google (PKCE, mở bằng trình duyệt hệ thống), để bạn không phải đăng nhập lại, app <strong>giữ đăng nhập</strong>: mã đăng nhập (access token, hết hạn sau khoảng 1 giờ) và mã làm mới (refresh token) chỉ lưu trong vùng nhớ riêng của app trên máy bạn; app tự dùng mã làm mới để lấy mã mới, không gửi mã này cho chúng tôi hay ai khác. Bạn bấm “Ngắt kết nối” là mã đăng nhập được thu hồi tại Google và toàn bộ dữ liệu Google đã tải (lịch, email gợi ý, danh bạ) bị xoá khỏi máy. Sự kiện đã ghi trên Google Lịch vẫn còn — xoá trong app Lịch nếu muốn. Dữ liệu Google của bạn chỉ được xử lý trên máy bạn — app không có máy chủ trung gian, không gửi dữ liệu Google của bạn cho chúng tôi hay bên thứ ba nào.</p>
 <p>App không gửi dữ liệu cho Facebook, Messenger hay bất kỳ bên thứ ba nào khác. Các nút mở Facebook / Messenger / Gmail / Drive chỉ là <strong>đường dẫn mở app ngoài</strong> — bạn bấm mới mở, app không tự gửi gì đi.</p>
 
 <h2>3. Lịch iPhone và đồng bộ CloudKit — chỉ khi bạn tự bật</h2>
@@ -100,7 +100,7 @@ Bản tiếng Anh tóm tắt ở cuối trang.</p>
 <p>Mic <strong>chưa có ở v2.0</strong> (dời sang v2.1). Ở v2.0 bạn gõ tay câu lệnh / câu hỏi trong app; app không ghi âm, không lưu file ghi âm.</p>
 
 <h2>5. Thông báo</h2>
-<p>App có thể gửi thông báo nhắc lịch chụp (trước giờ chụp <strong>12 tiếng</strong>) và nhắc hạn giao ảnh (trước 1 ngày) — chỉ từ dữ liệu job trên máy bạn, không qua máy chủ. Thông báo hiện tên khách + giờ chụp trên màn hình khoá nếu iPhone của bạn đang bật hiện nội dung thông báo. Bạn tắt được trong Cài đặt iPhone → Thông báo → FotoBro.</p>
+<p>App có thể gửi thông báo nhắc lịch chụp (trước giờ chụp <strong>1 ngày</strong>) và nhắc hạn giao ảnh (trước 1 ngày) — chỉ từ dữ liệu job trên máy bạn, không qua máy chủ. Thông báo hiện tên khách + giờ chụp trên màn hình khoá nếu iPhone của bạn đang bật hiện nội dung thông báo. Bạn tắt được trong Cài đặt iPhone → Thông báo → FotoBro.</p>
 
 <h2>6. Trẻ em</h2>
 <p>App dành cho người lớn (chủ studio) và không hướng tới trẻ em dưới 13 tuổi. App không cố ý thu thập dữ liệu của trẻ em.</p>
@@ -127,10 +127,10 @@ Bản tiếng Anh tóm tắt ở cuối trang.</p>
 <p class="lang"><strong>FotoBro</strong> is an app for freelance photographers to manage photo jobs, income/expenses and reminders. Each photographer fills in their own name and studio in Settings; there is no shared account and no data sharing between users.</p>
 <ul class="lang">
   <li><strong>All your data stays on your device.</strong> The app has no server of its own, sends your data to no server, sells no data, shows no ads, and uses no tracking or analytics SDKs. Data is stored unencrypted inside the app's iOS sandbox and protected by your iPhone passcode; per-file encryption is planned for v2.1.</li>
-  <li>Google Calendar / Gmail / Contacts / Drive are <strong>off by default</strong> and only connect when you tap “Sign in with Google” once and grant permission; the app only reads what you allowed, on your device. The sign-in uses Google OAuth 2.0 (PKCE, system browser) and the access token lives only in the session on your device and expires after about 1 hour. <strong>v2.0 deliberately does not store a refresh token.</strong> Tapping “Disconnect” revokes the token at Google and deletes downloaded Google data from the device.</li>
+  <li>Google Calendar / Gmail / Contacts / Drive are <strong>off by default</strong> and only connect when you tap “Sign in with Google” once and grant permission; the app only reads what you allowed, on your device. The sign-in uses Google OAuth 2.0 (PKCE, system browser). To keep you signed in, the access token (about 1 hour) and a refresh token are stored only in the app&#39;s private storage on your device and are never sent to us or anyone else. Tapping “Disconnect” revokes the token at Google and deletes downloaded Google data from the device.</li>
   <li>iPhone Calendar import only runs when you tap “Import from iPhone Calendar” and grant Calendar access. CloudKit sync/backup (Tier 2, paid) is not configured in v2.0 and stores only end-to-end encrypted data (AES-256-GCM) in your own iCloud container (<code>iCloud.com.fotobro.app</code>) when enabled.</li>
   <li>Voice input is <strong>not in v2.0</strong> (moved to v2.1); v2.0 uses typed commands only, no audio is recorded.</li>
-  <li>Reminders fire 12 hours before a shoot and 1 day before a delivery deadline; the lock-screen notification shows the client's name and shoot time. You can turn notifications off in iPhone Settings → Notifications → FotoBro.</li>
+  <li>Reminders fire 1 day before a shoot and 1 day before a delivery deadline; the lock-screen notification shows the client's name and shoot time. You can turn notifications off in iPhone Settings → Notifications → FotoBro.</li>
   <li>You can delete all data at any time inside the app (Settings → Delete saved data) — jobs, income/expenses, home photos, settings, app lock, Google tokens and downloaded Google data; uninstalling the app deletes everything as well. Backup files you downloaded and events already written to Google Calendar are not deleted from inside the app.</li>
   <li>Contact: <a href="mailto:supportfotobro@gmail.com">supportfotobro@gmail.com</a> (FotoBro support address).</li>
 </ul>

@@ -476,7 +476,8 @@
       .wl-track.drag{ transition:none; }
       .wl-pages::-webkit-scrollbar{ display:none; }
       .wl-page{ flex:none; width:100%; height:100%; overflow-y:auto; overscroll-behavior:contain; padding:calc(env(safe-area-inset-top) + 20px) 22px 16px; }
-      .wl-in{ max-width:460px; margin:0 auto; text-align:center; }
+      .wl-page{ display:flex; flex-direction:column; }
+      .wl-in{ max-width:460px; width:100%; margin:auto; text-align:center; } /* canh giữa theo chiều dọc, nội dung dài thì vẫn cuộn từ trên */
       .wl-page:not(.seen) .fl{ animation:none; opacity:0; }
       .wl-eyebrow{ font-size:0.8125rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--accent-t); margin-top:4px; }
       .welcome h1{ font-size:1.9375rem; line-height:1.2; font-weight:800; margin-top:6px; text-wrap:balance; }
@@ -585,6 +586,14 @@
       @media (prefers-reduced-motion: reduce){
         *,*::before,*::after{ animation:none !important; transition:none !important; }
       }
+      /* Trang Quyền riêng tư trong app */
+      .pv{ padding:4px 4px 28px; line-height:1.5; font-size:0.9375rem; }
+      .pv-d{ color:var(--label2); font-size:0.8125rem; margin:0 0 10px; }
+      .pv-lead{ margin:0 0 6px; }
+      .pv-h{ font-size:1rem; font-weight:700; margin:18px 0 6px; }
+      .pv-l{ margin:0; padding-left:20px; }
+      .pv-l li{ margin:4px 0; }
+      .pv a{ color:var(--accent-t); }
     </style>
       <script src="fotobro-config.js"></script>
   </head>
@@ -716,7 +725,7 @@
           <label class="row" style="cursor:pointer;"><span class="ic bg-blue" data-i="upload"></span><span class="txt t1">Mở bản sao lưu</span><span class="chev" data-i="chev"></span><input type="file" id="importFile" accept=".json,application/json" class="hidden" /></label>
           <button class="row" type="button" id="clearSample"><span class="ic bg-red" data-i="trash"></span><span class="txt t1 red" id="clearLabel">Xoá dữ liệu mẫu</span></button>
         </div>
-        <p class="sec-f" id="storageNote">Mọi thứ chỉ nằm trên máy này, không tài khoản, không máy chủ. App tự lưu mỗi lần bạn thêm job hay ghi tiền. Nên tải một bản sao lưu mỗi tuần — bản sao lưu gồm cả ảnh trang chủ.</p>
+        <p class="sec-f" id="storageNote">Dữ liệu nằm trên máy này, không gửi lên máy chủ nào. App tự lưu mỗi lần bạn thêm job hay ghi tiền. Nên tải một bản sao lưu mỗi tuần — bản sao lưu gồm cả ảnh trang chủ.</p>
 
 
         <div class="sec-h"><h2>Góc của bạn</h2></div>
@@ -893,12 +902,12 @@
     var state = { sample:true, jobs:[], txs:[] };
     /* Thông số riêng — chỉnh trong Cài đặt, lưu chung với dữ liệu */
     var DEFAULT_CFG = {
-      name:'', studio:'', instagram:'', tagline:'portrait | lookbook | wedding',
+      name:'', studio:'', instagram:'', tagline:'',
       prices:{ Portrait:2500000, Couple:4000000, Wedding:15000000, Lookbook:8000000, Event:5000000 },
       pricesFilm:{ Portrait:0, Couple:0, Wedding:0, Lookbook:0, Event:0 },
       extraHour:0, extraLoc:0, retouch:0, album:0,
       depositPct:40, deliverDays:14,
-      equipment:[], fixed:[], checkExtra:{}, theme:'warm', petals:false, gCals:[], gFeat:{cal:true, bank:false, leads:false, contacts:false, drive:false, calw:false, send:false}, glass:true, notifAsked:false, locale:'vi', currency:'VND', logo:'', mailTpls:{}, apple:null, authAsked:false, appleLastError:null
+      equipment:[], fixed:[], checkExtra:{}, theme:'warm', petals:false, gCals:[], gFeat:{cal:true, bank:false, leads:false, contacts:false, drive:false, calw:true, send:false}, glass:true, notifAsked:false, locale:'vi', currency:'VND', logo:'', mailTpls:{}, apple:null, authAsked:false, appleLastError:null
     };
     function mergeCfg(c){
       var o = JSON.parse(JSON.stringify(DEFAULT_CFG));
@@ -1018,16 +1027,16 @@
     function showStorageNote(){
       var n = document.getElementById('storageNote'); if (!n) return;
       n.textContent = storageOK
-        ? 'Mọi thứ chỉ nằm trên máy này, không tài khoản, không máy chủ. App tự lưu mỗi lần bạn thêm job hay ghi tiền. Nên tải một bản sao lưu mỗi tuần — bản sao lưu gồm cả ảnh trang chủ.'
+        ? 'Dữ liệu nằm trên máy này, không gửi lên máy chủ nào. App tự lưu mỗi lần bạn thêm job hay ghi tiền. Nên tải một bản sao lưu mỗi tuần — bản sao lưu gồm cả ảnh trang chủ.'
         : 'Máy này không lưu tự động được (trình duyệt chặn bộ nhớ khi mở file). Bạn nhớ bấm “Tải bản sao lưu” sau mỗi ngày chụp nhé.';
       n.classList.toggle('red', !storageOK);
     }
     function ssGet(k){ try{ return sessionStorage.getItem(k); }catch(e){ return null; } }
     function ssSet(k, v){ try{ sessionStorage.setItem(k, v); }catch(e){} }
-    /* Dọn token cũ: bản trước từng lưu access token cố định + refresh token
-       vào localStorage — v1 KHÔNG lưu refresh token nữa (xem gExchangeCode),
-       access token chỉ giữ trong sessionStorage, hết hạn sau ~1 giờ. */
-    try{ localStorage.removeItem('troLyXeo.gtoken'); localStorage.removeItem('troLyXeo.grefresh'); localStorage.removeItem('troLyXeo.ghadRefresh'); }catch(e){}
+    /* Giữ đăng nhập Google (từ 20/11/2026): access token + refresh token lưu trong
+       vùng nhớ riêng của app, tự làm mới — không phải đăng nhập lại mỗi giờ.
+       Chuyển token đang ở sessionStorage (bản trước) sang localStorage. */
+    try{ localStorage.removeItem('troLyXeo.ghadRefresh'); var _oldT = sessionStorage.getItem('troLyXeo.gtoken'); if (_oldT && !localStorage.getItem('troLyXeo.gtoken')) localStorage.setItem('troLyXeo.gtoken', _oldT); }catch(e){}
     function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
     function lsSet(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
     if (!loadLocal()){ seed(); }
@@ -1112,7 +1121,7 @@
       if (typeof window.__trolyxeoScheduleReminder !== 'function') return;
       if (state.cfg.notifAsked){ window.__trolyxeoScheduleReminder(j); return; }
       openSheet({ title:'Nhắc lịch chụp', left:'Để sau', tall:false,
-        body:'<div class="jd-head"><span class="ic lg bg-orange">' + I('bell') + '</span><h2>Nhắc trước giờ chụp 12 tiếng</h2><p>App nhắc 1 lần trước giờ chụp 12 tiếng và 1 lần trước hạn giao ảnh 1 ngày — chỉ từ job trên máy bạn, không qua máy chủ. Job gấp quá, mốc 12 tiếng đã qua thì app nhắc 60 phút trước giờ chụp (hoặc nhắc ngay nếu còn dưới 60 phút).</p></div>' +
+        body:'<div class="jd-head"><span class="ic lg bg-orange">' + I('bell') + '</span><h2>Nhắc trước buổi chụp 1 ngày</h2><p>App nhắc 1 lần trước buổi chụp 1 ngày và 1 lần trước hạn giao ảnh 1 ngày — chỉ từ job trên máy bạn, không qua máy chủ. Job gấp quá, mốc 1 ngày đã qua thì app nhắc 60 phút trước giờ chụp (hoặc nhắc ngay nếu còn dưới 60 phút).</p></div>' +
         '<div class="list"><div class="row"><span class="ic bg-gray">' + I('bell') + '</span><span class="txt"><span class="t1" style="display:block;">Thông báo hiện tên khách + giờ chụp</span><span class="t2" style="display:block;">Tên khách sẽ hiện trên màn hình khoá nếu iPhone đang bật hiện nội dung thông báo. Tắt được trong Cài đặt iPhone → Thông báo → FotoBro.</span></span></div></div>' +
         '<div class="btn-row" style="margin-top:14px;"><button type="button" class="btn fill" id="notifAllow">Cho phép nhắc lịch</button></div>',
         bind:function(api){
@@ -1133,7 +1142,7 @@
       var now = (typeof nowMs === 'number') ? nowMs : Date.now();
       var shoot = new Date(j.shootDate + 'T' + (j.shootTime || '08:00') + ':00').getTime();
       if (!(shoot > now)) return null;
-      var at12 = shoot - 12 * 3600000;
+      var at12 = shoot - 24 * 3600000; /* nhắc trước 1 ngày (tên mode giữ '12h' cho tương thích) */
       if (at12 > now) return { mode:'12h', at:at12 };
       var at60 = shoot - 3600000;
       if (at60 > now) return { mode:'60m', at:at60 };
@@ -1333,7 +1342,8 @@
         if (owe > 0 && (j.stage === 'Đã giao' || j.stage === 'Hậu kỳ' || j.stage === 'Chọn ảnh' || j.stage === 'Xong'))
           items.push({c:'orange', icon:'coin', id:j.id, title:j.client + ' còn thiếu ' + fmt(owe), desc:'Job ' + jobTypeLabel(j) + ' đang ở bước ' + j.stage + ' — nhắc khéo một câu thôi.'});
         var st = stuckInfo(j);
-        if (st) items.push({c:'red', icon:'clock', id:j.id, title:'Job kẹt: ' + j.client + ' — kẹt ở bước ' + j.stage, desc:st.reason + '. Mở job để xử lý.'});
+        /* Mỗi khách 1 dòng: đã có nhắc khác cho job này thì thôi không thêm dòng "lâu chưa cập nhật". */
+        if (st && !items.some(function(x){ return x.id === j.id; })) items.push({c:'red', icon:'clock', id:j.id, title:j.client + ' — lâu chưa cập nhật', desc:st.reason + '. Mở job để cập nhật bước.'});
       });
       state.jobs.filter(function(j){ return !j.cancelled && j.stage !== 'Xong' && j.shootDate && j.shootDate > dstr(1) && j.shootDate <= dstr(7); })
         .sort(function(a, b){ return a.shootDate < b.shootDate ? -1 : 1; })
@@ -1344,7 +1354,7 @@
       var p = o.parts || {num:String(o.num), unit:o.unit};
       return '<button type="button" class="tile" data-tile="' + o.key + '" style="--c:var(--' + o.c + ')"><span class="tl">' + I(o.icon, 2.2) + esc(o.label) + '</span>' +
         '<span class="tv">' + esc(p.num) + ' <span class="tu">' + esc(p.unit) + '</span></span>' +
-        (o.exact ? '<span class="tx num">' + esc(o.exact) + '</span>' : '') + '</button>';
+        (o.exact && p.unit !== 'đồng' && p.unit !== '' ? '<span class="tx num">' + esc(o.exact) + '</span>' : '') + '</button>';
     }
     function bindTiles(root){
       $$('[data-tile]', root).forEach(function(t){ t.addEventListener('click', function(){
@@ -1556,7 +1566,8 @@
         'UID:job-' + j.id + '@trolyxeo','DTSTART:' + icsDate(j.shootDate, j.shootTime),'DTEND:' + icsEnd(j),
         'SUMMARY:' + icsEsc('Chụp ' + jobTypeLabel(j) + ' — ' + j.client),
         'LOCATION:' + icsEsc(j.location || ''),'DESCRIPTION:' + icsEsc(j.note || 'Buổi chụp của ' + state.cfg.studio),
-        'BEGIN:VALARM','TRIGGER:-PT12H','ACTION:DISPLAY','DESCRIPTION:Nhắc chuẩn bị buổi chụp','END:VALARM',
+        'BEGIN:VALARM','TRIGGER:-P1D','ACTION:DISPLAY','DESCRIPTION:Mai có buổi chụp — chuẩn bị đồ nha','END:VALARM',
+        'BEGIN:VALARM','TRIGGER:-PT1H','ACTION:DISPLAY','DESCRIPTION:Còn 1 tiếng nữa tới giờ chụp','END:VALARM',
         'END:VEVENT','END:VCALENDAR'].join('\r\n');
       var a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob([ics], {type:'text/calendar'}));
@@ -1657,7 +1668,7 @@
         if (atDate !== dstr(0)) atTxt = fmtRel(atDate) + ' ' + atTxt;
         h += '<div class="list" style="margin-top:10px;"><div class="note-txt" style="color:var(--orange);">' +
           (ri.mode === '60m'
-            ? 'Mốc nhắc 12 tiếng trước đã qua — app sẽ nhắc 60 phút trước giờ chụp, lúc ' + esc(atTxt) + '.'
+            ? 'Mốc nhắc trước 1 ngày đã qua — app sẽ nhắc 60 phút trước giờ chụp, lúc ' + esc(atTxt) + '.'
             : 'Buổi chụp trong chưa tới 60 phút nữa — app sẽ nhắc ngay.') +
           '</div></div>';
       }
@@ -1676,12 +1687,13 @@
         actRow('fb', 'globe', 'gray', 'Mở Facebook khách') +
         actRow('mail', 'mail', 'gray', 'Soạn email cho khách', (j.email || 'Chưa có email') + ' · xác nhận lịch, cọc, giao ảnh…') +
         actRow('copymsg', 'copy', 'gray', 'Chép tin nhắn mẫu', 'Gợi ý: ' + chatTpl(suggestKey(j)).t + ' — chọn mẫu khác cũng được') + '</div>';
-      h += '<p class="sec-s">Lịch &amp; nhắc việc</p><div class="list">' +
-        (googleClientId() && state.cfg.gFeat && state.cfg.gFeat.calw ? actRow('gcalsave', 'calplus', 'gray', j.gEventId ? 'Cập nhật trên Google Lịch' : 'Thêm vào Google Lịch', j.gEventId ? 'Đã có trên Google Lịch — bấm để đồng bộ lại' : 'Ghi thẳng vào lịch của bạn, nhắc trước 12 tiếng') : '') +
-        actRow('ics', 'cal', 'gray', 'Lưu vào app Lịch', 'Tải file .ics, có nhắc trước 12 tiếng') +
-        '<a class="row" target="_blank" rel="noopener" href="' + (j.shootDate ? esc(gcalLink(j)) : '#') + '" data-gcal="1"><span class="ic bg-gray">' + I('calplus') + '</span><span class="txt t1">Thêm vào Google Lịch</span>' + I('chev').replace('<svg', '<svg class="chev"') + '</a>' +
-        actRow('remind', 'bell', 'gray', 'Tạo nhắc việc') +
-        actRow('alarm', 'alarm', 'gray', 'Đặt báo thức', 'Chép giờ và ghi chú để dán vào app Đồng hồ') + '</div>';
+      /* Gọn còn 2 dòng: Google Lịch (1 dòng, không trùng) + Lịch iPhone. Bỏ "nhắc việc / báo thức"
+         kiểu chép-dán — sự kiện lịch đã có nhắc trước 1 ngày. */
+      h += '<p class="sec-s">Lưu vào lịch</p><div class="list">' +
+        (googleClientId() && state.cfg.gFeat && state.cfg.gFeat.calw
+          ? actRow('gcalsave', 'calplus', 'gray', j.gEventId ? 'Cập nhật trên Google Lịch' : 'Thêm vào Google Lịch', j.gEventId ? 'Đã có trên Google Lịch — bấm để đồng bộ lại' : 'Có nhắc trước 1 ngày')
+          : '<a class="row" target="_blank" rel="noopener" href="' + (j.shootDate ? esc(gcalLink(j)) : '#') + '" data-gcal="1"><span class="ic bg-gray">' + I('calplus') + '</span><span class="txt t1">Thêm vào Google Lịch</span>' + I('chev').replace('<svg', '<svg class="chev"') + '</a>') +
+        (isNativeCalendar() ? actRow('ics', 'cal', 'gray', 'Thêm vào Lịch iPhone', 'Có nhắc trước 1 ngày') : actRow('ics', 'cal', 'gray', 'Tải file lịch', 'Mở bằng app Lịch trên máy, có nhắc trước 1 ngày')) + '</div>';
       h += '<p class="sec-s">Google Drive</p><div class="list">' +
         '<label class="frow full"><input id="driveInp" value="' + esc(j.driveLink || '') + '" placeholder="Dán link thư mục Drive của job…" inputmode="url" autocomplete="off" /></label>' +
         actRow('drive', 'folder', 'gray', 'Mở thư mục Drive') +
@@ -1822,7 +1834,7 @@
         if (isNativeCalendar()){
           var Cal = window.Capacitor.Plugins.Calendar;
           var sd = new Date(j.shootDate + 'T' + (j.shootTime || '08:00') + ':00');
-          Cal.createEventInteractively({ title:'Chụp ' + jobTypeLabel(j) + ' — ' + j.client, location:j.location || '', notes:j.note || '', startDate:sd.getTime(), endDate:sd.getTime() + 2 * 3600000, firstReminderMinutes:720 })
+          Cal.createEventInteractively({ title:'Chụp ' + jobTypeLabel(j) + ' — ' + j.client, location:j.location || '', notes:j.note || '', startDate:sd.getTime(), endDate:sd.getTime() + 2 * 3600000, firstReminderMinutes:1440, secondReminderMinutes:60 })
             .then(function(){ toast('Đã thêm vào Lịch iPhone'); })
             .catch(function(){ downloadICS(j); });
           return;
@@ -2316,7 +2328,7 @@
     }
     function dailyReportText(){
       var sThu = sum(monthTxs('thu')), sChi = sum(monthTxs('chi'));
-      var lines = ['BÁO CÁO CUỐI NGÀY — ' + new Date().toLocaleDateString('vi-VN', {weekday:'long', day:'numeric', month:'numeric', year:'numeric'}), state.cfg.studio + ' · Giám đốc: ' + state.cfg.name, ''];
+      var lines = ['BÁO CÁO CUỐI NGÀY — ' + new Date().toLocaleDateString('vi-VN', {weekday:'long', day:'numeric', month:'numeric', year:'numeric'}), [state.cfg.studio, state.cfg.name ? 'Giám đốc: ' + state.cfg.name : ''].filter(Boolean).join(' · '), ''];
       DEPTS.forEach(function(d){
         lines.push('• ' + d.name + ' (bạn ' + d.staff + '):');
         deptLines(d.id).forEach(function(l){ lines.push('   – ' + l); });
@@ -2827,19 +2839,22 @@
       var money = function(path, label, v){ return frow(label, '<input data-cfg="' + path + '" data-money="1" inputmode="numeric" value="' + mv(v) + '" placeholder="0" />'); };
       var h = '<div class="jd-head"><span class="ic lg bg-gray">' + I('gear') + '</span><h2>Thông số của ' + esc(greetName()) + '</h2><p>App dùng để tính giá, cọc, hạn giao và khấu hao</p></div>';
       var lc = typeof lockCfg === 'function' && lockCfg();
+      /* Thứ tự kiểu app quen thuộc: tài khoản & thông tin trước; Bảo mật / Liên hệ / Quyền riêng tư / Phiên bản xuống cuối. */
+      var hTop = h; h = '';
       h += '<p class="sec-s">Bảo mật</p><div class="list">' + (lc
         ? '<div class="row"><span class="ic bg-green">' + I('check', 2.6) + '</span><span class="txt"><span class="t1" style="display:block;">Đang khoá bằng Face ID</span><span class="t2" style="display:block;">Mở app, hoặc rời app quá 2 phút, là phải mở khoá</span></span></div>' +
           '<button type="button" class="row act" id="lkNow"><span class="ic bg-accent">' + I('person') + '</span><span class="txt t1">Khoá ngay</span></button>' +
           '<button type="button" class="row center destr" id="lkOff">Tắt khoá Face ID</button>'
         : '<button type="button" class="row" id="lkOn"><span class="ic bg-accent">' + I('person') + '</span><span class="txt"><span class="t1" style="display:block;">Khoá app bằng Face ID</span><span class="t2" style="display:block;">Hoặc vân tay / mật mã máy, kèm mã PIN dự phòng</span></span>' + chevSvg() + '</button>') +
-        '</div><p class="sec-f">Mọi dữ liệu nằm trên máy này, không gửi lên GitHub hay máy chủ nào. Khoá Face ID che app khi mở; nên đặt cả mật mã cho điện thoại.</p>';
+        '</div><p class="sec-f">Khoá Face ID che app khi mở; nên đặt cả mật mã cho điện thoại.</p>';
       var upd = typeof updReady === 'function' && updReady();
       h += '<p class="sec-s">Phiên bản</p><div class="list"><div class="row"><span class="ic bg-gray">' + I('sparkle') + '</span><span class="txt"><span class="t1" style="display:block;">FotoBro v' + (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '') + '</span><span class="t2" style="display:block;">' + (upd ? 'Có bản mới đã tải sẵn' : 'Chạy offline bằng bản đã lưu trên máy') + '</span></span>' +
         ((typeof isNativeApp === 'function' && isNativeApp()) ? '' : '<button type="button" class="btn ' + (upd ? 'fill' : 'tint') + ' sm" id="updCheck">' + (upd ? 'Cập nhật' : 'Kiểm tra') + '</button>') + '</div></div>';
       var sup = (window.FOTOBRO_CONFIG && window.FOTOBRO_CONFIG.supportEmail) || 'supportfotobro@gmail.com';
       h += '<p class="sec-s">Liên hệ</p><div class="list"><a class="row" href="mailto:' + esc(sup) + '"><span class="ic bg-gray">' + I('mail') + '</span><span class="txt"><span class="t1" style="display:block;">Email hỗ trợ — ' + esc(sup) + '</span><span class="t2" style="display:block;">Gửi email cho đội hỗ trợ FotoBro — trả lời trong vòng 3 ngày làm việc.</span></span>' + chevSvg() + '</a></div>';
       h += '<p class="sec-s">Quyền riêng tư</p><div class="list"><button type="button" class="row" id="privacyRow"><span class="ic bg-gray">' + I('doc') + '</span><span class="txt"><span class="t1" style="display:block;">Quyền riêng tư</span><span class="t2" style="display:block;">Dữ liệu ở trên máy bạn, app không gửi dữ liệu lên máy chủ nào — xem chi tiết</span></span>' + chevSvg() + '</button></div>';
-      h += '<p class="sec-s">Nhập dữ liệu</p><div class="list"><button type="button" class="row" id="cfgCal"><span class="ic bg-red">' + I('cal') + '</span><span class="txt"><span class="t1" style="display:block;">Nhập từ Lịch iPhone</span><span class="t2" style="display:block;">Lịch iPhone 30 ngày tới thành job</span></span>' + chevSvg() + '</button></div>';
+      var hEnd = h; h = hTop;
+      var hImport = '<p class="sec-s">Nhập dữ liệu</p><div class="list"><button type="button" class="row" id="cfgCal"><span class="ic bg-red">' + I('cal') + '</span><span class="txt"><span class="t1" style="display:block;">Nhập từ Lịch iPhone</span><span class="t2" style="display:block;">Lịch iPhone 30 ngày tới thành job</span></span>' + chevSvg() + '</button></div>';
       var gt = typeof gToken === 'function' ? gToken() : null, gc = typeof gcal !== 'undefined' ? gcal : null;
       /* Tài khoản Apple (v2.1, native iOS): chỉ hiện khi plugin có sẵn — bản web
          ẩn hẳn như cách mục Google ẩn khi chưa có Client ID. */
@@ -2878,7 +2893,7 @@
         feat('leads', 'mail', 'purple', 'Gmail · khách hỏi chụp', 'Tìm email hỏi lịch / giá, gợi ý tạo buổi chụp') +
         feat('contacts', 'person', 'orange', 'Danh bạ', 'Gõ tên khách là gợi ý số điện thoại, email') +
         feat('drive', 'folder', 'blue', 'Google Drive', 'Chọn thư mục ảnh của job, chỉ xem tên thư mục') +
-        feat('calw', 'calplus', 'blue', 'Ghi buổi chụp vào Google Lịch', 'Lưu job có ngày chụp thẳng vào lịch, nhắc trước 12 tiếng') +
+        feat('calw', 'calplus', 'blue', 'Ghi buổi chụp vào Google Lịch', 'Lưu job có ngày chụp thẳng vào lịch, nhắc trước 1 ngày') +
         feat('send', 'send', 'purple', 'Gửi email cho khách bằng Gmail', 'App soạn sẵn, bạn xem lại rồi tự bấm Gửi') + '</div>' +
         (function(){
           /* Chân trang ĐỘNG: liệt kê đúng các quyền sẽ xin ở màn hình Google —
@@ -2901,6 +2916,7 @@
           return '<label class="row" style="cursor:pointer;"><span class="ic round" style="background:' + cl.color + '">' + I('cal') + '</span><span class="txt t1 clip">' + esc(cl.name) + '</span><input type="checkbox" class="switch" role="switch" aria-checked="' + (chosenIds.indexOf(cl.id) >= 0 ? 'true' : 'false') + '" data-gcal="' + esc(cl.id) + '"' + (chosenIds.indexOf(cl.id) >= 0 ? ' checked' : '') + ' /></label>';
         }).join('') + '</div>';
       }
+      h += hImport;
       h += '<p class="sec-s">Thông tin</p><div class="list">' +
         frow('Tên gọi', '<input data-cfg="name" value="' + esc(c.name) + '" placeholder="Tên của bạn" />') +
         frow('Tên studio', '<input data-cfg="studio" value="' + esc(c.studio) + '" placeholder="Tên studio của bạn" />') +
@@ -2962,6 +2978,7 @@
       } else {
         h += '<p class="sec-f">Các khoản tháng nào cũng trả. Đầu tháng bấm một nút là ghi hết vào sổ, khỏi nhập lại từng khoản.</p>';
       }
+      h += hEnd;
       return h;
     }
 
@@ -3015,7 +3032,7 @@
           var revokes = toks.map(function(tk){ return fetch('https://oauth2.googleapis.com/revoke?token=' + encodeURIComponent(tk), { method:'POST', headers:{ 'Content-Type':'application/x-www-form-urlencoded' } }).then(function(r){ return r.ok; }).catch(function(){ return false; }); });
           Promise.all(revokes).then(function(rs){
             var failed = rs.indexOf(false) >= 0;
-            ssSet(GT_KEY, ''); lsSet(GC_KEY, ''); gcal = null; lsSet(GM_KEY, ''); gmail = null; lsSet(GCT_KEY, ''); gContacts = [];
+            lsSet(GT_KEY, ''); lsSet(GC_KEY, ''); gcal = null; lsSet(GM_KEY, ''); gmail = null; lsSet(GCT_KEY, ''); gContacts = [];
             try{ localStorage.removeItem('troLyXeo.grefresh'); localStorage.removeItem('troLyXeo.ghadRefresh'); }catch(e){}
             renderAll(); refreshSettings();
             if (failed) toast('Đã ngắt trên máy, nhưng Google chưa xác nhận thu hồi mã — kiểm tra lại tại myaccount.google.com → Bảo mật → Quyền truy cập của bên thứ ba → FotoBro', 'warn');
@@ -3231,27 +3248,27 @@
       if (document.getElementById('authGate')) return;
       if (state.cfg.authAsked || aLinked() || gLinked()) return;
       var appleAv = (typeof isNativeApp === 'function' && isNativeApp() && typeof window.__fotobroAppleAvailable === 'function' && window.__fotobroAppleAvailable());
-      var g = document.createElement('div'); g.id = 'authGate'; g.className = 'authgate'; g.setAttribute('role', 'dialog'); g.setAttribute('aria-label', 'Đăng nhập');
+      /* Hiện ngay (không mờ dần) để không lộ trang chủ chớp qua trước khi cổng đăng nhập hiện. */
+      var g = document.createElement('div'); g.id = 'authGate'; g.className = 'authgate on'; g.setAttribute('role', 'dialog'); g.setAttribute('aria-label', 'Đăng nhập');
       g.innerHTML = '<div class="ag-in"><img src="icon-192.png" alt="FotoBro" style="width:96px;height:96px;border-radius:22px;margin:0 auto;box-shadow:0 0 0 .5px var(--sep);" />' +
         '<h1>FotoBro</h1><p class="wl-sub">Trợ lý studio ảnh — việc giấy tờ, tiền bạc, nhắc việc để FotoBro lo, bạn chỉ việc chụp thật đẹp.</p>' +
         '<div class="ag-btns">' +
         (appleAv ? '<button type="button" class="btn ag-apple" id="agApple">' + appleLogo() + 'Đăng nhập bằng Apple</button>' : '') +
         '<button type="button" class="btn ag-google" id="agGoogle">' + googleLogo() + 'Đăng nhập bằng Google</button></div>' +
-        '<p class="sec-f ag-note">Tài khoản chỉ để nhận diện và đồng bộ sau này. Dữ liệu vẫn ở trên máy bạn.</p>' +
+        '<p class="sec-f ag-note">Đăng nhập để lịch chụp tự lưu vào Google Lịch, có nhắc trên điện thoại. Dữ liệu vẫn nằm trên máy bạn.</p>' +
         '<button type="button" class="btn plain ag-skip" id="agSkip">Dùng thử không cần tài khoản</button></div>';
       document.body.appendChild(g);
       document.documentElement.classList.add('locked');
-      requestAnimationFrame(function(){ requestAnimationFrame(function(){ g.classList.add('on'); }); });
       var ab = $('#agApple', g); if (ab) ab.addEventListener('click', function(){ aConnect(); });
       $('#agGoogle', g).addEventListener('click', function(){ gConnect(false); });
       $('#agSkip', g).addEventListener('click', function(){ state.cfg.authAsked = true; saveLocal(); closeAuthGate(); });
     }
     function closeAuthGate(){
       var g = document.getElementById('authGate'); if (!g) return;
+      /* Chưa chào bao giờ: mở màn chào ngay trên cổng rồi bỏ cổng — không lộ trang chủ ở giữa. */
+      if (lsGet('troLyXeo.welcomed') !== '2'){ openWelcome(); g.remove(); return; }
       g.classList.remove('on'); document.documentElement.classList.remove('locked');
       setTimeout(function(){ g.remove(); }, 420);
-      /* Đóng cổng rồi mới cho màn chào mừng hiện (nếu chưa chào bao giờ). */
-      if (lsGet('troLyXeo.welcomed') !== '2') setTimeout(function(){ openWelcome(); }, 450);
     }
     function maybeCloseAuthGate(){ var g = document.getElementById('authGate'); if (g && (aLinked() || gLinked())) closeAuthGate(); }
 
@@ -3268,7 +3285,7 @@
           '<p class="wl-eyebrow">' + esc(c.studio) + '</p>' +
           '<h1>Chào mừng <em>' + esc(greetName()) + '</em><br/>tới công ty nhỏ của mình</h1>' +
           '<p class="wl-sub">Từ hôm nay ' + esc(greetName()) + ' chỉ việc chụp thật đẹp. Giấy tờ, tiền bạc, nhắc việc — để cả nhà lo, sáu phòng ban trực sẵn rồi.</p>' +
-          '<p class="wl-tag">' + esc(c.tagline || '') + '</p></div>',
+          (c.tagline && c.tagline !== 'portrait | lookbook | wedding' ? '<p class="wl-tag">' + esc(c.tagline) + '</p>' : '') + '</div>',
         '<div class="wl-in"><div class="wl-mini">' + STK('cam') + '</div><h2>Thanh dưới cùng</h2><p class="wl-sub">Bốn tab và một nút Ghi ở giữa, chạm là chuyển.</p><div class="list wl-list">' +
           guideRow('sun', 'orange', 'Hôm nay', 'Hôm nay chụp ai, hạn giao, khách còn thiếu — gọn trong một màn') +
           guideRow('cam', 'accent', 'Buổi chụp', 'Mỗi khách một dòng, 8 bước từ Tư vấn tới Xong, danh sách chuẩn bị đồ') +
@@ -3278,10 +3295,9 @@
         '<div class="wl-in"><div class="wl-mini">' + STK('party') + '</div><h2>Vài mẹo nhỏ</h2><p class="wl-sub">Biết mấy cái này là dùng như dân chuyên.</p><div class="list wl-list">' +
           guideRow('arrowr', 'gray', 'Chạm vào một dòng', 'Mở chi tiết: tiến độ, tiền, nhắn khách, lịch, Drive. Kéo xuống để đóng') +
           guideRow('gear', 'gray', 'Bánh răng = Cài đặt', 'Giá gói, % cọc, số ngày giao ảnh, thiết bị, chi cố định, màu giao diện, nhập lịch') +
-          guideRow('cal', 'red', 'Nhập từ Lịch iPhone', '1 chạm trong app iOS — sự kiện 30 ngày tới thành buổi chụp, hoặc đăng nhập Google') +
-          guideRow('mic', 'red', 'Giọng nói (bản sau)', 'Giọng nói sẽ có ở bản sau — giờ gõ câu hỏi nha') +
+          guideRow('cal', 'red', 'Lịch chụp tự vào lịch', 'Đăng nhập Google là buổi chụp tự lưu vào Google Lịch. Có lịch sẵn trên iPhone thì Cài đặt → Nhập từ Lịch iPhone') +
           guideRow('download', 'green', 'Sao lưu mỗi tuần', 'Thêm → Tải bản sao lưu. Đổi máy thì mở lại file đó') +
-          guideRow('heart', 'red', 'Dữ liệu ở trên máy', 'Không tài khoản, không máy chủ — job và sổ tiền chỉ lưu trên điện thoại của bạn') + '</div></div>',
+          guideRow('heart', 'red', 'Dữ liệu là của bạn', 'Job và sổ tiền lưu trên điện thoại của bạn, không gửi lên máy chủ nào') + '</div></div>',
         '<div class="wl-in"><img src="icon-192.png" alt="FotoBro" style="width:72px;height:72px;border-radius:17px;margin:0 auto;box-shadow:0 0 0 .5px var(--sep);" />' +
           (firstTime && state.sample
             ? '<h2>Sẵn sàng chưa ' + esc(greetName()) + '?</h2><p class="wl-sub">App đang có vài job và khoản tiền <b>mẫu</b> để xem thử. Muốn dùng thật thì bắt đầu với sổ trống nhé.</p>' +
@@ -3298,7 +3314,9 @@
       document.body.appendChild(w);
       petalRain(w, 22);
       document.documentElement.classList.add('locked');
-      requestAnimationFrame(function(){ requestAnimationFrame(function(){ w.classList.add('on'); }); });
+      /* Lần đầu: hiện ngay, không mờ dần — tránh trang chủ chớp qua trước màn chào. */
+      if (firstTime) w.classList.add('on');
+      else requestAnimationFrame(function(){ requestAnimationFrame(function(){ w.classList.add('on'); }); });
       var box = $('.wl-pages', w), track = $('.wl-track', w), dots = $$('.wl-dots i', w), next = $('.wl-next', w), cur = 0, last = pages.length - 1;
       function setPage(i){
         i = Math.max(0, Math.min(last, i)); cur = i;
@@ -3338,7 +3356,7 @@
     }
     $('#guideRow').addEventListener('click', function(){ openWelcome({guideOnly:true}); });
     paintIcons();
-    if (lsGet('troLyXeo.welcomed') !== '2') setTimeout(function(){ if (!document.getElementById('authGate')) openWelcome(); }, 250);
+    if (lsGet('troLyXeo.welcomed') !== '2' && !document.getElementById('authGate')) openWelcome();
     </script>
 
     <script>
@@ -3598,8 +3616,39 @@
        phát event 'fotobro-oauth' khi appUrlOpen nhận redirect về. Hàm
        handleGoogleReturnUrl khai báo ở dưới được gắn lên window ngay sau khi
        định nghĩa (không bọc bằng hàm cùng tên — sẽ tự đệ quy vô hạn). */
-    function gToken(){ try{ var t = JSON.parse(ssGet(GT_KEY) || 'null'); return t && t.t && t.exp > Date.now() + 60000 ? t.t : null; }catch(e){ return null; } }
-    function gLinked(){ return !!(googleClientId() && (gToken() || gcal)); }
+    function gToken(){ try{ var t = JSON.parse(lsGet(GT_KEY) || 'null'); return t && t.t && t.exp > Date.now() + 60000 ? t.t : null; }catch(e){ return null; } }
+    function gLinked(){ return !!(googleClientId() && (gToken() || gcal || gRT())); }
+    var GR_KEY = 'troLyXeo.grefresh';
+    function gRT(){ return lsGet(GR_KEY) || ''; }
+    var _gRefreshing = null;
+    /* Đổi refresh token lấy access token mới (client iOS + PKCE: không cần client_secret). */
+    function gRefresh(){
+      var rt = gRT(); if (!rt || !googleClientId()) return Promise.resolve(null);
+      if (_gRefreshing) return _gRefreshing;
+      _gRefreshing = (async function(){
+        try{
+          var body = new URLSearchParams({ client_id:googleClientId(), refresh_token:rt, grant_type:'refresh_token' });
+          var r = await fetch('https://oauth2.googleapis.com/token', { method:'POST', headers:{ 'Content-Type':'application/x-www-form-urlencoded' }, body:body.toString() });
+          if (!r.ok){ var e = {}; try{ e = await r.json(); }catch(x){}
+            if (e.error === 'invalid_grant'){ lsSet(GR_KEY, ''); lsSet(GT_KEY, ''); } /* bị thu hồi / hết hạn: phải đăng nhập lại */
+            return null; }
+          var d = await r.json(), old = null; try{ old = JSON.parse(lsGet(GT_KEY) || 'null'); }catch(x){}
+          lsSet(GT_KEY, JSON.stringify({ t:d.access_token, exp:Date.now() + (+d.expires_in || 3600) * 1000, s:d.scope || (old && old.s) || '' }));
+          if (d.refresh_token) lsSet(GR_KEY, d.refresh_token);
+          return d.access_token;
+        }catch(e){ return null; } finally { _gRefreshing = null; }
+      })();
+      return _gRefreshing;
+    }
+    /* Gọi API Google: thiếu / hết hạn token thì tự làm mới, bị 401 thì làm mới rồi thử lại 1 lần. */
+    async function gAuthFetch(url, opt){
+      opt = opt || {};
+      var t = gToken() || await gRefresh(); if (!t) throw new Error('auth');
+      function go(tok){ var h = Object.assign({}, opt.headers || {}, { Authorization:'Bearer ' + tok }); return fetch(url, Object.assign({}, opt, { headers:h })); }
+      var r = await go(t);
+      if (r.status === 401){ lsSet(GT_KEY, ''); var t2 = await gRefresh(); if (!t2) throw new Error('auth'); r = await go(t2); if (r.status === 401){ lsSet(GT_KEY, ''); throw new Error('auth'); } }
+      return r;
+    }
     /* Đăng nhập bằng Apple (v2.1, native iOS) — xem APPLE-SIGNIN-PLAN.md §4.4.
        Mirror cụm Google nhưng đơn giản hơn: không token hết hạn, không scope
        từng tính năng. Định danh chỉ lưu trên máy (cfg.apple), không có server. */
@@ -3654,6 +3703,7 @@
     async function gConnect(silent){
       var cid = googleClientId();
       if (!cid){ toast('Đăng nhập Google chưa sẵn sàng — FotoBro đang tạo Client ID chung, xong là bấm 1 cái là vào', 'warn'); return; }
+      if (silent && gRT()){ var nt = await gRefresh(); if (nt){ renderAll(); if (typeof refreshSettings === 'function') refreshSettings(); if (typeof gSyncAll === 'function') gSyncAll(true); return; } }
       var scopes = gScopes();
       if (!scopes){ toast('Chưa bật tính năng Google nào — bật 1 tính năng ở Cài đặt → Lấy gì từ Google rồi kết nối lại', 'warn'); return; }
       var verifier = pkceVerifier(), challenge = await pkceChallenge(verifier);
@@ -3661,9 +3711,9 @@
       var nonce = Math.random().toString(36).slice(2) + Date.now().toString(36);
       lsSet(GS_KEY, JSON.stringify({ state:nonce, verifier:verifier }));
       var p = { client_id:cid, redirect_uri:gRedirectUri(), response_type:'code', code_challenge:challenge, code_challenge_method:'S256', scope:scopes, include_granted_scopes:'true', state:nonce };
-      if (silent) p.prompt = 'none';
-      /* KHÔNG xin access_type:'offline': v1 không lưu refresh token (xem
-         gExchangeCode), hết hạn thì đăng nhập lại im lặng bằng prompt=none. */
+      /* Xin refresh token để giữ đăng nhập; lần đầu (chưa có) thì bắt màn đồng ý để Google chắc chắn trả về. */
+      p.access_type = 'offline';
+      if (silent) p.prompt = 'none'; else if (!gRT()) p.prompt = 'consent';
       var authUrl = 'https://accounts.google.com/o/oauth2/v2/auth?' + Object.keys(p).map(function(k){ return k + '=' + encodeURIComponent(p[k]); }).join('&');
       if (isNativeApp() && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser && window.Capacitor.Plugins.Browser.open){
         /* Google CẤM OAuth trong WKWebView nhúng (lỗi disallowed_useragent):
@@ -3683,12 +3733,10 @@
       var r = await fetch('https://oauth2.googleapis.com/token', { method:'POST', headers:{ 'Content-Type':'application/x-www-form-urlencoded' }, body:body.toString() });
       if (!r.ok){ toast('Google chưa đổi được mã đăng nhập, thử lại nha', 'warn'); return; }
       var d = await r.json();
-      ssSet(GT_KEY, JSON.stringify({ t:d.access_token, exp:Date.now() + (+d.expires_in || 3600) * 1000, s:d.scope || '' }));
-      /* H2 (SECURITY-AUDIT): CỐ TÌNH không lưu d.refresh_token. Refresh token
-         là credential sống dài hạn; lưu plaintext trong localStorage mà code
-         không hề dùng để làm mới token (không có grant_type=refresh_token)
-         thì chỉ thêm rủi ro. Hết hạn thì đăng nhập lại im lặng bằng
-         gConnect(true) với prompt=none. */
+      lsSet(GT_KEY, JSON.stringify({ t:d.access_token, exp:Date.now() + (+d.expires_in || 3600) * 1000, s:d.scope || '' }));
+      /* Giữ đăng nhập: lưu refresh token (chỉ trên máy, trong vùng nhớ riêng của app),
+         gRefresh() dùng nó để lấy access token mới. Ngắt kết nối = thu hồi tại Google + xoá. */
+      if (d.refresh_token){ lsSet(GR_KEY, d.refresh_token); if (typeof gKeepFresh === 'function') gKeepFresh(); }
       jobsMode = 'cal';
       setTimeout(function(){ go('jobs'); renderAll(); if (typeof gSyncAll === 'function') gSyncAll(true); else gFetch(true); }, 300);
     }
@@ -3723,7 +3771,7 @@
       var expect = lsGet(GS_KEY); lsSet(GS_KEY, '');
       if (!q.state || q.state !== expect){ setTimeout(function(){ toast('Kết nối Google không hợp lệ, thử lại nha', 'warn'); }, 400); return; }
       if (q.access_token){
-        ssSet(GT_KEY, JSON.stringify({ t:q.access_token, exp:Date.now() + (+q.expires_in || 3600) * 1000, s:cleanStr(q.scope, 1000) }));
+        lsSet(GT_KEY, JSON.stringify({ t:q.access_token, exp:Date.now() + (+q.expires_in || 3600) * 1000, s:cleanStr(q.scope, 1000) }));
         jobsMode = 'cal';
         setTimeout(function(){ go('jobs'); renderAll(); if (typeof gSyncAll === 'function') gSyncAll(true); else gFetch(true); }, 300);
       } else if (/interaction_required|login_required|consent_required/.test(q.error || '')) {
@@ -3736,9 +3784,7 @@
     })();
     function gLocal(iso){ var d = new Date(iso); if (isNaN(d.getTime())) return null; return { date:d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()), time:pad2(d.getHours()) + ':' + pad2(d.getMinutes()) }; }
     async function gApi(path){
-      var t = gToken(); if (!t) throw new Error('auth');
-      var r = await fetch('https://www.googleapis.com/calendar/v3' + path, { headers:{ Authorization:'Bearer ' + t } });
-      if (r.status === 401){ ssSet(GT_KEY, ''); throw new Error('auth'); }
+      var r = await gAuthFetch('https://www.googleapis.com/calendar/v3' + path);
       if (!r.ok) throw new Error('lỗi ' + r.status);
       return r.json();
     }
@@ -3865,15 +3911,35 @@
       tl.insertAdjacentHTML('beforeend', evs.map(gRow).join('')); bindGev(tl);
     };
 
-    /* Mở trang Quyền riêng tư: trên app native dùng Capacitor Browser (giữ
-       người dùng trong app), trên web mở tab mới. */
+    /* Chính sách quyền riêng tư — xem ngay trong app, không cần mạng.
+       Nội dung khớp PRIVACY.md (sửa bên này thì sửa luôn bên kia). */
     function openPrivacy(){
-      var url = 'https://hoangviet1397.github.io/fotobro/PRIVACY.html';
-      if (typeof isNativeApp === 'function' && isNativeApp() && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser && window.Capacitor.Plugins.Browser.open){
-        window.Capacitor.Plugins.Browser.open({ url:url }).catch(function(){ window.open(url, '_blank'); });
-        return;
-      }
-      window.open(url, '_blank');
+      var em = esc((window.FOTOBRO_CONFIG && String(window.FOTOBRO_CONFIG.supportEmail || '').trim()) || 'supportfotobro@gmail.com');
+      function sec(t, items){ return '<h3 class="pv-h">' + t + '</h3><ul class="pv-l">' + items.map(function(x){ return '<li>' + x + '</li>'; }).join('') + '</ul>'; }
+      var h = '<div class="pv">' +
+        '<p class="pv-d">Cập nhật 20/11/2026 · FotoBro v' + (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '') + '</p>' +
+        '<p class="pv-lead"><b>Dữ liệu của bạn nằm trên điện thoại của bạn</b> — và trên Google Lịch / Lịch iPhone của chính bạn nếu bạn bật lưu lịch chụp vào đó. FotoBro không có máy chủ riêng, không bán dữ liệu, không quảng cáo, không theo dõi bạn.</p>' +
+        sec('1. App lưu gì', [
+          'Buổi chụp (khách, loại chụp, lịch, địa điểm, giá, cọc, tiến độ), sổ thu chi, cài đặt của bạn, ảnh trang chủ bạn tự chọn, mã khoá app (nếu bật).',
+          'Tất cả lưu trong vùng nhớ riêng của app trên iPhone, được bảo vệ bằng mật mã iPhone.',
+          'App không lấy vị trí, không ghi âm, không đọc danh bạ iPhone.']) +
+        sec('2. Đăng nhập Google — chỉ khi bạn bật', [
+          'Mặc định tắt. Chỉ khi bạn bấm "Đăng nhập Google" và cho phép, app mới đọc Lịch, Gmail (mail báo tiền về, khách hỏi chụp), Danh bạ Google và tên thư mục Drive; ghi lịch chụp vào Google Lịch và gửi email cho khách khi bạn bấm.',
+          'Mọi thứ xử lý ngay trên máy bạn, không qua máy chủ nào của chúng tôi.',
+          'App giữ đăng nhập để bạn không phải đăng nhập lại: mã đăng nhập chỉ lưu trong vùng nhớ riêng của app trên máy bạn.',
+          'Bấm "Ngắt kết nối" là thu hồi quyền tại Google và xoá dữ liệu Google đã tải khỏi máy.']) +
+        sec('3. Lịch iPhone & thông báo', [
+          'App chỉ đọc Lịch iPhone khi bạn bấm "Nhập từ Lịch iPhone" và cho phép.',
+          'Thông báo nhắc lịch chụp (trước 1 ngày) và hạn giao ảnh được tạo ngay trên máy. Tắt trong Cài đặt iPhone → Thông báo → FotoBro.']) +
+        sec('4. Chia sẻ với bên thứ ba', [
+          'Không. Các nút mở Facebook, Messenger, Gmail, Drive chỉ mở app đó khi bạn bấm; FotoBro không tự gửi gì đi.']) +
+        sec('5. Xoá dữ liệu', [
+          'Cài đặt → Xoá dữ liệu đã lưu: xoá toàn bộ dữ liệu trong app.',
+          'Gỡ app cũng xoá hết. File sao lưu bạn đã tải về và sự kiện đã ghi lên Google Lịch thì bạn tự xoá.']) +
+        sec('6. Trẻ em', ['App dành cho người lớn, không hướng tới trẻ dưới 13 tuổi.']) +
+        sec('7. Liên hệ', ['Thắc mắc về dữ liệu: <a href="mailto:' + em + '">' + em + '</a>']) +
+        '</div>';
+      openSheet({ title:'Quyền riêng tư', tall:true, body:h });
     }
     /* Sheet "Đăng nhập Google để làm gì?" — khôi phục ở v2.1: liệt kê từng tính
        năng dùng đúng quyền nào (khớp 100% với gScopes() — bật tính năng nào thì
@@ -3885,7 +3951,7 @@
         ['leads', 'Gmail · khách hỏi chụp', 'Đọc email hỏi lịch / giá để gợi ý tạo buổi chụp.'],
         ['contacts', 'Danh bạ', 'Đọc danh bạ để gợi ý số điện thoại, email khi gõ tên khách.'],
         ['drive', 'Google Drive', 'Chỉ xem tên thư mục ảnh của job, không mở hay sửa file.'],
-        ['calw', 'Ghi buổi chụp vào Google Lịch', 'GHI vào lịch của bạn (thêm / sửa / xoá sự kiện do app tạo), nhắc trước 12 tiếng.'],
+        ['calw', 'Ghi buổi chụp vào Google Lịch', 'GHI vào lịch của bạn (thêm / sửa / xoá sự kiện do app tạo), nhắc trước 1 ngày.'],
         ['send', 'Gửi email cho khách bằng Gmail', 'GỬI email — nhưng chỉ những email bạn đã xem và tự bấm Gửi.']
       ];
       var body = '<p class="muted" style="font-size:0.9375rem;margin:6px 0 10px;">Đăng nhập Google 1 lần, app chỉ xin quyền của tính năng bạn bật. Bật thêm tính năng sau thì Google hỏi thêm quyền đó.</p><div class="list">' + rows.map(function(r){
@@ -3934,7 +4000,7 @@
       if (gFeat('send') && FEAT_SCOPE.send) s.push(FEAT_SCOPE.send);
       return s.filter(function(x, i){ return x && s.indexOf(x) === i; }).join(' ');
     }
-    function gTokObj(){ try{ return JSON.parse(ssGet(GT_KEY) || 'null'); }catch(e){ return null; } }
+    function gTokObj(){ try{ return JSON.parse(lsGet(GT_KEY) || 'null'); }catch(e){ return null; } }
     function gHas(scope){ var t = gTokObj(); return !!(t && gToken() && (!t.s || (' ' + t.s + ' ').indexOf(' ' + scope + ' ') >= 0)); }
     function gNeeds(k){ return gFeat(k) && gToken() && !gHas(FEAT_SCOPE[k]); }
     var gmail = (function(){ try{ var d = JSON.parse(lsGet(GM_KEY) || 'null'); return d && Array.isArray(d.bank) ? d : null; }catch(e){ return null; } })();
@@ -3942,9 +4008,7 @@
     var gContacts = (function(){ try{ var a = JSON.parse(lsGet(GCT_KEY) || '[]'); return Array.isArray(a) ? a : []; }catch(e){ return []; } })();
     function gSeenAdd(id){ if (gSeen.indexOf(id) < 0){ gSeen.push(id); if (gSeen.length > 800) gSeen = gSeen.slice(-800); lsSet(GSEEN_KEY, JSON.stringify(gSeen)); } }
     async function gGet(url){
-      var t = gToken(); if (!t) throw new Error('auth');
-      var r = await fetch(url, { headers:{ Authorization:'Bearer ' + t } });
-      if (r.status === 401){ ssSet(GT_KEY, ''); throw new Error('auth'); }
+      var r = await gAuthFetch(url);
       if (r.status === 403) throw new Error('chưa bật API hoặc chưa cấp quyền');
       if (!r.ok) throw new Error('lỗi ' + r.status);
       return r.json();
@@ -4194,13 +4258,19 @@
     var _rmx = renderMoney; renderMoney = function(){ _rmx(); renderGx(); };
     var _rjx = renderJobs; renderJobs = function(){ _rjx(); renderGx(); };
     async function gSyncAll(manual){
-      if (!gToken()) return;
+      if (!gToken() && !(await gRefresh())) return;
       if (gFeat('cal') && gHas(SC.cal) && typeof gFetch === 'function') await gFetch(manual);
       if ((gFeat('bank') || gFeat('leads')) && gHas(SC.gmail)) await gmFetch(manual);
       if (gFeat('contacts') && gHas(SC.contacts) && (manual || !gContacts.length)) await ctFetch(manual);
     }
     renderAll();
-    if (gToken() && (!gmail || Date.now() - gmail.fetchedAt > 15 * 60000)) setTimeout(function(){ gSyncAll(false); }, 800);
+    /* Giữ token luôn còn hạn: lúc mở app, khi quay lại app, và mỗi phút kiểm 1 lần */
+    var _gTimer = null;
+    function gKeepFresh(){ if (!gRT()) return Promise.resolve(); if (!_gTimer) _gTimer = setInterval(gKeepFresh, 60000); var o = null; try{ o = JSON.parse(lsGet(GT_KEY) || 'null'); }catch(e){}
+      if (o && o.t && o.exp > Date.now() + 5 * 60000) return Promise.resolve();
+      return gRefresh().then(function(t){ if (t){ renderAll(); if (typeof refreshSettings === 'function') refreshSettings(); } }); }
+    gKeepFresh().then(function(){ if (gToken() && (!gmail || Date.now() - gmail.fetchedAt > 15 * 60000)) setTimeout(function(){ gSyncAll(false); }, 800); });
+    document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'visible') gKeepFresh(); });
     </script>
 
     <script>
@@ -4213,9 +4283,7 @@
     FEAT_SCOPE.send = 'https://www.googleapis.com/auth/gmail.send';
     function tzName(){ try{ return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Ho_Chi_Minh'; }catch(e){ return 'Asia/Ho_Chi_Minh'; } }
     async function gSend(method, url, body){
-      var t = gToken(); if (!t) throw new Error('auth');
-      var r = await fetch(url, { method:method, headers:{ Authorization:'Bearer ' + t, 'Content-Type':'application/json' }, body:body ? JSON.stringify(body) : undefined });
-      if (r.status === 401){ ssSet(GT_KEY, ''); throw new Error('auth'); }
+      var r = await gAuthFetch(url, { method:method, headers:{ 'Content-Type':'application/json' }, body:body ? JSON.stringify(body) : undefined });
       if (r.status === 404 || r.status === 410) throw new Error('notfound');
       if (r.status === 403) throw new Error('chưa bật API hoặc chưa cấp quyền');
       if (!r.ok) throw new Error('lỗi ' + r.status);
@@ -4226,7 +4294,7 @@
     function gEventBody(j){
       var desc = [ 'Khách: ' + j.client, j.phone ? 'Điện thoại: ' + j.phone : '', j.email ? 'Email: ' + j.email : '', j.price ? 'Giá: ' + fmt(j.price) + ' · còn thiếu ' + fmt(jobOwe(j)) : '', j.note ? '\n' + j.note : '', '\n— FotoBro' ].filter(Boolean).join('\n');
       var b = { summary:'Chụp ' + jobTypeLabel(j) + ' — ' + j.client, location:j.location || '', description:desc.slice(0, 3000),
-        reminders:{ useDefault:false, overrides:[{ method:'popup', minutes:720 }, { method:'popup', minutes:60 }] } };
+        reminders:{ useDefault:false, overrides:[{ method:'popup', minutes:1440 }, { method:'popup', minutes:60 }] } };
       if (j.shootTime){
         var p = j.shootDate.split('-'), t = j.shootTime.split(':'), e = new Date(+p[0], +p[1] - 1, +p[2], +t[0] + 2, +t[1]);
         var endS = e.getFullYear() + '-' + pad2(e.getMonth() + 1) + '-' + pad2(e.getDate()) + 'T' + pad2(e.getHours()) + ':' + pad2(e.getMinutes()) + ':00';
