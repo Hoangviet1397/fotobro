@@ -133,6 +133,30 @@
       .row .t1{ font-size:1.0625rem; }
       .row .t2{ font-size:0.875rem; color:var(--label2); margin-top:1px; }
       .clip{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      .wrap2{ display:-webkit-box !important; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; white-space:normal; overflow-wrap:anywhere; }
+      /* Nút Ghi giữa thanh tab */
+      .tabbar .tab-add{ color:var(--accent-t); font-weight:600; }
+      .tab-plus{ width:34px; height:34px; border-radius:50%; background:var(--accent-btn); color:#fff; display:flex; align-items:center; justify-content:center; margin-top:-4px; box-shadow:0 4px 12px rgba(215,0,21,.28); }
+      .tabbar .tab-plus svg{ width:20px; height:20px; }
+      .tabbar .tab-add:active .tab-plus{ transform:scale(.92); }
+      /* Ghi nhanh ở trang chủ: 3 nút, nút đầu là nút chính */
+      .quick3{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:14px; }
+      .qbtn{ border:0; border-radius:16px; min-height:68px; padding:8px 4px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; font:inherit; font-size:0.9375rem; font-weight:700; background:var(--fill); color:var(--label); cursor:pointer; }
+      .qbtn small{ font-size:0.75rem; font-weight:500; color:var(--label2); }
+      .qbtn.p{ background:var(--accent-btn); color:#fff; }
+      .qbtn.p small{ color:rgba(255,255,255,.85); }
+      .qbtn svg{ width:22px; height:22px; margin-bottom:2px; }
+      .qbtn:active{ opacity:.7; }
+      #homeStats{ grid-template-columns:1fr 1fr !important; margin-top:12px; }
+      /* Tiền bạc: tóm tắt Thu / Chi / Lời trên 1 dòng */
+      .msum{ display:grid; grid-template-columns:repeat(3,1fr); margin-top:14px; padding:12px 6px; text-align:center; }
+      .msum-c{ min-width:0; padding:0 4px; }
+      .msum-c + .msum-c{ border-left:.5px solid var(--sep); }
+      .msum-c span{ display:block; font-size:0.8125rem; color:var(--label2); }
+      .msum-c b{ display:block; font-size:1.125rem; margin-top:2px; overflow-wrap:anywhere; }
+      .owe-row{ cursor:pointer; gap:10px; }
+      .owe-row .val{ flex:none; }
+      .owe-nhac{ flex:none; min-height:36px; padding:0 14px; }
       .row .val{ color:var(--label2); font-size:1rem; text-align:right; flex:none; max-width:55%; }
       .row .val.red{ color:var(--red); } .row .val.green{ color:var(--green); } .row .val.b{ font-weight:600; }
       .row .chev{ color:var(--label3); flex:none; width:8px; height:14px; }
@@ -196,6 +220,9 @@
       .pills{ display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 0; padding:0; }
       .pills::-webkit-scrollbar{ display:none; }
       .pill{ flex:none; border:0; background:var(--fill); color:var(--label); font-size:0.9375rem; font-weight:500; padding:0 14px; min-height:44px; border-radius:999px; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+      /* Hàng nút lọc theo bước / theo loại: 1 hàng, vuốt ngang (không xuống 2 dòng) */
+      #stageChips, #checkTypeChips{ flex-wrap:nowrap; overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:none; touch-action:pan-x pan-y;
+        margin-left:-16px; margin-right:-16px; padding:0 16px; scroll-padding:0 16px; }
       .pill .n{ color:var(--label2); font-variant-numeric:tabular-nums; }
       .pill.on{ background:var(--label); color:var(--bg); }
       .pill.on .n{ color:inherit; opacity:.7; }
@@ -289,6 +316,10 @@
       .report{ white-space:pre-wrap; font-size:0.9375rem; line-height:1.5; padding:14px 16px; }
       .report.clamp{ max-height:9.2em; overflow:hidden; -webkit-mask-image:linear-gradient(180deg,#000 60%,transparent); mask-image:linear-gradient(180deg,#000 60%,transparent); }
       .tpl{ padding:12px 16px; }
+      .tpl-row{ align-items:flex-start; padding-top:11px; padding-bottom:11px; }
+      .tpl-row .t2{ margin-top:2px; line-height:1.35; }
+      .tpl-copy{ flex:none; color:var(--accent-t); align-self:center; display:flex; }
+      .tpl-copy svg{ width:20px; height:20px; }
       .tpl + .tpl{ border-top:.5px solid var(--sep); }
       .tpl b{ display:block; font-size:1rem; }
       .tpl p{ color:var(--label2); font-size:0.9375rem; margin:3px 0 10px; white-space:pre-wrap; }
@@ -372,8 +403,9 @@
         background:var(--bar-strong); -webkit-backdrop-filter:blur(30px); backdrop-filter:blur(30px); color:var(--label);
         padding:11px 18px 11px 13px; border-radius:999px; box-shadow:0 10px 34px rgba(0,0,0,.18), 0 0 0 .5px var(--sep);
         font-size:0.9375rem; font-weight:600; max-width:calc(100% - 28px); display:flex; gap:9px; align-items:center;
-        transition:transform .45s cubic-bezier(.32,.72,0,1); pointer-events:none; }
-      .hud.show{ transform:translate(-50%,0); }
+        transition:transform .45s cubic-bezier(.32,.72,0,1), opacity .25s ease, visibility 0s linear .45s; pointer-events:none;
+        opacity:0; visibility:hidden; /* ẩn hẳn khi không hiện: tránh bóng đổ lộ thành vệt xám ở đầu màn hình */ }
+      .hud.show{ transform:translate(-50%,0); opacity:1; visibility:visible; transition:transform .45s cubic-bezier(.32,.72,0,1), opacity .15s ease, visibility 0s; }
       .hud .ic{ width:24px; height:24px; border-radius:50%; }
       .hud .ic svg{ width:14px; height:14px; }
 
@@ -439,7 +471,8 @@
       .wl-in{ max-width:460px; margin:0 auto; text-align:center; }
       .wl-page:not(.seen) .fl{ animation:none; opacity:0; }
       .wl-eyebrow{ font-size:0.8125rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--accent-t); margin-top:4px; }
-      .welcome h1{ font-size:1.9375rem; line-height:1.2; font-weight:800; margin-top:6px; }
+      .welcome h1{ font-size:1.9375rem; line-height:1.2; font-weight:800; margin-top:6px; text-wrap:balance; }
+      .welcome h2{ text-wrap:balance; }
       .welcome h1 em{ font-style:normal; font-weight:800; color:var(--accent); }
       .welcome h2{ font-size:1.75rem; font-weight:800; margin-top:8px; }
       .wl-sub{ color:var(--label2); font-size:1rem; line-height:1.5; margin-top:10px; }
@@ -456,7 +489,7 @@
       .wl-dots{ padding:6px 0; }
       .wl-dots i{ cursor:pointer; width:7px; height:7px; border-radius:4px; background:var(--label3); transition:all .25s ease; }
       .wl-dots i.on{ width:22px; background:var(--accent); }
-      .petals{ position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
+      .petals{ position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden; opacity:.38; } /* cánh hoa mờ để không lấn chữ */
       .petal{ position:absolute; top:-50px; animation:fall linear infinite; }
       .petal > span{ display:block; animation:flutter ease-in-out infinite alternate; }
       @keyframes fall{ to{ transform:translateY(calc(100vh + 100px)) rotate(420deg); } }
@@ -485,8 +518,11 @@
       html[data-glass="1"] .sheet .list, html[data-glass="1"] .sheet .tile{ -webkit-backdrop-filter:none; backdrop-filter:none; }
       html[data-glass="1"] .sheet{ background:rgba(255,255,255,.74); -webkit-backdrop-filter:blur(34px) saturate(180%); backdrop-filter:blur(34px) saturate(180%); border-top:.5px solid var(--glass-edge); }
       @media (prefers-color-scheme: dark){ html[data-glass="1"] .sheet{ background:rgba(0,0,0,.76); } }
-      html[data-glass="1"] .pill:not(.on), html[data-glass="1"] .seg{ background:rgba(255,255,255,.38); -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px); box-shadow:inset 0 0 0 .5px var(--glass-edge); }
-      @media (prefers-color-scheme: dark){ html[data-glass="1"] .pill:not(.on), html[data-glass="1"] .seg{ background:rgba(255,255,255,.08); } }
+      /* Nút gợi ý / nút lọc: nền xám nhạt kiểu iOS để nhìn ra là nút bấm được
+         (trước đây nền trắng 38% trên nền trắng → trông như chữ thường). */
+      html[data-glass="1"] .pill:not(.on), html[data-glass="1"] .seg{ background:rgba(118,118,128,.12); -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px); box-shadow:inset 0 0 0 .5px rgba(0,0,0,.04); }
+      @media (prefers-color-scheme: dark){ html[data-glass="1"] .pill:not(.on), html[data-glass="1"] .seg{ background:rgba(118,118,128,.24); box-shadow:none; } }
+      html[data-glass="1"] .ask-sugg .pill:not(.on){ background:var(--surface); box-shadow:0 0 0 .5px var(--sep), 0 1px 2px rgba(0,0,0,.05); color:var(--accent-t); }
       html[data-glass="1"] .seg button.on{ background:rgba(255,255,255,.9); }
       @media (prefers-color-scheme: dark){ html[data-glass="1"] .seg button.on{ background:rgba(255,255,255,.2); } }
       html[data-glass="1"] .tabbar, html[data-glass="1"] .nav.solid, html[data-glass="1"] .composer{ -webkit-backdrop-filter:blur(28px) saturate(190%); backdrop-filter:blur(28px) saturate(190%); }
@@ -549,48 +585,21 @@
         </div>
 
 
-        <div class="sec-h sec-first" id="todaySec"><h2>Cần nhớ hôm nay</h2></div>
+        <div class="sec-h sec-first" id="todaySec"><h2>Hôm nay &amp; sắp tới</h2></div>
         <div class="list" id="todayList"></div>
+        <div class="quick3" role="group" aria-label="Ghi nhanh">
+          <button type="button" class="qbtn p" id="qJob"><span data-i="cam"></span>Buổi chụp<small>khách mới</small></button>
+          <button type="button" class="qbtn" id="qThu"><span data-i="inarrow"></span>Thu<small>cọc, tiền về</small></button>
+          <button type="button" class="qbtn" id="qChi"><span data-i="outarrow"></span>Chi<small>xăng, makeup</small></button>
+        </div>
         <div class="tiles" id="homeStats"></div>
-
-
-        <div class="sec-h"><h2>Hỏi trợ lý</h2><button class="link" type="button" data-go="ask">Mở</button></div>
-        <div class="list">
-          <button class="row" type="button" id="homeMic">
-            <span class="ic bg-accent" data-i="mic"></span>
-            <span class="txt"><span class="t1 b" style="display:block;">Nói với trợ lý</span><span class="t2" style="display:block;">“Chi makeup 2 triệu” · “Ai chưa trả tiền?”</span></span>
+        <div class="list" style="margin-top:12px;">
+          <button class="row" type="button" id="homeAsk">
+            <span class="ic bg-accent" data-i="bubble"></span>
+            <span class="txt"><span class="t1 b" style="display:block;">Hỏi FotoBro</span><span class="t2" style="display:block;">“Ai chưa trả tiền?” · “Chi makeup 2 triệu”</span></span>
             <span class="chev" data-i="chev"></span>
           </button>
         </div>
-        <div class="pills" id="homeChips"></div>
-
-        <a class="hero" id="heroLink" href="https://www.instagram.com/" target="_blank" rel="noopener" aria-label="Ảnh trang chủ">
-          <img src="icon.svg" alt="Cặp đôi áo dài trong khu vườn — ảnh bạn chụp" />
-          <span class="hero-cap"><b>Ánh sáng đẹp nhất là để dành cho ảnh</b>Việc còn lại, cả nhà lo giúp bạn.</span>
-        </a>
-
-        <div class="list quote" id="quoteCard">
-          <button type="button" class="q-stk" id="quoteStk" aria-label="Đổi sticker và câu khác"></button>
-          <div class="q-body">
-            <p class="q-lbl" id="quoteLbl">Câu của hôm nay</p>
-            <p class="q-txt" id="quoteText"></p>
-            <div class="q-act">
-              <button type="button" class="btn tint sm" id="quoteNext">Câu khác</button>
-              <button type="button" class="btn plain sm" id="quoteCopy">Chép gửi bạn</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="sec-h"><h2>Các phòng báo cáo</h2><button class="link" type="button" data-go="depts">Tất cả</button></div>
-        <div class="list" id="deptMini"></div>
-
-        <div class="sec-h"><h2>Ảnh của bạn</h2><a class="link" id="igLink" href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a></div>
-        <div class="moments" id="myShots" style="display:none;margin-bottom:10px;"></div>
-        <div class="moments" id="igShots"><p class="sec-f" style="margin:0;">Chưa có ảnh mẫu — thêm ảnh của bạn từ máy ở dưới.</p></div>
-        <div class="list" style="margin-top:12px;">
-          <label class="row act" style="cursor:pointer;"><span class="ic bg-pink" data-i="plus"></span><span class="txt"><span class="t1" style="display:block;">Thêm ảnh từ máy</span><span class="t2" style="display:block;" id="myShotCount">Ảnh lưu trong app, ảnh trang chủ đổi mỗi ngày</span></span><input type="file" id="myShotFile" accept="image/*" multiple class="hidden" /></label>
-        </div>
-        <p class="sec-f">Ảnh trang chủ tự đổi mỗi ngày. Ảnh Instagram @<span class="igName"></span> chạm để mở bài gốc; ảnh thêm từ máy chỉ nằm trên máy này, chạm để đặt làm ảnh hôm nay hoặc xoá.</p>
       </section>
 
       <!-- ============ BUỔI CHỤP ============ -->
@@ -617,11 +626,11 @@
       <!-- ============ TIỀN BẠC ============ -->
       <section class="view" id="view-money" data-title="Tiền bạc">
         <div class="lt"><p class="eyebrow" id="moneyEyebrow">Tháng này</p><h1>Tiền bạc</h1></div>
-        <div class="tiles" id="moneyStats"></div>
+        <div class="list msum" id="moneyStats"></div>
 
         <div id="gmBank"></div>
-        <div class="sec-h"><h2>Lời theo từng job</h2></div>
-        <div class="list" id="jobProfit"></div>
+        <div class="sec-h"><h2 id="oweTitle">Khách còn thiếu</h2></div>
+        <div class="list" id="oweList"></div>
 
         <div class="sec-h"><h2>Sổ thu chi</h2></div>
         <div class="seg" id="txSeg">
@@ -632,13 +641,20 @@
         </div>
         <div id="txList"></div>
         <p class="sec-f">Chạm vào một khoản để xoá nếu ghi nhầm.</p>
+
+        <div class="sec-h"><h2>Lời theo từng job</h2></div>
+        <div class="list" id="jobProfit"></div>
       </section>
 
       <!-- ============ PHÒNG BAN ============ -->
-      <section class="view" id="view-depts" data-title="Phòng ban">
-        <div class="lt"><p class="eyebrow">Công ty nhỏ của bạn</p><h1>Phòng ban</h1>
-          <p class="lt-sub">Bạn là Giám đốc kiêm nhiếp ảnh gia chính. Sáu phòng, mỗi phòng một bạn phụ trách, cuối ngày báo cáo lại.</p></div>
-        <div class="list" id="deptGrid" style="margin-top:18px;"></div>
+      <section class="view" id="view-depts" data-title="Thêm">
+        <div class="lt"><p class="eyebrow">Công ty nhỏ của bạn</p><h1>Thêm</h1></div>
+        <div class="list" style="margin-top:14px;">
+          <button class="row" type="button" data-go="ask"><span class="ic bg-accent" data-i="bubble"></span><span class="txt"><span class="t1 b" style="display:block;">Trợ lý FotoBro</span><span class="t2" style="display:block;">Hỏi “ai chưa trả tiền?” hoặc nói “chi makeup 2 triệu”</span></span><span class="chev" data-i="chev"></span></button>
+        </div>
+        <div class="sec-h"><h2>Phòng ban</h2></div>
+        <p class="sec-f" style="margin-top:-4px;margin-bottom:10px;">Bạn là Giám đốc kiêm nhiếp ảnh gia chính. Sáu phòng, mỗi phòng một bạn phụ trách, cuối ngày báo cáo lại.</p>
+        <div class="list" id="deptGrid"></div>
 
         <div class="sec-h"><h2>Báo cáo cuối ngày</h2><button class="link" type="button" id="reportMore">Xem đủ</button></div>
         <div class="list">
@@ -664,6 +680,32 @@
         </div>
         <p class="sec-f" id="storageNote">Mọi thứ chỉ nằm trên máy này, không tài khoản, không máy chủ. App tự lưu mỗi lần bạn thêm job hay ghi tiền. Nên tải một bản sao lưu mỗi tuần.</p>
 
+
+        <div class="sec-h"><h2>Góc của bạn</h2></div>
+        <a class="hero" id="heroLink" href="https://www.instagram.com/" target="_blank" rel="noopener" aria-label="Ảnh trang chủ">
+          <img src="icon.svg" alt="Cặp đôi áo dài trong khu vườn — ảnh bạn chụp" />
+          <span class="hero-cap"><b>Ánh sáng đẹp nhất là để dành cho ảnh</b>Việc còn lại, cả nhà lo giúp bạn.</span>
+        </a>
+
+        <div class="list quote" id="quoteCard">
+          <button type="button" class="q-stk" id="quoteStk" aria-label="Đổi sticker và câu khác"></button>
+          <div class="q-body">
+            <p class="q-lbl" id="quoteLbl">Câu của hôm nay</p>
+            <p class="q-txt" id="quoteText"></p>
+            <div class="q-act">
+              <button type="button" class="btn tint sm" id="quoteNext">Câu khác</button>
+              <button type="button" class="btn plain sm" id="quoteCopy">Chép gửi bạn</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec-h"><h2>Ảnh của bạn</h2><a class="link" id="igLink" href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a></div>
+        <div class="moments" id="myShots" style="display:none;margin-bottom:10px;"></div>
+        <div class="moments" id="igShots"><p class="sec-f" style="margin:0;">Chưa có ảnh mẫu — thêm ảnh của bạn từ máy ở dưới.</p></div>
+        <div class="list" style="margin-top:12px;">
+          <label class="row act" style="cursor:pointer;"><span class="ic bg-pink" data-i="plus"></span><span class="txt"><span class="t1" style="display:block;">Thêm ảnh từ máy</span><span class="t2" style="display:block;" id="myShotCount">Ảnh lưu trong app, ảnh trang chủ đổi mỗi ngày</span></span><input type="file" id="myShotFile" accept="image/*" multiple class="hidden" /></label>
+        </div>
+        <p class="sec-f">Ảnh trang chủ tự đổi mỗi ngày. Ảnh Instagram @<span class="igName"></span> chạm để mở bài gốc; ảnh thêm từ máy chỉ nằm trên máy này, chạm để đặt làm ảnh hôm nay hoặc xoá.</p>
 
         <div class="foot">
           <p>Làm cho nhiếp ảnh gia tự do — job, tiền bạc, báo cáo trong một app.</p>
@@ -702,9 +744,9 @@
       <div class="tabbar-in">
         <button type="button" data-view="home" class="on"><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path class="f" d="M4 11.5 13 4l9 7.5V21a1 1 0 0 1-1 1h-5v-6h-6v6H5a1 1 0 0 1-1-1z"/></svg>Hôm nay</button>
         <button type="button" data-view="jobs"><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path class="f" d="M4 9.5A2.5 2.5 0 0 1 6.5 7h2.2l1.6-2.5h5.4L17.3 7h2.2A2.5 2.5 0 0 1 22 9.5v9A2.5 2.5 0 0 1 19.5 21h-13A2.5 2.5 0 0 1 4 18.5z"/><circle cx="13" cy="13.8" r="3.6"/></svg>Buổi chụp</button>
+        <button type="button" class="tab-add" id="tabAdd" aria-label="Ghi nhanh: buổi chụp, khoản thu, khoản chi"><span class="tab-plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>Ghi</button>
         <button type="button" data-view="money"><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect class="f" x="3" y="6.5" width="20" height="13" rx="2.6"/><circle cx="13" cy="13" r="3"/><path d="M6.8 10v6M19.2 10v6"/></svg>Tiền bạc</button>
-        <button type="button" data-view="depts"><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle class="f" cx="9.5" cy="9" r="3.4"/><circle class="f" cx="18" cy="10" r="2.7"/><path class="f" d="M3.8 20.5c.4-3.6 2.6-5.8 5.7-5.8s5.3 2.2 5.7 5.8z"/><path d="M16.5 15.2c2.6.1 4.6 2 5 5.3"/></svg>Phòng ban</button>
-        <button type="button" data-view="ask"><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path class="f" d="M13 4.5c5 0 9 3.3 9 7.4s-4 7.4-9 7.4c-1.1 0-2.2-.16-3.2-.47L5 20.5l1.4-3.7C4.9 15.5 4 13.8 4 11.9 4 7.8 8 4.5 13 4.5z"/></svg>Trợ lý</button>
+        <button type="button" data-view="depts"><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect class="f" x="4" y="4" width="7.5" height="7.5" rx="2.2"/><rect class="f" x="14.5" y="4" width="7.5" height="7.5" rx="2.2"/><rect class="f" x="4" y="14.5" width="7.5" height="7.5" rx="2.2"/><rect class="f" x="14.5" y="14.5" width="7.5" height="7.5" rx="2.2"/></svg>Thêm</button>
       </div>
     </nav>
 
@@ -946,8 +988,8 @@
     /* i18n v1 tối thiểu: chỉ nhãn chính (tab, Hôm nay, form job, Cài đặt).
        Phần còn lại (chi tiết job, sổ tiền, phòng ban, trợ lý, báo cáo) vẫn tiếng Việt — xem README. */
     var I18N = {
-      vi:{ tab_home:'Hôm nay', tab_jobs:'Buổi chụp', tab_money:'Tiền bạc', tab_depts:'Phòng ban', tab_ask:'Trợ lý', today:'Hôm nay', remember:'Cần nhớ hôm nay', ask:'Hỏi trợ lý', settings:'Cài đặt', hello:'Chào', morning:'Buổi sáng an lành', afternoon:'Buổi chiều dịu dàng', evening:'Buổi tối ấm áp', tomorrow:'Ngày mai', yesterday:'Hôm qua', no_date:'chưa hẹn ngày' },
-      en:{ tab_home:'Today', tab_jobs:'Shoots', tab_money:'Money', tab_depts:'Studio', tab_ask:'Assistant', today:'Today', remember:'To remember today', ask:'Ask assistant', settings:'Settings', hello:'Hello', morning:'Good morning', afternoon:'Good afternoon', evening:'Good evening', tomorrow:'Tomorrow', yesterday:'Yesterday', no_date:'no date yet' }
+      vi:{ tab_home:'Hôm nay', tab_jobs:'Buổi chụp', tab_money:'Tiền bạc', tab_depts:'Thêm', tab_ask:'Trợ lý', today:'Hôm nay', remember:'Hôm nay & sắp tới', ask:'Hỏi trợ lý', settings:'Cài đặt', hello:'Chào', morning:'Buổi sáng an lành', afternoon:'Buổi chiều dịu dàng', evening:'Buổi tối ấm áp', tomorrow:'Ngày mai', yesterday:'Hôm qua', no_date:'chưa hẹn ngày' },
+      en:{ tab_home:'Today', tab_jobs:'Shoots', tab_money:'Money', tab_depts:'More', tab_ask:'Assistant', today:'Today', remember:'Today & coming up', ask:'Ask assistant', settings:'Settings', hello:'Hello', morning:'Good morning', afternoon:'Good afternoon', evening:'Good evening', tomorrow:'Tomorrow', yesterday:'Yesterday', no_date:'no date yet' }
     };
     function loc(){ return (state.cfg && state.cfg.locale === 'en') ? 'en' : 'vi'; }
     function tr(k){ var d = I18N[loc()] || I18N.vi; return d[k] || I18N.vi[k] || k; }
@@ -964,6 +1006,7 @@
     function fmtParts(n){
       var a = Math.abs(n), s = n < 0 ? '−' : '';
       var en = loc() === 'en';
+      if (a >= 999500000){ var b = Math.round(a/10000000)/100; return {num:s + String(b).replace('.', en ? '.' : ','), unit:en ? 'B' : 'tỷ'}; }
       if (a >= 999500){ var v = Math.round(a/100000)/10; return {num:s + String(v).replace('.', en ? '.' : ','), unit:en ? 'M' : 'triệu'}; }
       if (a >= 1000) return {num:s + Math.round(a/1000), unit:en ? 'k' : 'nghìn'};
       return {num:s + a, unit:en ? '' : 'đồng'};
@@ -1176,14 +1219,22 @@
       if (view === curView){ window.scrollTo({top:0, behavior:'smooth'}); return; }
       scrollMem[curView] = window.scrollY;
       curView = view;
-      $$('.tabbar button').forEach(function(b){ var on = b.getAttribute('data-view') === view; b.classList.toggle('on', on); if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+      $$('.tabbar button[data-view]').forEach(function(b){ var on = b.getAttribute('data-view') === (view === 'ask' ? 'depts' : view); b.classList.toggle('on', on); if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
       $$('.view').forEach(function(v){ v.classList.toggle('on', v.id === 'view-' + view); });
       if (view === 'ask') setTimeout(function(){ window.scrollTo(0, document.body.scrollHeight); }, 0);
       else window.scrollTo(0, scrollMem[view] || 0);
       renderView(view);
       setNav();
     }
-    $$('.tabbar button').forEach(function(b){ b.addEventListener('click', function(){ go(b.getAttribute('data-view')); }); });
+    $$('.tabbar button[data-view]').forEach(function(b){ b.addEventListener('click', function(){ go(b.getAttribute('data-view')); }); });
+    function quickAdd(){
+      actionSheet({ title:'Ghi nhanh', actions:[
+        {label:'Buổi chụp mới', fn:function(){ openJobForm(); }},
+        {label:'Khoản thu — cọc, tiền về', fn:function(){ openTxForm({kind:'thu'}); }},
+        {label:'Khoản chi — xăng, makeup, thuê đồ', fn:function(){ openTxForm({kind:'chi'}); }}
+      ] });
+    }
+    $('#tabAdd').addEventListener('click', quickAdd);
     $$('[data-go]').forEach(function(b){ b.addEventListener('click', function(){ go(b.getAttribute('data-go')); }); });
 
     /* ================= HÔM NAY ================= */
@@ -1208,6 +1259,9 @@
         var st = stuckInfo(j);
         if (st) items.push({c:'red', icon:'clock', id:j.id, title:'Job kẹt: ' + j.client + ' — kẹt ở bước ' + j.stage, desc:st.reason + '. Mở job để xử lý.'});
       });
+      state.jobs.filter(function(j){ return !j.cancelled && j.stage !== 'Xong' && j.shootDate && j.shootDate > dstr(1) && j.shootDate <= dstr(7); })
+        .sort(function(a, b){ return a.shootDate < b.shootDate ? -1 : 1; })
+        .forEach(function(j){ items.push({c:'gray', icon:'cal', id:j.id, title:fmtRel(j.shootDate) + ': ' + j.client + ' (' + jobTypeLabel(j) + ')', desc:[j.shootTime, j.location].filter(Boolean).join(' · ') || 'chưa ghi giờ, địa điểm'}); });
       return items;
     }
     function tile(o){
@@ -1238,15 +1292,13 @@
       var active = state.jobs.filter(function(j){ return j.stage !== 'Xong'; }).length;
       var items = todayItems();
       $('#homeStats').innerHTML =
-        tile({key:'jobs', c:'accent', icon:'cam', label:'Đang chạy', num:active, unit:'job'}) +
-        tile({key:'today', c:'orange', icon:'bell', label:'Cần nhớ', num:items.length, unit:'việc'}) +
         tile({key:'thu', c:'green', icon:'inarrow', label:'Thu tháng này', parts:fmtParts(sum(monthTxs('thu')))}) +
         tile({key:'owe', c:'red', icon:'wallet', label:'Khách còn thiếu', parts:fmtParts(totalOwe())});
       bindTiles($('#homeStats'));
       $('#todayList').innerHTML = items.length ? items.map(function(it){
         return '<button type="button" class="row" data-job="' + it.id + '"><span class="ic bg-' + it.c + '">' + I(it.icon) + '</span><span class="txt"><span class="t1 b" style="display:block;">' + esc(it.title) + '</span><span class="t2" style="display:block;">' + esc(it.desc) + '</span></span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button>';
-      }).join('') : '<div class="empty-row">' + '<span class="stk-sm">' + STK('sleep') + '</span>' + '<div><div class="b">Hôm nay thong thả lắm</div><div class="muted" style="font-size:0.875rem;">Không có hạn nào dí hết. Pha trà, ngắm ảnh, nghĩ concept mới thôi.</div></div></div>';
-      $('#deptMini').innerHTML = DEPTS.map(function(d){
+      }).join('') : '<div class="empty-row">' + '<span class="stk-sm">' + STK('sleep') + '</span>' + '<div><div class="b">Hôm nay thong thả lắm</div><div class="muted" style="font-size:0.875rem;">7 ngày tới chưa có lịch chụp hay hạn giao nào. Có khách mới thì bấm Buổi chụp ở dưới.</div></div></div>';
+      if ($('#deptMini')) $('#deptMini').innerHTML = DEPTS.map(function(d){
         return '<button type="button" class="row" data-dept="' + d.id + '"><span class="ic round ltr bg-gray">' + d.staff.charAt(0) + '</span><span class="txt"><span class="t1 b" style="display:block;">' + esc(d.name) + '</span><span class="t2 clip" style="display:block;">' + esc(deptLines(d.id)[0] || 'Đang rảnh, chờ lệnh của bạn.') + '</span></span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button>';
       }).join('');
       bindRows($('#view-home'));
@@ -1342,10 +1394,57 @@
     <script>
     /* ================= BUỔI CHỤP ================= */
     var jobFilter = 'Tất cả';
-    function msgFor(j){
-      return 'Chào ' + j.client + '! ' + selfIntro() +
-        'Mình nhắn về buổi chụp ' + jobTypeLabel(j) + ' của mình vào ' + fmtDate(j.shootDate) + (j.shootTime ? ' lúc ' + j.shootTime : '') +
-        (j.location ? ' tại ' + j.location : '') + '. Có gì cần trao đổi thêm, bạn cứ nhắn mình nha. Cảm ơn bạn nhiều!';
+    /* ===== TIN NHẮN MẪU (chat Zalo / Messenger) =====
+       Ngắn 1–2 câu, tự điền tên gọi, ngày, giờ, chỗ, số tiền; thiếu thông tin thì bỏ hẳn vế đó,
+       không bao giờ để lộ chỗ trống. Mẫu email dài nằm riêng ở MAIL_TPLS. */
+    var HO_VN = ['Nguyễn','Trần','Lê','Phạm','Hoàng','Huỳnh','Phan','Vũ','Võ','Đặng','Bùi','Đỗ','Hồ','Ngô','Dương','Lý','Đinh','Đoàn','Trương','Lâm','Mai','Cao','Tạ','Hà','Trịnh','Lương','Tô','Châu','Thái','Quách','Lưu','Kiều','Tăng','Văn','La','Từ'];
+    function callName(s){
+      s = String(s || '').trim(); if (!s) return 'bạn';
+      var w = s.split(/\s+/);
+      /* Họ tên người Việt 3+ chữ: gọi 2 chữ cuối (Nguyễn Thị Mai Anh → Mai Anh). Tên công ty, cặp đôi giữ nguyên. */
+      if (w.length >= 3 && HO_VN.indexOf(w[0]) >= 0 && !/[&,]/.test(s)) return w.slice(-2).join(' ');
+      if (s.length > 24) return 'bạn'; /* tên công ty / bộ sưu tập quá dài: gọi bạn cho tự nhiên */
+      return s;
+    }
+    function capFirst(s){ s = String(s); return s.charAt(0).toUpperCase() + s.slice(1); }
+    function chatWhen(d){
+      if (!d) return '';
+      var dd = dayDiff(d);
+      if (dd === 0) return 'hôm nay'; if (dd === 1) return 'ngày mai';
+      return fmtDate(d);
+    }
+    function chatCtx(j, name){
+      j = j || {};
+      var ten = name || callName(j.client), paid = j.id != null ? jobThu(j.id) : 0, owe = j.id != null ? jobOwe(j) : 0;
+      var pct = state.cfg.depositPct || 40, price = +j.price || 0;
+      return { ten:ten, Ten:capFirst(ten), loai:j.type ? jobTypeLabel(j) : '', khi:chatWhen(j.shootDate), gio:j.shootTime ? ' lúc ' + j.shootTime : '', noi:j.location ? ' ở ' + j.location : '',
+        gia:price ? fmt(price) : '', pct:pct, coc:price ? fmt(Math.round(price * pct / 100 / 1000) * 1000) : '', da:paid ? fmt(paid) : '', con:owe ? fmt(owe) : '',
+        drive:safeUrl(j.driveLink) || '', ig:state.cfg.instagram || '', intro:selfIntro() };
+    }
+    var CHAT_TPLS = [
+      {k:'lienhe', t:'Chào khách', job:true, f:function(x){ return 'Chào ' + x.ten + '! ' + x.intro + 'Mình nhắn về buổi chụp ' + x.loai + (x.khi ? ' ' + x.khi : '') + x.gio + x.noi + ' nè. Bạn cần gì cứ nhắn mình nha.'; }},
+      {k:'hoigia', t:'Trả lời khách hỏi giá', f:function(x){ return 'Chào ' + x.ten + '! ' + x.intro + 'Bạn định chụp dịp gì, ngày nào, ở đâu nè? Mình gửi gói hợp nhất kèm giá liền nha.' + (x.ig ? ' Ảnh mẫu: instagram.com/' + x.ig : ''); }},
+      {k:'baogia', t:'Báo giá & xin cọc', f:function(x){ return x.Ten + ' ơi, gói ' + (x.loai || 'chụp') + ' bên mình ' + (x.gia || '[giá]') + '. Bạn cọc trước ' + x.pct + '%' + (x.coc ? ' (' + x.coc + ')' : '') + ' là mình giữ lịch' + (x.khi ? ' ' + x.khi : '') + ' nha.'; }},
+      {k:'coc', t:'Đã nhận cọc', f:function(x){ return 'Mình nhận cọc' + (x.da ? ' ' + x.da : '') + ' rồi nha ' + x.ten + '! Lịch' + (x.khi ? ' ' + x.khi : '') + ' đã giữ chắc rồi, gần ngày mình nhắn nhắc chuẩn bị.'; }},
+      {k:'nhac', t:'Nhắc lịch chụp', f:function(x){ return x.Ten + ' ơi, nhắc lịch chụp ' + (x.khi || 'sắp tới') + x.gio + x.noi + ' nha. Nhớ ngủ sớm, tới sớm 10 phút giúp mình nhé!'; }},
+      {k:'chon', t:'Mời chọn ảnh', f:function(x){ return x.Ten + ' ơi, ảnh đã lên link rồi nè' + (x.drive ? ': ' + x.drive : '') + '. Bạn chọn tấm ưng rồi gửi số ảnh cho mình nha.'; }},
+      {k:'giao', t:'Giao ảnh', f:function(x){ return 'Ảnh của ' + x.ten + ' xong rồi nè' + (x.drive ? ': ' + x.drive : '') + '. Cần chỉnh tấm nào cứ nói mình nha!'; }},
+      {k:'tien', t:'Nhắc thanh toán', f:function(x){ return x.Ten + ' ơi, buổi chụp' + (x.loai ? ' ' + x.loai : '') + ' còn ' + (x.con || '[số tiền]') + ' nha. Bạn chuyển khi tiện giúp mình, cảm ơn bạn nhiều!'; }},
+      {k:'camnhan', t:'Xin cảm nhận', f:function(x){ return 'Cảm ơn ' + x.ten + ' đã chọn mình! Nếu ưng ảnh, cho mình xin 1 câu cảm nhận và cho đăng vài tấm nhé.'; }}
+    ];
+    function chatTpl(k){ return CHAT_TPLS.filter(function(t){ return t.k === k; })[0]; }
+    function chatMsg(k, j, name){ return chatTpl(k).f(chatCtx(j, name)); }
+    /* Mẫu hợp với bước hiện tại của job */
+    function suggestKey(j){
+      var owe = j.id != null ? jobOwe(j) : 0;
+      return ({ 'Tư vấn':'lienhe', 'Chốt cọc':'coc', 'Sắp chụp':'nhac', 'Đã chụp':'chon', 'Chọn ảnh':'chon', 'Hậu kỳ':'giao', 'Đã giao':owe ? 'tien' : 'camnhan', 'Xong':'camnhan' })[j.stage || 'Tư vấn'] || 'lienhe';
+    }
+    function msgFor(j){ return chatMsg(suggestKey(j), j); }
+    function pickMsg(j){
+      var sk = suggestKey(j);
+      var keys = [sk].concat(CHAT_TPLS.map(function(t){ return t.k; }).filter(function(k){ return k !== sk && k !== 'hoigia'; }));
+      actionSheet({ title:'Chép tin nhắn cho ' + callName(j.client), msg:'Mẫu đầu tiên hợp với bước “' + (j.stage || 'Tư vấn') + '”. Chạm để chép, rồi dán vào Zalo hoặc Messenger.',
+        actions:keys.map(function(k, i){ return {label:chatTpl(k).t + (i === 0 ? ' · gợi ý' : ''), fn:function(){ copyText(chatMsg(k, j), 'Đã chép: ' + chatTpl(k).t); }}; }) });
     }
     function icsDate(dateStr, timeStr){
       var p = dateStr.split('-'); var t = (timeStr || '08:00').split(':');
@@ -1388,7 +1487,7 @@
       var owe = jobOwe(j);
       var sub = [jobTypeLabel(j), fmtRel(j.shootDate) + (j.shootTime ? ' ' + j.shootTime : ''), j.location].filter(Boolean).join(' · ');
       return '<button type="button" class="row" data-job="' + j.id + '">' + typeIcon(j.type) +
-        '<span class="txt"><span class="t1 b clip" style="display:block;">' + esc(j.client) + '</span><span class="t2 clip" style="display:block;">' + esc(sub) + '</span>' + stepsBar(j) + '</span>' +
+        '<span class="txt"><span class="t1 b wrap2" style="display:block;">' + esc(j.client) + '</span><span class="t2 clip" style="display:block;">' + esc(sub) + '</span>' + stepsBar(j) + '</span>' +
         '<span class="job-val">' + stageTag(j) + (owe > 0 && j.stage !== 'Xong' ? '<span class="owe">còn ' + fmtTiny(owe) + '</span>' : '') + '</span>' +
         I('chev').replace('<svg', '<svg class="chev"') + '</button>';
     }
@@ -1402,6 +1501,7 @@
         return at === 0 ? (ad < bd ? -1 : 1) : (ad > bd ? -1 : 1);
       });
     }
+    var jobsShowDone = false;
     function renderJobs(){
       renderStageChips();
       $('#jobsEyebrow').textContent = state.jobs.filter(function(j){ return j.stage !== 'Xong' && !j.cancelled; }).length + ' job đang chạy';
@@ -1411,7 +1511,18 @@
         $('#emptyAddJob').addEventListener('click', function(){ openJobForm(); });
         return;
       }
-      $('#jobList').innerHTML = '<div class="list">' + list.map(jobRow).join('') + '</div>';
+      if (jobFilter === 'Tất cả'){
+        var JOB_GROUPS = [['Sắp chụp', ['Chốt cọc','Sắp chụp']], ['Đang làm ảnh', ['Đã chụp','Chọn ảnh','Hậu kỳ']], ['Đã giao, chờ xong', ['Đã giao']], ['Chờ khách chốt', ['Tư vấn']]];
+        var done = list.filter(function(j){ return j.stage === 'Xong'; });
+        var h = JOB_GROUPS.map(function(g){
+          var it = list.filter(function(j){ return g[1].indexOf(j.stage) >= 0; });
+          return it.length ? '<p class="sec-s">' + esc(g[0]) + ' · ' + it.length + '</p><div class="list">' + it.map(jobRow).join('') + '</div>' : '';
+        }).join('');
+        if (done.length) h += jobsShowDone ? '<p class="sec-s">Đã xong · ' + done.length + '</p><div class="list">' + done.map(jobRow).join('') + '</div>'
+          : '<div class="list" style="margin-top:16px;"><button type="button" class="row" id="jobsDoneMore"><span class="txt t1" style="color:var(--accent-t);">Xem ' + done.length + ' job đã xong</span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button></div>';
+        $('#jobList').innerHTML = h.replace(/^<p class="sec-s">/, '<p class="sec-s" style="margin-top:0;">');
+        var jm = $('#jobsDoneMore'); if (jm) jm.addEventListener('click', function(){ jobsShowDone = true; renderJobs(); });
+      } else $('#jobList').innerHTML = '<div class="list">' + list.map(jobRow).join('') + '</div>';
       bindRows($('#jobList'));
     }
 
@@ -1454,7 +1565,7 @@
         actRow('msgr', 'bubble', 'gray', 'Nhắn Messenger', 'Chép sẵn tin nhắn, qua đó chỉ cần Dán rồi Gửi') +
         actRow('fb', 'globe', 'gray', 'Mở Facebook khách') +
         actRow('mail', 'mail', 'gray', 'Soạn email cho khách', (j.email || 'Chưa có email') + ' · xác nhận lịch, cọc, giao ảnh…') +
-        actRow('copymsg', 'copy', 'gray', 'Chép tin nhắn mẫu') + '</div>';
+        actRow('copymsg', 'copy', 'gray', 'Chép tin nhắn mẫu', 'Gợi ý: ' + chatTpl(suggestKey(j)).t + ' — chọn mẫu khác cũng được') + '</div>';
       h += '<p class="sec-s">Lịch &amp; nhắc việc</p><div class="list">' +
         (googleClientId() && state.cfg.gFeat && state.cfg.gFeat.calw ? actRow('gcalsave', 'calplus', 'gray', j.gEventId ? 'Cập nhật trên Google Lịch' : 'Thêm vào Google Lịch', j.gEventId ? 'Đã có trên Google Lịch — bấm để đồng bộ lại' : 'Ghi thẳng vào lịch của bạn, nhắc trước 12 tiếng') : '') +
         actRow('ics', 'cal', 'gray', 'Lưu vào app Lịch', 'Tải file .ics, có nhắc trước 12 tiếng') +
@@ -1566,7 +1677,7 @@
       if (act === 'call'){ location.href = 'tel:' + String(j.phone).replace(/[^\d+]/g, ''); return; }
       if (act === 'zalo'){ window.open('https://zalo.me/' + String(j.phone).replace(/[^\d]/g, '').replace(/^84/, '0'), '_blank'); return; }
       if (act === 'drivepick'){ if (typeof openDrivePicker === 'function') openDrivePicker(j); return; }
-      if (act === 'copymsg'){ copyText(msgFor(j), 'Đã chép tin nhắn mẫu'); }
+      if (act === 'copymsg'){ pickMsg(j); }
       if (act === 'gcalsave'){ if (typeof gCalSave === 'function') gCalSave(j); return; }
       if (act === 'mail' && typeof openComposer === 'function'){ openComposer(id); return; }
       if (act === 'mail'){
@@ -1834,19 +1945,25 @@
     function renderMoney(){
       var sThu = sum(monthTxs('thu')), sChi = sum(monthTxs('chi'));
       var mm = parseD(dstr(0)); $('#moneyEyebrow').textContent = 'Tháng ' + (mm.getMonth()+1) + ', ' + mm.getFullYear();
-      $('#moneyStats').innerHTML =
-        tile({key:'thu', c:'green', icon:'inarrow', label:'Thu tháng này', parts:fmtParts(sThu)}) +
-        tile({key:'chi', c:'red', icon:'outarrow', label:'Chi tháng này', parts:fmtParts(sChi)}) +
-        tile({key:'loi', c:'teal', icon:'coin', label:'Lời tháng này', parts:fmtParts(sThu - sChi)}) +
-        tile({key:'owe', c:'orange', icon:'wallet', label:'Khách còn thiếu', parts:fmtParts(totalOwe())});
-      bindTiles($('#moneyStats'));
+      $('#moneyStats').innerHTML = '<div class="msum-c"><span>Thu</span><b class="num green">' + esc(fmtShort(sThu)) + '</b></div>' +
+        '<div class="msum-c"><span>Chi</span><b class="num">' + esc(fmtShort(sChi)) + '</b></div>' +
+        '<div class="msum-c"><span>Lời</span><b class="num' + (sThu - sChi < 0 ? ' red' : '') + '">' + (sThu - sChi < 0 ? '−' : '') + esc(fmtShort(Math.abs(sThu - sChi))) + '</b></div>';
+      var owes = state.jobs.filter(function(j){ return j.stage !== 'Xong' && !j.cancelled && jobOwe(j) > 0; }).sort(function(a, b){ return jobOwe(b) - jobOwe(a); });
+      $('#oweTitle').textContent = 'Khách còn thiếu' + (owes.length ? ' · ' + fmtShort(totalOwe()) : '');
+      $('#oweList').innerHTML = owes.length ? owes.map(function(j){
+        var paid = jobThu(j.id);
+        return '<div class="row owe-row" data-job="' + j.id + '" role="button" tabindex="0"><span class="txt"><span class="t1 b wrap2" style="display:block;">' + esc(j.client) + '</span><span class="t2" style="display:block;">' + esc(jobTypeLabel(j)) + ' · ' + (paid ? 'đã nhận ' + fmtTiny(paid) + ' / ' + fmtTiny(j.price) : 'chưa nhận cọc') + '</span></span>' +
+          '<span class="val num b red">' + fmtTiny(jobOwe(j)) + '</span><button type="button" class="btn tint sm owe-nhac" data-nhac="' + j.id + '" aria-label="Chép tin nhắc thanh toán cho ' + esc(j.client) + '">Nhắc</button></div>';
+      }).join('') : '<div class="empty-row muted">Khách trả đủ hết rồi, không ai còn thiếu.</div>';
+      $$('#oweList [data-nhac]').forEach(function(b){ b.addEventListener('click', function(e){ e.stopPropagation(); var j = jobById(b.getAttribute('data-nhac')); if (j) copyText(chatMsg('tien', j), 'Đã chép tin nhắc — dán vào Zalo hoặc Messenger'); }); });
+      $$('#oweList .owe-row').forEach(function(r){ r.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openJob(r.getAttribute('data-job')); } }); });
       /* Nhiều job (> 6): mặc định chỉ hiện job đang chạy, job đã xong gom vào nút "Xem thêm" — Sổ thu chi đỡ bị đẩy xuống xa. */
       var pjAll = sortJobs(state.jobs), pjDone = pjAll.filter(function(j){ return j.stage === 'Xong'; }).length;
       var pjFold = !profitShowAll && pjAll.length > 6 && pjDone > 0;
       var pjList = pjFold ? pjAll.filter(function(j){ return j.stage !== 'Xong'; }) : pjAll;
       $('#jobProfit').innerHTML = (state.jobs.length ? pjList.map(function(j){
         var t = jobThu(j.id), c = jobChi(j.id), owe = jobOwe(j), p = t - c;
-        return '<button type="button" class="row" data-job="' + j.id + '">' + typeIcon(j.type) + '<span class="txt"><span class="t1 b clip" style="display:block;">' + esc(j.client) + '</span><span class="t2" style="display:block;">Thu ' + fmtTiny(t) + ' · Chi ' + fmtTiny(c) + (owe && j.stage !== 'Xong' ? ' · <span class="red">thiếu ' + fmtTiny(owe) + '</span>' : '') + '</span></span>' +
+        return '<button type="button" class="row" data-job="' + j.id + '">' + typeIcon(j.type) + '<span class="txt"><span class="t1 b wrap2" style="display:block;">' + esc(j.client) + '</span><span class="t2" style="display:block;">Thu ' + fmtTiny(t) + ' · Chi ' + fmtTiny(c) + (owe && j.stage !== 'Xong' ? ' · <span class="red">thiếu ' + fmtTiny(owe) + '</span>' : '') + '</span></span>' +
           (p === 0 ? '<span class="val num">0₫</span>' : '<span class="val num b ' + (p > 0 ? 'green' : 'red') + '" style="font-size:1.0625rem;">' + (p > 0 ? '+' : '−') + esc(fmtShort(Math.abs(p))) + '</span>') + I('chev').replace('<svg', '<svg class="chev"') + '</button>';
       }).join('') : '<div class="empty-row muted">Chưa có job nào.</div>') +
         (pjFold ? '<button type="button" class="row" id="profitMore"><span class="txt t1" style="color:var(--accent-t);">Xem thêm ' + pjDone + ' job đã xong</span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button>' : '');
@@ -1942,22 +2059,19 @@
       Object.keys(map).forEach(function(k){ if (!best || map[k] > best.total) best = {cat:k, total:map[k]}; });
       return best;
     }
-    var TPLS = [
-      {t:'Khách hỏi giá lần đầu', b:'Chào {ten}! Cảm ơn bạn đã ghé studio mình nè. Bạn cho mình hỏi thêm xíu: bạn muốn chụp dịp gì, khoảng ngày nào, và ở đâu? Mình gửi gói phù hợp nhất kèm giá cho bạn liền nha. Ảnh của mình bạn xem thêm ở instagram.com/{ig} nhé!'},
-      {t:'Gửi báo giá & chốt cọc', b:'{ten} ơi, gói chụp của mình là {gia}. Bạn cọc trước 40% để mình giữ lịch nha, phần còn lại trả sau khi giao ảnh. Chốt lịch xong mình gửi timeline chuẩn bị cho bạn luôn.'},
-      {t:'Xác nhận đã nhận cọc', b:'Mình nhận được cọc rồi nè {ten}! Lịch chụp của mình đã được giữ chắc chắn. Gần tới ngày mình sẽ nhắn nhắc chuẩn bị trang phục và giờ giấc nha. Cảm ơn bạn đã tin mình!'},
-      {t:'Nhắc trước ngày chụp', b:'{ten} ơi, mai là ngày chụp của mình rồi nè! Bạn nhớ ngủ sớm, chuẩn bị trang phục như mình đã hẹn. Hẹn gặp bạn đúng giờ, mình mang theo đầy đủ đồ nghề rồi. Háo hức quá!'},
-      {t:'Nhắc khách chọn ảnh', b:'{ten} ơi, ảnh buổi chụp đã lên link rồi nè. Bạn thong thả chọn những tấm ưng nhất rồi gửi lại mã ảnh cho mình, mình hậu kỳ kỹ rồi giao đúng hẹn nha.'},
-      {t:'Giao ảnh & xin cảm nhận', b:'{ten} ơi, ảnh của bạn xong rồi nè — mình để link ở đây. Bạn xem thử, có tấm nào muốn mình chỉnh thêm cứ nói nha. Nếu bạn vui, cho mình xin một câu cảm nhận và cho phép mình đăng vài tấm lên trang nhé. Cảm ơn bạn rất nhiều!'}
-    ];
     var CAPTION = 'Có những buổi sáng, ánh nắng tự nó đã là một bài thơ — việc của mình chỉ là đứng đúng chỗ và bấm máy.';
+    function tplRows(name){
+      var nm = String(name || '').trim();
+      return CHAT_TPLS.filter(function(t){ return !t.job; }).map(function(t){
+        return '<button type="button" class="row tpl-row" data-tpl="' + t.k + '"><span class="txt"><span class="t1 b" style="display:block;">' + esc(t.t) + '</span><span class="t2 wrap2" style="display:block;">' + esc(chatMsg(t.k, null, nm || 'bạn')) + '</span></span><span class="tpl-copy" aria-hidden="true">' + I('copy') + '</span></button>';
+      }).join('');
+    }
     function deptTools(id){
       if (id === 'donkhach'){
         var h = '<p class="sec-s">Mẫu tin nhắn — chạm để chép</p><div class="list">' +
-          frow('Tên khách', '<input id="tplName" placeholder="chị Lan Anh" />') + '</div>' +
-          '<div class="list" style="margin-top:12px;">' + TPLS.map(function(t, i){
-            return '<div class="tpl"><b>' + esc(t.t) + '</b><p>' + esc(brand(t.b)) + '</p><button type="button" class="btn tint sm" data-tpl="' + i + '">' + I('copy') + 'Chép mẫu này</button></div>';
-          }).join('') + '</div>';
+          frow('Tên khách', '<input id="tplName" placeholder="chị Lan Anh" autocomplete="off" />') + '</div>' +
+          '<div class="list" style="margin-top:12px;" id="tplList">' + tplRows('') + '</div>' +
+          '<p class="sec-f">Chạm một mẫu là chép. Trong từng buổi chụp, nút “Chép tin nhắn mẫu” tự điền ngày, giờ, số tiền của khách đó.</p>';
         h += '<p class="sec-s">Tính giá nhanh</p><div class="list">' +
           frow('Gói chụp', '<select id="calcPkg">' + Object.keys(state.cfg.prices).filter(function(t){ return state.cfg.prices[t] > 0; }).map(function(t){ return '<option value="' + esc(t) + '">' + esc(t) + ' — ' + fmt(state.cfg.prices[t]) + '</option>'; }).join('') + '</select>') +
           frow('Chụp bằng', '<select id="calcMedium">' + MEDIUMS.map(function(m){ return '<option>' + esc(m) + '</option>'; }).join('') + '</select>') +
@@ -1991,10 +2105,12 @@
         '<p class="sec-s">Báo cáo hôm nay</p><div class="list"><ul class="dept-lines">' + deptLines(d.id).map(function(l){ return '<li>' + esc(l) + '</li>'; }).join('') + '</ul></div>' + deptTools(d.id);
       openSheet({ title:d.name, left:'Đóng', tall: id === 'donkhach', body:body, bind:function(api){
         var b = api.body;
-        $$('[data-tpl]', b).forEach(function(x){ x.addEventListener('click', function(){
+        function bindTpl(){ $$('[data-tpl]', b).forEach(function(x){ x.addEventListener('click', function(){
           var name = ($('#tplName', b) && $('#tplName', b).value.trim()) || 'bạn';
-          copyText(brand(TPLS[+x.getAttribute('data-tpl')].b).replace(/\{ten\}/g, name).replace(/\{gia\}/g, '…'), 'Đã chép mẫu tin — dán vào Messenger là gửi được');
-        }); });
+          copyText(chatMsg(x.getAttribute('data-tpl'), null, name), 'Đã chép — dán vào Zalo hoặc Messenger là gửi được');
+        }); }); }
+        bindTpl();
+        var tn = $('#tplName', b); if (tn) tn.addEventListener('input', function(){ $('#tplList', b).innerHTML = tplRows(tn.value); bindTpl(); });
         $$('[data-cap]', b).forEach(function(x){ x.addEventListener('click', function(){ copyText(CAPTION, 'Đã chép caption'); }); });
         $$('[data-goto]', b).forEach(function(x){ x.addEventListener('click', function(){ api.close(); go(x.getAttribute('data-goto')); }); });
         if ($('#calcPkg', b)){
@@ -2126,7 +2242,6 @@
       $$('.pill', el).forEach(function(c){ c.addEventListener('click', function(){ handler(c.textContent); }); });
     }
     fillChips($('#askChips'), function(q){ askAndAnswer(q); });
-    fillChips($('#homeChips'), function(q){ go('ask'); askAndAnswer(q); });
 
     /* ================= GIỌNG NÓI ================= */
     function speak(text){
@@ -2244,7 +2359,10 @@
       }catch(e){ stopListening(); toast('Giọng nói chưa dùng được trên máy này', 'warn'); }
     }
     $('#micBtn').addEventListener('click', startListening);
-    $('#homeMic').addEventListener('click', function(){ go('ask'); startListening(); });
+    $('#homeAsk').addEventListener('click', function(){ go('ask'); });
+    $('#qJob').addEventListener('click', function(){ openJobForm(); });
+    $('#qThu').addEventListener('click', function(){ openTxForm({kind:'thu'}); });
+    $('#qChi').addEventListener('click', function(){ openTxForm({kind:'chi'}); });
     $('#voiceYes').addEventListener('click', function(){ $('#voiceHeard').classList.add('hidden'); if (pendingVoice) runVoiceCommand(pendingVoice); pendingVoice = ''; });
     $('#voiceRetry').addEventListener('click', function(){ $('#voiceHeard').classList.add('hidden'); startListening(); });
     $('#voiceEdit').addEventListener('click', function(){ $('#voiceHeard').classList.add('hidden'); askInput.value = pendingVoice; sendBtn.disabled = !pendingVoice; askInput.focus(); });
@@ -2331,10 +2449,10 @@
     window.addEventListener('pagehide', flushSave);
     function renderView(v){
       if (v === 'home') renderHome();
-      else if (v === 'jobs') renderJobs();
+      else if (v === 'jobs'){ renderJobs(); renderChecklist(); } /* Chuẩn bị đồ nằm trong tab Buổi chụp */
       else if (v === 'money') renderMoney();
       else if (v === 'depts') renderDepts();
-      else if (v === 'ask') renderChecklist();
+      else if (v === 'ask') renderChecklist(); /* giữ: Trợ lý có thể đổi job → danh sách đồ cập nhật sẵn */
     }
     function renderAll(){
       saveLocalSoon();
@@ -2699,26 +2817,26 @@
           '<h1>Chào mừng <em>' + esc(greetName()) + '</em><br/>tới công ty nhỏ của mình</h1>' +
           '<p class="wl-sub">Từ hôm nay ' + esc(greetName()) + ' chỉ việc chụp thật đẹp. Giấy tờ, tiền bạc, nhắc việc — để cả nhà lo, sáu phòng ban trực sẵn rồi.</p>' +
           '<p class="wl-tag">' + esc(c.tagline || '') + '</p></div>',
-        '<div class="wl-in"><div class="wl-mini">' + STK('cam') + '</div><h2>Năm tab, năm người bạn</h2><p class="wl-sub">Thanh dưới cùng là năm tab, chạm là chuyển.</p><div class="list wl-list">' +
-          guideRow('sun', 'orange', 'Hôm nay', 'Việc cần nhớ, khách còn thiếu tiền, câu hay mỗi ngày') +
+        '<div class="wl-in"><div class="wl-mini">' + STK('cam') + '</div><h2>Thanh dưới cùng</h2><p class="wl-sub">Bốn tab và một nút Ghi ở giữa, chạm là chuyển.</p><div class="list wl-list">' +
+          guideRow('sun', 'orange', 'Hôm nay', 'Hôm nay chụp ai, hạn giao, khách còn thiếu — gọn trong một màn') +
           guideRow('cam', 'accent', 'Buổi chụp', 'Mỗi khách một dòng, 8 bước từ Tư vấn tới Xong, danh sách chuẩn bị đồ') +
-          guideRow('wallet', 'green', 'Tiền bạc', 'Sổ thu chi, lời từng job, lời tháng — app tự tính') +
-          guideRow('person', 'purple', 'Phòng ban', 'Sáu phòng báo cáo mỗi ngày, mẫu tin nhắn, máy tính giá') +
-          guideRow('bubble', 'blue', 'Trợ lý', 'Hỏi “ai chưa trả tiền?” hoặc ra lệnh “chi makeup 2 triệu”') + '</div></div>',
+          guideRow('plus', 'accent', 'Nút Ghi (+)', 'Ghi buổi chụp mới, khoản thu, khoản chi từ bất cứ đâu') + guideRow('wallet', 'green', 'Tiền bạc', 'Ai còn thiếu tiền, sổ thu chi, lời từng job — app tự tính') +
+          guideRow('person', 'purple', 'Thêm', 'Trợ lý, sáu phòng ban, báo cáo cuối ngày, cài đặt, sao lưu, ảnh của bạn') +
+          '</div></div>',
         '<div class="wl-in"><div class="wl-mini">' + STK('party') + '</div><h2>Vài mẹo nhỏ</h2><p class="wl-sub">Biết mấy cái này là dùng như dân chuyên.</p><div class="list wl-list">' +
-          guideRow('plusc', 'accent', 'Nút ＋ góc trên', 'Thêm buổi chụp mới, ghi khoản thu chi') +
+          guideRow('plusc', 'accent', 'Nút Ghi ở giữa', 'Thêm buổi chụp mới, ghi khoản thu chi — ở tab nào cũng bấm được') +
           guideRow('arrowr', 'gray', 'Chạm vào một dòng', 'Mở chi tiết: tiến độ, tiền, nhắn khách, lịch, Drive. Kéo xuống để đóng') +
           guideRow('gear', 'gray', 'Bánh răng = Cài đặt', 'Giá gói, % cọc, số ngày giao ảnh, thiết bị, chi cố định, màu giao diện, nhập lịch') +
           guideRow('cal', 'red', 'Nhập từ Lịch iPhone', 'Bấm 1 chạm trong app iOS — sự kiện 30 ngày tới thành buổi chụp; hoặc đăng nhập Google để đọc Lịch Google') +
           guideRow('mic', 'red', 'Giọng nói (bản v2.1)', 'Giọng nói sẽ có ở bản v2.1 — giờ gõ câu hỏi nha') +
-          guideRow('download', 'green', 'Sao lưu mỗi tuần', 'Phòng ban → Tải bản sao lưu. Đổi máy thì mở lại file đó') +
+          guideRow('download', 'green', 'Sao lưu mỗi tuần', 'Thêm → Tải bản sao lưu. Đổi máy thì mở lại file đó') +
           guideRow('heart', 'red', 'Dữ liệu ở trên máy', 'Không tài khoản, không máy chủ — job và sổ tiền chỉ lưu trên điện thoại của bạn') + '</div></div>',
         '<div class="wl-in"><img src="icon-192.png" alt="FotoBro" style="width:72px;height:72px;border-radius:17px;margin:0 auto;box-shadow:0 0 0 .5px var(--sep);" />' +
           (firstTime && state.sample
             ? '<h2>Sẵn sàng chưa ' + esc(greetName()) + '?</h2><p class="wl-sub">App đang có vài job và khoản tiền <b>mẫu</b> để xem thử. Muốn dùng thật thì bắt đầu với sổ trống nhé.</p>' +
               '<div class="wl-choices"><button type="button" class="btn fill" id="wlReal">Bắt đầu sổ trống — dùng thật</button><button type="button" class="btn tint" id="wlCal">' + I('cal', 2.2) + 'Nhập từ Lịch iPhone</button><button type="button" class="btn gray" id="wlSample">Xem thử với dữ liệu mẫu trước</button></div>' +
               '<p class="sec-f" style="text-align:center;">Xem thử xong, bấm “Dùng thật” ở dải trên cùng trang Hôm nay là xoá dữ liệu mẫu.</p>'
-            : '<h2>' + (firstTime ? 'Vào app thôi ' + esc(greetName()) + '!' : 'Hết hướng dẫn rồi!') + '</h2><p class="wl-sub">Có gì quên thì vào Phòng ban → Hướng dẫn sử dụng để xem lại.</p>' +
+            : '<h2>' + (firstTime ? 'Vào app thôi ' + esc(greetName()) + '!' : 'Hết hướng dẫn rồi!') + '</h2><p class="wl-sub">Có gì quên thì vào Thêm → Hướng dẫn sử dụng để xem lại.</p>' +
               '<div class="wl-choices"><button type="button" class="btn fill" id="wlGo">' + (firstTime ? 'Vào app' : 'Đóng hướng dẫn') + '</button><button type="button" class="btn tint" id="wlCal">' + I('cal', 2.2) + 'Nhập từ Lịch iPhone</button></div>') +
           '</div>'
       ];

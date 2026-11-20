@@ -49,7 +49,10 @@ async function loadDom(beforeParse) {
   eq('title là FotoBro', doc.title, 'FotoBro');
   eq('APP_VERSION 2.0', W.APP_VERSION, '2.0');
   eq('storage key giữ troLyXeo.v1', W.LS_KEY, 'troLyXeo.v1');
-  t('đủ 5 tab', doc.querySelectorAll('.tabbar button[data-view]').length === 5,
+  // Phương án A (20/11/2026): 5 ô = 4 màn (home, jobs, money, depts/Thêm) + nút Ghi nhanh ở giữa
+  t('đủ 5 ô thanh tab (4 màn + nút Ghi)', doc.querySelectorAll('.tabbar button').length === 5 &&
+    [...doc.querySelectorAll('.tabbar button[data-view]')].map(b => b.getAttribute('data-view')).join(',') === 'home,jobs,money,depts' &&
+    !!doc.querySelector('.tabbar #tabAdd'),
     [...doc.querySelectorAll('.tabbar button[data-view]')].map(b => b.getAttribute('data-view')).join(','));
   t('source chứa fotobro-sao-luu.json', html.includes('fotobro-sao-luu.json'));
   t('source không chứa tro-ly-xeo-sao-luu.json', !html.includes('tro-ly-xeo-sao-luu.json'));
