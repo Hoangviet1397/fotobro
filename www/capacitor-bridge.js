@@ -38,7 +38,7 @@
  *  - @capacitor/app, @capacitor/browser, @capacitor/calendar,
  *    @capacitor/local-notifications, @capacitor/haptics, @capacitor/share,
  *    @capacitor/camera, @capacitor/splash-screen, @capacitor/status-bar,
- *    @capacitor/preferences.
+ *    @capacitor/preferences, @capawesome/capacitor-apple-sign-in (v2.1).
  *  Trong WebView, Capacitor tự chèn đối tượng `window.Capacitor` với
  *  `Capacitor.Plugins.*`. Trên bản web (Safari / GitHub Pages) đối tượng
  *  này không có — mọi nhánh dưới đây đều guard, app web chạy y như cũ.
@@ -165,6 +165,32 @@
   // để code web kiểm tra nhanh plugin có sẵn không, không gọi gì khác.
   window.__fotobroNativeCalendar = function () {
     return !!(P.Calendar && P.Calendar.findEvents);
+  };
+
+  /* ---------- 7. Đăng nhập bằng Apple (v2.1) ---------- */
+  // Plugin @capawesome/capacitor-apple-sign-in 0.1.5 — jsName "AppleSignIn".
+  // Chỉ native iOS. Trả về { user, email, givenName, familyName } hoặc null khi
+  // người dùng bấm Huỷ (không toast lỗi). Lỗi thật thì throw để index.html toast.
+  // idToken / authorizationCode KHÔNG trả về cho index.html (v2.1 không có
+  // server để xác thực, giữ lại chỉ thêm rủi ro — xem APPLE-SIGNIN-PLAN.md §5).
+  // Không gọi initialize() — chỉ cần cho Android/Web.
+  window.__fotobroAppleSignIn = async function () {
+    var SIA = P.AppleSignIn;
+    if (!SIA || !SIA.signIn) return null; // plugin chưa có (web / build cũ)
+    var nonce = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    var r;
+    try {
+      r = await SIA.signIn({ scopes: ['EMAIL', 'FULL_NAME'], nonce: nonce });
+    } catch (e) {
+      if (e && e.code === 'SIGN_IN_CANCELED') return null; // người dùng bấm Huỷ: im lặng
+      throw e;
+    }
+    r = r || {};
+    return { user: r.user || null, email: r.email || null,
+             givenName: r.givenName || null, familyName: r.familyName || null };
+  };
+  window.__fotobroAppleAvailable = function () {
+    return !!(P.AppleSignIn && P.AppleSignIn.signIn);
   };
 
   void isIOS;

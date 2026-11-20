@@ -305,6 +305,121 @@ async function loadDom(beforeParse) {
   eq('mở mới: 0 job', w3.win.state.jobs.length, 0);
   t('mở mới: #sampleBanner ẩn', w3.doc.querySelector('#sampleBanner').classList.contains('hidden'));
 
+  console.log('\n[14] Đăng nhập bằng Apple (v2.1): hàng ẩn trên web, hiện khi có plugin');
+  // (a) Bản web: không có window.Capacitor -> Cài đặt không có mục Tài khoản
+  W.state.cfg.apple = null;
+  W.openSettings();
+  await sleep(100);
+  const _sheets14 = doc.querySelectorAll('.sheet .sheet-body');
+  const st14 = _sheets14[_sheets14.length - 1];
+  t('web: Cài đặt không có nút Apple', !st14.querySelector('#aConnRow'));
+  t('web: Cài đặt không có mục Tài khoản', !st14.innerHTML.includes('Đăng nhập bằng Apple'));
+  await saveSheet();
+  // (b) App iPhone: mock Capacitor + bridge (trả kèm token để kiểm tra không lưu token)
+  const appleMock = { user: '000123.abc', email: 'a@privaterelay.appleid.com', givenName: 'Mai', familyName: 'Anh', idToken: 'FAKE-ID-TOKEN', authorizationCode: 'FAKE-AUTH-CODE' };
+  const { win: wA, doc: dA } = await loadDom(w => {
+    w.Capacitor = { isNativePlatform: () => true, getPlatform: () => 'ios', Plugins: {} };
+    w.__fotobroAppleAvailable = () => true;
+    w.__fotobroAppleSignIn = async () => ({ ...appleMock });
+  });
+  DOC = dA;
+  eq('apple: mặc định cfg.apple null', wA.state.cfg.apple, null);
+  wA.openSettings();
+  await sleep(100);
+  let stA = dA.querySelectorAll('.sheet .sheet-body');
+  stA = stA[stA.length - 1];
+  t('apple: Cài đặt có nút Đăng nhập bằng Apple', !!stA.querySelector('#aConnRow'));
+  t('apple: có mục Tài khoản', stA.innerHTML.includes('Tài khoản'));
+  stA.querySelector('#aConnRow').click();
+  await sleep(300);
+  eq('apple: cfg.apple.user', wA.state.cfg.apple.user, '000123.abc');
+  eq('apple: tên Mai Anh', wA.state.cfg.apple.name, 'Mai Anh');
+  eq('apple: email relay', wA.state.cfg.apple.email, 'a@privaterelay.appleid.com');
+  eq('apple: relay true', wA.state.cfg.apple.relay, true);
+  // (c) không lưu token
+  const savedA = wA.localStorage.getItem('troLyXeo.v1') || '';
+  t('apple: localStorage không chứa idToken giả', !savedA.includes('FAKE-ID-TOKEN'));
+  t('apple: localStorage không chứa authorizationCode giả', !savedA.includes('FAKE-AUTH-CODE'));
+  // (d) Cài đặt hiện trạng thái đã đăng nhập
+  stA = dA.querySelectorAll('.sheet .sheet-body');
+  stA = stA[stA.length - 1];
+  t('apple: đã đăng nhập hiện tên Mai Anh', stA.innerHTML.includes('Mai Anh'));
+  t('apple: đã đăng nhập có nút Đăng xuất', !!stA.querySelector('#aDisc'));
+  t('apple: relay có chú thích Email ẩn', stA.innerHTML.includes('Email ẩn'));
+  // (e) đăng nhập lần 2 không trả tên/email -> giữ tên cũ
+  wA.__fotobroAppleSignIn = async () => ({ user: '000123.abc', email: null, givenName: null, familyName: null });
+  await wA.aConnect();
+  await sleep(200);
+  eq('apple lần 2: tên Mai Anh còn nguyên', wA.state.cfg.apple.name, 'Mai Anh');
+  eq('apple lần 2: email relay còn nguyên', wA.state.cfg.apple.email, 'a@privaterelay.appleid.com');
+  // (f) bấm Huỷ: im lặng, không toast lỗi, cfg không đổi
+  const origToast = wA.toast;
+  const seenToasts = [];
+  wA.toast = function(m, k){ seenToasts.push(m); };
+  wA.__fotobroAppleSignIn = async () => null;
+  await wA.aConnect();
+  await sleep(100);
+  eq('apple huỷ: cfg.apple.user không đổi', wA.state.cfg.apple.user, '000123.abc');
+  t('apple huỷ: không toast nào', seenToasts.length === 0, seenToasts.join('|'));
+  wA.toast = origToast;
+  // (g) đăng xuất: xoá apple, job/tiền không đổi
+  const jobsBefore = wA.state.jobs.length, txsBefore = wA.state.txs.length;
+  wA.aDisconnect();
+  await sleep(100);
+  lastAsheetBtn('[data-a="0"]').click();
+  await sleep(300);
+  eq('apple đăng xuất: cfg.apple null', wA.state.cfg.apple, null);
+  eq('apple đăng xuất: số job không đổi', wA.state.jobs.length, jobsBefore);
+  eq('apple đăng xuất: số tx không đổi', wA.state.txs.length, txsBefore);
+  // (h) mergeCfg + wipeAll
+  const dApple = wA.mergeCfg({ apple: { user: 'x9', name: 'Test', email: 't@x.com', relay: false, at: 123 } });
+  eq('mergeCfg giữ apple.user', dApple.apple.user, 'x9');
+  eq('mergeCfg giữ apple.name', dApple.apple.name, 'Test');
+  eq('mergeCfg apple không user -> null', wA.mergeCfg({ apple: { name: 'NoUser' } }).apple, null);
+  wA.state.cfg.apple = { user: 'x9', name: 'Test', email: 't@x.com', relay: false, at: 1 };
+  wA.saveLocal();
+  t('wipe: trước wipe có troLyXeo.v1', !!wA.localStorage.getItem('troLyXeo.v1'));
+  wA.wipeAll();
+  await sleep(600);
+  t('wipe: sau wipe mất troLyXeo.v1', !wA.localStorage.getItem('troLyXeo.v1'));
+  eq('wipe: sau wipe cfg.apple null', wA.state.cfg.apple, null);
+  await saveSheet();
+
+  console.log('\n[15] Bridge Apple (capacitor-bridge.js): map kết quả phẳng, Huỷ im lặng');
+  const bridgeSrc = fs.readFileSync(path.join(__dirname, 'www', 'capacitor-bridge.js'), 'utf-8');
+  async function loadBridge(signInImpl){
+    const dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>', {
+      url: 'http://localhost/', runScripts: 'dangerously', pretendToBeVisual: true,
+      beforeParse(w){
+        w.Capacitor = { isNativePlatform: () => true, getPlatform: () => 'ios',
+          Plugins: { AppleSignIn: signInImpl ? { signIn: signInImpl } : {} } };
+      }
+    });
+    const s = dom.window.document.createElement('script');
+    s.textContent = bridgeSrc;
+    dom.window.document.body.appendChild(s);
+    await new Promise(r => setTimeout(r, 50));
+    return dom.window;
+  }
+  const bw1 = await loadBridge(async () => ({ user: '000123.abc', email: 'a@privaterelay.appleid.com', givenName: 'Mai', familyName: 'Anh', idToken: 'FAKE-ID-TOKEN', authorizationCode: 'FAKE-AUTH-CODE', realUserStatus: 'LIKELY_REAL' }));
+  t('bridge: AppleSignIn có sẵn', bw1.__fotobroAppleAvailable() === true);
+  const br1 = await bw1.__fotobroAppleSignIn();
+  eq('bridge: user', br1.user, '000123.abc');
+  eq('bridge: email', br1.email, 'a@privaterelay.appleid.com');
+  eq('bridge: givenName', br1.givenName, 'Mai');
+  eq('bridge: familyName', br1.familyName, 'Anh');
+  t('bridge: không trả idToken', !('idToken' in br1));
+  t('bridge: không trả authorizationCode', !('authorizationCode' in br1));
+  const bw2 = await loadBridge(async () => { const e = new Error('Sign in was canceled.'); e.code = 'SIGN_IN_CANCELED'; throw e; });
+  eq('bridge: Huỷ -> null', await bw2.__fotobroAppleSignIn(), null);
+  const bw3 = await loadBridge(async () => { throw new Error('Network error'); });
+  let threw = false;
+  try { await bw3.__fotobroAppleSignIn(); } catch (e) { threw = true; }
+  t('bridge: lỗi thật -> throw', threw);
+  const bw4 = await loadBridge(null);
+  t('bridge: không plugin -> available false', bw4.__fotobroAppleAvailable() === false);
+  eq('bridge: không plugin -> signIn null', await bw4.__fotobroAppleSignIn(), null);
+
   console.log('\n===== KẾT QUẢ: ' + pass + ' đạt / ' + (pass + fail) + ' =====');
   if (fail) { console.log('FAILURES:', fails.join(' | ')); process.exit(1); }
 })().catch(e => { console.error('TEST CRASH:', e); process.exit(2); });

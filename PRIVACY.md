@@ -5,8 +5,7 @@
 > `https://hoangviet1397.github.io/fotobro/PRIVACY.html` (bật Pages trên repo
 > `fotobro` rồi mới có URL này — hiện chưa host). Bản `.md` này và `PRIVACY.html`
 > viết cùng một nội dung, đồng bộ ngày 20/11/2026 (FotoBro iOS v2.0).
-> Liên hệ: support@fotobro.app (đang thiết lập; trong lúc chờ, xem trong app,
-> mục Cài đặt → Liên hệ).
+> Liên hệ: supportfotobro@gmail.com.
 >
 > **English summary is at the bottom of this file.**
 
@@ -90,6 +89,10 @@ dẫn mở app ngoài** — bạn bấm mới mở, app không tự gửi gì đ
   mã hoá đầu cuối (AES-256-GCM) rồi lưu vào iCloud cá nhân của bạn. Chúng tôi
   không đọc được nội dung đã mã hoá, và không dùng dữ liệu này cho mục đích
   nào khác. Bạn tắt đồng bộ bất cứ lúc nào; dữ liệu trên máy bạn vẫn giữ nguyên.
+- **Đăng nhập bằng Apple (v2.1):** tuỳ chọn, không bắt buộc. Khi bạn đăng nhập bằng
+  Apple ID, app chỉ lưu mã định danh Apple, tên và email (nếu bạn cho phép, có thể
+  là email ẩn của Apple) **trên máy này**, không gửi lên máy chủ FotoBro (chúng tôi
+  không có máy chủ lưu tài khoản). Đăng xuất sẽ xoá các thông tin này khỏi máy.
 - **Giọng nói:** mic **chưa có ở v2.0** (dời sang v2.1). Ở v2.0 bạn gõ tay câu
   lệnh / câu hỏi trong app; app không ghi âm, không lưu file ghi âm.
 
@@ -127,9 +130,7 @@ nên chúng tôi không gửi thông báo riêng — bạn xem lại URL này kh
 
 ## 8. Liên hệ
 
-Mọi thắc mắc về dữ liệu trong app, liên hệ: support@fotobro.app (địa chỉ
-hỗ trợ của FotoBro — đang trong quá trình thiết lập; trong lúc chờ, liên hệ
-qua thông tin trong app, mục Cài đặt → Liên hệ).
+Mọi thắc mắc về dữ liệu trong app, liên hệ: supportfotobro@gmail.com.
 
 ---
 
@@ -168,4 +169,4 @@ studio in Settings; there is no shared account and no data sharing between users
   Google tokens and downloaded Google data; uninstalling the app deletes
   everything as well. Backup files you downloaded and events already
   written to Google Calendar are not deleted from inside the app.
-- Contact: support@fotobro.app (FotoBro support address — currently being set up).
+- Contact: supportfotobro@gmail.com.

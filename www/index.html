@@ -818,6 +818,9 @@
       if (name === 'chev') return '<svg viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + IC.chev + '</svg>';
       return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (sw || 2) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (IC[name] || '') + '</svg>';
     }
+    /* Logo Apple (tô đặc, theo đúng HIG cho nút Sign in with Apple) — dùng
+       riêng cho mục Tài khoản, không qua I() vì I() vẽ nét (stroke). */
+    function appleLogo(){ return '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2.088-.938-2.692-1.04-3.96-1.04zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.702"/></svg>'; }
     function paintIcons(root){
       Array.prototype.forEach.call((root || document).querySelectorAll('[data-i]'), function(el){ if (!el._p){ el.innerHTML = I(el.getAttribute('data-i')); el._p = 1; } });
     }
@@ -861,7 +864,7 @@
       pricesFilm:{ Portrait:0, Couple:0, Wedding:0, Lookbook:0, Event:0 },
       extraHour:0, extraLoc:0, retouch:0, album:0,
       depositPct:40, deliverDays:14,
-      equipment:[], fixed:[], checkExtra:{}, theme:'warm', petals:false, gCals:[], gFeat:{cal:true, bank:false, leads:false, contacts:false, drive:false, calw:false, send:false}, glass:true, notifAsked:false, locale:'vi', currency:'VND', logo:'', mailTpls:{}
+      equipment:[], fixed:[], checkExtra:{}, theme:'warm', petals:false, gCals:[], gFeat:{cal:true, bank:false, leads:false, contacts:false, drive:false, calw:false, send:false}, glass:true, notifAsked:false, locale:'vi', currency:'VND', logo:'', mailTpls:{}, apple:null
     };
     function mergeCfg(c){
       var o = JSON.parse(JSON.stringify(DEFAULT_CFG));
@@ -883,6 +886,10 @@
       o.locale = o.locale === 'en' ? 'en' : 'vi';
       o.currency = o.currency === 'USD' ? 'USD' : 'VND';
       o.logo = typeof o.logo === 'string' ? o.logo.slice(0, 300000) : '';
+      o.apple = (o.apple && typeof o.apple === 'object' && typeof o.apple.user === 'string' && o.apple.user)
+        ? { user:cleanStr(o.apple.user, 200), name:cleanStr(o.apple.name || '', 80),
+            email:cleanStr(o.apple.email || '', 120), relay:o.apple.relay === true, at:+o.apple.at || 0 }
+        : null;
       var _mt = {}; if (o.mailTpls && typeof o.mailTpls === 'object') Object.keys(o.mailTpls).forEach(function(k){ if (['confirm','deposit','remind','deliver','balance'].indexOf(k) >= 0 && o.mailTpls[k] && typeof o.mailTpls[k] === 'object') _mt[k] = { s:cleanStr(o.mailTpls[k].s, 4000), b:cleanStr(o.mailTpls[k].b, 4000) }; }); o.mailTpls = _mt;
       var ids = {}, next = 900000;
       function cid(v){ var id = /^\d{1,12}$/.test(String(v)) ? +v : null; if (id === null || ids[id]) id = ++next; ids[id] = 1; return id; }
@@ -992,8 +999,8 @@
     /* i18n v1 tối thiểu: chỉ nhãn chính (tab, Hôm nay, form job, Cài đặt).
        Phần còn lại (chi tiết job, sổ tiền, phòng ban, trợ lý, báo cáo) vẫn tiếng Việt — xem README. */
     var I18N = {
-      vi:{ tab_home:'Hôm nay', tab_jobs:'Buổi chụp', tab_money:'Tiền bạc', tab_depts:'Thêm', tab_ask:'Trợ lý', today:'Hôm nay', remember:'Hôm nay & sắp tới', ask:'Hỏi trợ lý', settings:'Cài đặt', hello:'Chào', morning:'Buổi sáng an lành', afternoon:'Buổi chiều dịu dàng', evening:'Buổi tối ấm áp', tomorrow:'Ngày mai', yesterday:'Hôm qua', no_date:'chưa hẹn ngày' },
-      en:{ tab_home:'Today', tab_jobs:'Shoots', tab_money:'Money', tab_depts:'More', tab_ask:'Assistant', today:'Today', remember:'Today & coming up', ask:'Ask assistant', settings:'Settings', hello:'Hello', morning:'Good morning', afternoon:'Good afternoon', evening:'Good evening', tomorrow:'Tomorrow', yesterday:'Yesterday', no_date:'no date yet' }
+      vi:{ tab_home:'Hôm nay', tab_jobs:'Buổi chụp', tab_money:'Tiền bạc', tab_depts:'Thêm', tab_ask:'Trợ lý', today:'Hôm nay', remember:'Hôm nay & sắp tới', ask:'Hỏi trợ lý', settings:'Cài đặt', hello:'Chào', morning:'Buổi sáng an lành', afternoon:'Buổi chiều dịu dàng', evening:'Buổi tối ấm áp', tomorrow:'Ngày mai', yesterday:'Hôm qua', no_date:'chưa hẹn ngày', apple_account:'Tài khoản', apple_signin:'Đăng nhập bằng Apple', apple_signin_sub:'Dùng Apple ID của bạn — không cần tạo tài khoản mới', apple_signin_note:'Chỉ để nhận diện, không nối Lịch/Gmail — nối Google ở mục dưới.', apple_signed_in:'Đã đăng nhập bằng Apple', apple_hidden_email:'Email ẩn của Apple', apple_signout:'Đăng xuất Apple ID', apple_signout_title:'Đăng xuất Apple ID?', apple_signout_msg:'Chỉ xoá tên và email Apple khỏi máy này. Job, tiền và cài đặt vẫn giữ nguyên. Muốn Apple quên hẳn FotoBro thì vào iPhone Cài đặt → Apple ID → Đăng nhập bằng Apple → FotoBro.', apple_signin_ok:'Đã đăng nhập bằng Apple', apple_signout_ok:'Đã đăng xuất Apple ID', apple_signin_fail:'Chưa đăng nhập được bằng Apple, thử lại nha', apple_native_only:'Đăng nhập bằng Apple chỉ có trên app iPhone' },
+      en:{ tab_home:'Today', tab_jobs:'Shoots', tab_money:'Money', tab_depts:'More', tab_ask:'Assistant', today:'Today', remember:'Today & coming up', ask:'Ask assistant', settings:'Settings', hello:'Hello', morning:'Good morning', afternoon:'Good afternoon', evening:'Good evening', tomorrow:'Tomorrow', yesterday:'Yesterday', no_date:'no date yet', apple_account:'Account', apple_signin:'Sign in with Apple', apple_signin_sub:'Use your Apple ID — no new account needed', apple_signin_note:'For identification only — it does not connect Calendar/Gmail; connect Google below.', apple_signed_in:'Signed in with Apple', apple_hidden_email:'Hidden Apple email', apple_signout:'Sign out Apple ID', apple_signout_title:'Sign out of Apple ID?', apple_signout_msg:'Only removes your Apple name and email from this device. Jobs, money and settings stay. To make Apple forget FotoBro entirely, go to iPhone Settings → Apple ID → Sign in with Apple → FotoBro.', apple_signin_ok:'Signed in with Apple', apple_signout_ok:'Signed out of Apple ID', apple_signin_fail:'Could not sign in with Apple, please try again', apple_native_only:'Sign in with Apple is only available in the iPhone app' }
     };
     function loc(){ return (state.cfg && state.cfg.locale === 'en') ? 'en' : 'vi'; }
     function tr(k){ var d = I18N[loc()] || I18N.vi; return d[k] || I18N.vi[k] || k; }
@@ -2508,9 +2515,23 @@
       var upd = typeof updReady === 'function' && updReady();
       h += '<p class="sec-s">Phiên bản</p><div class="list"><div class="row"><span class="ic bg-gray">' + I('sparkle') + '</span><span class="txt"><span class="t1" style="display:block;">FotoBro v' + (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '') + '</span><span class="t2" style="display:block;">' + (upd ? 'Có bản mới đã tải sẵn' : 'Chạy offline bằng bản đã lưu trên máy') + '</span></span>' +
         ((typeof isNativeApp === 'function' && isNativeApp()) ? '' : '<button type="button" class="btn ' + (upd ? 'fill' : 'tint') + ' sm" id="updCheck">' + (upd ? 'Cập nhật' : 'Kiểm tra') + '</button>') + '</div></div>';
-      h += '<p class="sec-s">Liên hệ</p><div class="list"><a class="row" href="mailto:support@fotobro.app"><span class="ic bg-gray">' + I('mail') + '</span><span class="txt"><span class="t1" style="display:block;">Email hỗ trợ — support@fotobro.app</span><span class="t2" style="display:block;">Email này đang thiết lập, chưa gửi được ngay — trong lúc chờ, liên hệ qua Facebook của studio.</span></span>' + chevSvg() + '</a></div>';
+      var sup = (window.FOTOBRO_CONFIG && window.FOTOBRO_CONFIG.supportEmail) || 'supportfotobro@gmail.com';
+      h += '<p class="sec-s">Liên hệ</p><div class="list"><a class="row" href="mailto:' + esc(sup) + '"><span class="ic bg-gray">' + I('mail') + '</span><span class="txt"><span class="t1" style="display:block;">Email hỗ trợ — ' + esc(sup) + '</span><span class="t2" style="display:block;">Gửi email cho đội hỗ trợ FotoBro — trả lời trong vòng 3 ngày làm việc.</span></span>' + chevSvg() + '</a></div>';
       h += '<p class="sec-s">Nhập dữ liệu</p><div class="list"><button type="button" class="row" id="cfgCal"><span class="ic bg-red">' + I('cal') + '</span><span class="txt"><span class="t1" style="display:block;">Nhập từ Lịch iPhone</span><span class="t2" style="display:block;">Lịch iPhone 30 ngày tới thành job</span></span>' + chevSvg() + '</button></div>';
       var gt = typeof gToken === 'function' ? gToken() : null, gc = typeof gcal !== 'undefined' ? gcal : null;
+      /* Tài khoản Apple (v2.1, native iOS): chỉ hiện khi plugin có sẵn — bản web
+         ẩn hẳn như cách mục Google ẩn khi chưa có Client ID. */
+      var appleAv = (typeof isNativeApp === 'function' && isNativeApp() && typeof window.__fotobroAppleAvailable === 'function' && window.__fotobroAppleAvailable());
+      if (appleAv){
+        var ap = (c.apple && c.apple.user) ? c.apple : null;
+        var who = ap ? (ap.name || ap.email || ('ID ' + String(ap.user).slice(0, 12) + '…')) : '';
+        h += '<p class="sec-s">' + tr('apple_account') + '</p><div class="list">' +
+          (ap
+            ? '<div class="row"><span class="ic bg-green">' + I('check', 2.6) + '</span><span class="txt"><span class="t1" style="display:block;">' + tr('apple_signed_in') + '</span><span class="t2" style="display:block;">' + esc(who) + (ap.relay ? ' · ' + tr('apple_hidden_email') : '') + '</span></span></div>' +
+              '<button type="button" class="row center destr" id="aDisc">' + tr('apple_signout') + '</button>'
+            : '<button type="button" class="row act" id="aConnRow"><span class="ic bg-gray">' + appleLogo() + '</span><span class="txt"><span class="t1" style="display:block;">' + tr('apple_signin') + '</span><span class="t2" style="display:block;">' + tr('apple_signin_sub') + '</span></span>' + chevSvg() + '</button>') +
+          '</div><p class="sec-f">' + tr('apple_signin_note') + '</p>';
+      }
       h += '<p class="sec-s">Kết nối Google</p><div class="list">' +
         (googleClientId() ? (gt || gc
           ? '<div class="row"><span class="ic bg-green">' + I('check', 2.6) + '</span><span class="txt"><span class="t1" style="display:block;">' + (gt ? 'Đang kết nối' : 'Đã kết nối (hết hạn, bấm Kết nối lại)') + '</span><span class="t2" style="display:block;">' + (gc ? gc.events.length + ' sự kiện · cập nhật ' + agoText(gc.fetchedAt) : 'Chưa tải lịch') + '</span></span><button type="button" class="btn tint sm" id="gConnRow2">' + (gt ? 'Làm mới' : 'Kết nối lại') + '</button></div>' +
@@ -2634,6 +2655,8 @@
       var lk2 = $('#lkNow', b); if (lk2) lk2.addEventListener('click', function(){ sheets.slice().reverse().forEach(function(s){ s.close(); }); setTimeout(function(){ showLock(false); }, 350); });
       var lk3 = $('#lkOff', b); if (lk3) lk3.addEventListener('click', function(){ disableLock(); });
       var gcr = $('#gConnRow', b); if (gcr) gcr.addEventListener('click', function(){ gConnect(false); });
+      var acr = $('#aConnRow', b); if (acr) acr.addEventListener('click', function(){ aConnect(); });
+      var ads = $('#aDisc', b); if (ads) ads.addEventListener('click', function(){ aDisconnect(); });
       var gcr2 = $('#gConnRow2', b); if (gcr2) gcr2.addEventListener('click', function(){ if (gToken()) gSyncAll(true); else gConnect(true); });
       var gds = $('#gDisc', b); if (gds) gds.addEventListener('click', function(){
         actionSheet({ title:'Ngắt kết nối Google Lịch?', msg:'Xoá lịch, email gợi ý và danh bạ đã lưu trên máy; thu hồi mã đăng nhập tại Google. Buổi chụp và sổ thu chi vẫn giữ nguyên. Sự kiện đã ghi trên Google Lịch vẫn còn — xoá trong app Lịch nếu muốn.', actions:[{ label:'Ngắt kết nối', destructive:true, fn:function(){
@@ -3153,6 +3176,33 @@
        định nghĩa (không bọc bằng hàm cùng tên — sẽ tự đệ quy vô hạn). */
     function gToken(){ try{ var t = JSON.parse(ssGet(GT_KEY) || 'null'); return t && t.t && t.exp > Date.now() + 60000 ? t.t : null; }catch(e){ return null; } }
     function gLinked(){ return !!(googleClientId() && (gToken() || gcal)); }
+    /* Đăng nhập bằng Apple (v2.1, native iOS) — xem APPLE-SIGNIN-PLAN.md §4.4.
+       Mirror cụm Google nhưng đơn giản hơn: không token hết hạn, không scope
+       từng tính năng. Định danh chỉ lưu trên máy (cfg.apple), không có server. */
+    function aLinked(){ return !!(state.cfg.apple && state.cfg.apple.user); }
+    async function aConnect(){
+      if (!isNativeApp() || typeof window.__fotobroAppleSignIn !== 'function'){ toast(tr('apple_native_only'), 'warn'); return; }
+      var r = null;
+      try { r = await window.__fotobroAppleSignIn(); } catch (e) { toast(tr('apple_signin_fail'), 'warn'); return; }
+      if (!r || !r.user) return; // người dùng bấm Huỷ: im lặng
+      var name = [r.givenName, r.familyName].filter(Boolean).join(' ').trim();
+      var prev = (state.cfg.apple && state.cfg.apple.user === r.user) ? state.cfg.apple : null;
+      state.cfg.apple = {
+        user: String(r.user),
+        name: name || (prev && prev.name) || '',               // tên CHỈ có lần đầu — giữ lại tên cũ nếu lần này không có
+        email: r.email || (prev && prev.email) || '',
+        relay: !!r.email && /@privaterelay\.appleid\.com$/.test(r.email),
+        at: Date.now()
+      };
+      saveLocal(); renderAll(); refreshSettings();
+      toast(tr('apple_signin_ok'), 'ok');
+    }
+    function aDisconnect(){
+      actionSheet({ title:tr('apple_signout_title'), msg:tr('apple_signout_msg'), actions:[{ label:tr('apple_signout'), destructive:true, fn:function(){
+        state.cfg.apple = null; saveLocal(); renderAll(); refreshSettings();
+        toast(tr('apple_signout_ok'), 'del');
+      } }] });
+    }
     /* Google AUTO 1 chạm (iOS v1): 1 Client ID chung + PKCE, KHÔNG client_secret,
        KHÔNG bắt người dùng tự tạo Google Cloud project hay dán Client ID.
        Xin đủ quyền 1 lần: đọc Lịch, đọc Gmail, đọc Danh bạ, xem Drive, ghi Lịch, gửi Gmail. */
