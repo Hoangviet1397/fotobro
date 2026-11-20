@@ -90,19 +90,15 @@
 				<string>com.fotobro.app</string>
 			</array>
 		</dict>
-		<!-- Google OAuth iOS — PLACEHOLDER, CHƯA CÓ CLIENT ID THẬT (L1, SECURITY-AUDIT):
-		     Scheme 'com.googleusercontent.apps.CHUA-CO-CLIENT-ID' dưới đây là
-		     GIỮ CHỖ, PHẢI THAY bằng reversed client ID thật
-		     (com.googleusercontent.apps.&lt;Client-ID-phần-đầu&gt;) ngay khi có
-		     Client ID iOS thật — xem GOOGLE-SETUP.md §2c. Nếu build cuối mà
-		     vẫn để placeholder, đăng nhập Google lỗi redirect_uri_mismatch.
-		     Scheme này phải khớp googleRedirectScheme() trong www/index.html. -->
+		<!-- Google OAuth iOS — Client ID thật đã điền 20/11/2026 (project FotoBro).
+		     Scheme reversed client ID, phải khớp googleRedirectScheme() trong
+		     www/index.html (tự suy ra từ Client ID). Xem GOOGLE-SETUP.md §2c. -->
 		<dict>
 			<key>CFBundleURLName</key>
 			<string>com.googleusercontent.apps.fotobro</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.CHUA-CO-CLIENT-ID</string>
+				<string>com.googleusercontent.apps.613244728921-utl1gi6qiu7ombgh4tmf4v96h17ks4sp</string>
 			</array>
 		</dict>
 	</array>
