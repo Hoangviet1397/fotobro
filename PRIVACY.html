@@ -93,6 +93,7 @@ Bản tiếng Anh tóm tắt ở cuối trang.</p>
 <h2>3. Lịch iPhone và đồng bộ CloudKit — chỉ khi bạn tự bật</h2>
 <p><strong>Lịch iPhone:</strong> chỉ khi bạn bấm “Nhập từ Lịch iPhone” và cho phép quyền truy cập Lịch, app mới đọc các sự kiện trong 30 ngày tới để tạo buổi chụp. App không đọc lịch khi bạn không bấm nhập, và không ghi gì vào Lịch iPhone trừ khi bạn bấm “Thêm vào Lịch iPhone” trong chi tiết job.</p>
 <p><strong>CloudKit (đồng bộ / sao lưu, Nấc 2, có thu phí):</strong> ở v2.0 chưa bật (trạng thái not-configured, container <code>iCloud.com.fotobro.app</code> chưa được tạo). Chỉ khi bạn đăng nhập bằng Apple ID và bật đồng bộ, dữ liệu mới được mã hoá đầu cuối (AES-256-GCM) rồi lưu vào iCloud cá nhân của bạn (container <code>iCloud.com.fotobro.app</code>). Chúng tôi không đọc được nội dung đã mã hoá, và không dùng dữ liệu này cho mục đích nào khác. Bạn tắt đồng bộ bất cứ lúc nào; dữ liệu trên máy bạn vẫn giữ nguyên.</p>
+<p><strong>Đăng nhập bằng Apple (v2.1):</strong> tuỳ chọn, không bắt buộc. Khi bạn đăng nhập bằng Apple ID, app chỉ lưu mã định danh Apple, tên và email (nếu bạn cho phép, có thể là email ẩn của Apple) <strong>trên máy này</strong>, không gửi lên máy chủ FotoBro (chúng tôi không có máy chủ lưu tài khoản). Đăng xuất sẽ xoá các thông tin này khỏi máy.</p>
 <p><strong>Giọng nói:</strong> mic <strong>chưa có ở v2.0</strong> (dời sang v2.1). Ở v2.0 bạn gõ tay câu lệnh / câu hỏi trong app; app không ghi âm, không lưu file ghi âm.</p>
 
 <h2>4. Giọng nói</h2>
@@ -117,7 +118,7 @@ Bản tiếng Anh tóm tắt ở cuối trang.</p>
 <p>Nếu chính sách này thay đổi, bản mới sẽ được cập nhật tại chính URL này và ghi ngày cập nhật ở đầu trang. Vì app không có tài khoản người dùng nên chúng tôi không gửi thông báo riêng — bạn xem lại URL này khi cần.</p>
 
 <h2>9. Liên hệ</h2>
-<p>Mọi thắc mắc về dữ liệu trong app, liên hệ: <a href="mailto:support@fotobro.app">support@fotobro.app</a> (địa chỉ hỗ trợ của FotoBro — đang trong quá trình thiết lập; trong lúc chờ, liên hệ qua thông tin trong app, mục Cài đặt → Liên hệ).</p>
+<p>Mọi thắc mắc về dữ liệu trong app, liên hệ: <a href="mailto:supportfotobro@gmail.com">supportfotobro@gmail.com</a> (địa chỉ hỗ trợ của FotoBro).</p>
 <p>Repo mã nguồn: <a href="https://github.com/Hoangviet1397/fotobro">github.com/Hoangviet1397/fotobro</a></p>
 
 <hr />
@@ -131,7 +132,7 @@ Bản tiếng Anh tóm tắt ở cuối trang.</p>
   <li>Voice input is <strong>not in v2.0</strong> (moved to v2.1); v2.0 uses typed commands only, no audio is recorded.</li>
   <li>Reminders fire 12 hours before a shoot and 1 day before a delivery deadline; the lock-screen notification shows the client's name and shoot time. You can turn notifications off in iPhone Settings → Notifications → FotoBro.</li>
   <li>You can delete all data at any time inside the app (Settings → Delete saved data) — jobs, income/expenses, home photos, settings, app lock, Google tokens and downloaded Google data; uninstalling the app deletes everything as well. Backup files you downloaded and events already written to Google Calendar are not deleted from inside the app.</li>
-  <li>Contact: <a href="mailto:support@fotobro.app">support@fotobro.app</a> (FotoBro support address — currently being set up).</li>
+  <li>Contact: <a href="mailto:supportfotobro@gmail.com">supportfotobro@gmail.com</a> (FotoBro support address).</li>
 </ul>
 
 <footer>

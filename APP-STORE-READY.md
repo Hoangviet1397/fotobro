@@ -309,6 +309,11 @@ pipeline → xem báo cáo. Không bắt buộc cho lần gửi đầu.
 ### App Privacy — khai "Data Not Collected"
 - Dữ liệu job/tiền/cài đặt/ảnh trang chủ chỉ ở trên máy → Apple tính
   là không thu thập.
+- Đăng nhập bằng Apple (v2.1): mã định danh Apple, tên và email (nếu người
+  dùng cho phép) cũng chỉ lưu trên máy, không gửi đi đâu → vẫn "Data Not
+  Collected". Khi trả lời questionnaire, ghi chú rõ dữ liệu có trên máy
+  nhưng không thu thập / không chia sẻ. Nếu Nấc 2 đồng bộ `cfg.apple`
+  qua CloudKit thì phải khai lại.
 - Khai lại nếu trước submit có thay đổi: Google bật (dữ liệu Google chỉ
   đọc trên máy, không gửi về máy chủ FotoBro), CloudKit bật thật (đồng
   bộ qua iCloud của Apple).
@@ -403,14 +408,11 @@ Anh, ngắn gọn). Đừng đợi Apple hỏi mới nghĩ.
 - App dùng Google OAuth với Client ID chung của FotoBro, PKCE,
   redirect theo scheme `com.fotobro.app` (native) — không dùng
   redirect web cũ.
-- **Rủi ro Guideline 4.8 (Sign in with Apple):** Apple có thể yêu cầu
-  app nào có đăng nhập bên thứ ba (Google) thì phải có Sign in with
-  Apple tương đương. Chuẩn bị sẵn câu trả lời: đăng nhập Google là
-  **tùy chọn, không bắt buộc, không phải đăng nhập tài khoản FotoBro**
-  (app không có tài khoản riêng), và Sign in with Apple đã được bật
-  cho Nấc 2 CloudKit nếu reviewer yêu cầu. Nếu Apple vẫn bắt buộc thì
-  phải thêm Sign in with Apple trước khi gửi lại — ghi vào mục "Vấn đề
-  còn tồn tại" ở báo cáo cuối của agent làm app.
+- **Rủi ro Guideline 4.8 (Sign in with Apple):** ĐÃ XỬ LÝ ở v2.1 — app đã có nút
+  "Đăng nhập bằng Apple" (plugin `@capawesome/capacitor-apple-sign-in@0.1.5`,
+  native iOS, xem `APPLE-SIGNIN-PLAN.md`) bên cạnh đăng nhập Google. Đăng nhập
+  Google là **tùy chọn, không bắt buộc, không phải đăng nhập tài khoản FotoBro**
+  (app không có tài khoản riêng).
 - **Cảnh báo "Google chưa xác minh ứng dụng này":** chỉ được submit khi
   xác minh Google đã xong. Nếu chưa xong thì **tắt Google tạm ở v1**
   và sửa mô tả + screenshot + App Privacy cho khớp, đừng để reviewer

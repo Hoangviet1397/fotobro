@@ -36,6 +36,7 @@
 		"PreferencesPlugin",
 		"SharePlugin",
 		"SplashScreenPlugin",
-		"StatusBarPlugin"
+		"StatusBarPlugin",
+		"AppleSignInPlugin"
 	]
 }

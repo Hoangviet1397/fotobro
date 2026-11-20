@@ -134,6 +134,8 @@
       .row .t2{ font-size:0.875rem; color:var(--label2); margin-top:1px; }
       .clip{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
       .wrap2{ display:-webkit-box !important; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; white-space:normal; overflow-wrap:anywhere; }
+      /* Ghi chú sổ thu chi hiện đủ, không kẹp 2 dòng chung với tên khách/phương thức */
+      .tx-note{ line-height:1.35; }
       /* Nút Ghi giữa thanh tab */
       .tabbar .tab-add{ color:var(--label); font-weight:600; }
       .tab-plus{ width:34px; height:34px; border-radius:50%; background:var(--label); color:var(--bg); display:flex; align-items:center; justify-content:center; margin-top:-4px; box-shadow:0 3px 10px rgba(0,0,0,.18); }
@@ -199,6 +201,7 @@
       .tile .tl svg{ width:17px; height:17px; }
       .tile .tv{ font-family:var(--rounded); font-weight:700; font-size:1.75rem; line-height:1; letter-spacing:-.01em; font-variant-numeric:tabular-nums; }
       .tile .tu{ font-size:0.9375rem; font-weight:600; color:var(--label2); margin-left:3px; letter-spacing:0; }
+      .tile .tx{ display:block; font-size:0.8125rem; color:var(--label2); font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
 
       /* ---------- Nút ---------- */
       .btn{ display:flex; align-items:center; justify-content:center; gap:8px; width:100%; min-height:50px; padding:0 18px;
@@ -358,7 +361,7 @@
       body.typing .composer{ bottom:0; padding-bottom:calc(8px + env(safe-area-inset-bottom)); }
 
       /* ---------- Thanh tab ---------- */
-      .tabbar{ position:fixed; left:0; right:0; bottom:0; z-index:41; background:var(--bar);
+      .tabbar{ position:fixed; left:0; right:0; bottom:0; z-index:41; background:var(--bar-strong);
         -webkit-backdrop-filter:saturate(180%) blur(20px); backdrop-filter:saturate(180%) blur(20px);
         box-shadow:0 -.5px 0 var(--sep); padding-bottom:env(safe-area-inset-bottom); transition:transform .2s ease; }
       .tabbar-in{ display:flex; max-width:620px; margin:0 auto; height:var(--tabh); }
@@ -383,11 +386,12 @@
       .sheet-head{ background:var(--bg); border-radius:14px 14px 0 0; border-bottom:.5px solid var(--sep); position:relative; z-index:2; }
       html[data-glass="1"] .sheet{ background:var(--bg) !important; }
       textarea.tpl-subj{ min-height:0; resize:vertical; line-height:1.35; }
+      .pill:disabled{ opacity:.45; }
       .sheet-head{ display:grid; grid-template-columns:1fr auto 1fr; align-items:center; min-height:46px; padding:0 6px; flex:none; touch-action:none; }
       .sheet-head b{ font-size:1.0625rem; font-weight:600; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:52vw; }
       .sh-btn{ border:0; background:none; color:var(--accent-t); font-size:1.0625rem; min-height:44px; padding:0 10px; }
       .sh-btn:active{ opacity:.5; }
-      .sh-l{ justify-self:start; } .sh-r{ justify-self:end; font-weight:600; }
+      .sh-l{ justify-self:start; font-weight:600; } .sh-r{ justify-self:end; font-weight:600; }
       .sheet-body{ overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; padding:4px 16px calc(30px + env(safe-area-inset-bottom)); flex:1; }
       .asheet{ position:fixed; left:8px; right:8px; bottom:calc(8px + env(safe-area-inset-bottom)); max-width:480px; margin:0 auto;
         transform:translateY(130%); transition:transform .36s cubic-bezier(.32,.72,0,1); }
@@ -437,8 +441,8 @@
       .q-txt{ font-size:1rem; line-height:1.45; margin-top:3px; }
       .q-act{ display:flex; gap:4px; margin-top:8px; margin-left:-4px; }
       .q-act .btn.plain{ padding:0 10px; }
-      .stk-pop{ position:fixed; left:50%; top:42%; z-index:150; text-align:center; transform:translate(-50%,-50%) scale(.3); opacity:0;
-        transition:transform .5s cubic-bezier(.2,1.6,.4,1), opacity .25s ease; cursor:pointer; }
+      .stk-pop{ position:fixed; left:50%; top:42%; z-index:150; text-align:center; transform:translate(-50%,-50%) scale(.3); opacity:0; pointer-events:none;
+        transition:transform .5s cubic-bezier(.2,1.6,.4,1), opacity .25s ease; }
       .stk-pop.on{ transform:translate(-50%,-50%) scale(1); opacity:1; }
       .stk-pop svg{ width:150px; height:150px; margin:0 auto; filter:drop-shadow(0 10px 24px rgba(0,0,0,.25)); }
       .stk-pop p{ display:inline-block; margin-top:4px; background:var(--bar-strong); -webkit-backdrop-filter:blur(20px); backdrop-filter:blur(20px);
@@ -471,7 +475,7 @@
       .wl-track{ display:flex; height:100%; transition:transform .45s cubic-bezier(.32,.72,0,1); will-change:transform; }
       .wl-track.drag{ transition:none; }
       .wl-pages::-webkit-scrollbar{ display:none; }
-      .wl-page{ flex:none; width:100%; height:100%; overflow-y:auto; overscroll-behavior:contain; padding:calc(env(safe-area-inset-top) + 40px) 22px 12px; }
+      .wl-page{ flex:none; width:100%; height:100%; overflow-y:auto; overscroll-behavior:contain; padding:calc(env(safe-area-inset-top) + 20px) 22px 16px; }
       .wl-in{ max-width:460px; margin:0 auto; text-align:center; }
       .wl-page:not(.seen) .fl{ animation:none; opacity:0; }
       .wl-eyebrow{ font-size:0.8125rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--accent-t); margin-top:4px; }
@@ -479,11 +483,13 @@
       .welcome h2{ text-wrap:balance; }
       .welcome h1 em{ font-style:normal; font-weight:800; color:var(--accent); }
       .welcome h2{ font-size:1.75rem; font-weight:800; margin-top:8px; }
-      .wl-sub{ color:var(--label2); font-size:1rem; line-height:1.5; margin-top:10px; }
+      .wl-sub{ color:var(--label2); font-size:1rem; line-height:1.5; margin-top:8px; }
       .wl-tag{ display:inline-block; margin-top:14px; padding:5px 14px; border-radius:999px; background:var(--accent-tint); color:var(--accent); font-weight:600; font-size:0.875rem; }
-      .wl-mini{ width:96px; height:96px; margin:0 auto; }
+      .wl-mini{ width:76px; height:76px; margin:0 auto; }
       .wl-mini svg{ width:100%; height:100%; filter:drop-shadow(0 6px 12px rgba(0,0,0,.18)); animation:bob 2.8s ease-in-out infinite; }
-      .wl-list{ text-align:left; margin-top:16px; }
+      .wl-list{ text-align:left; margin-top:10px; }
+      /* Trang mẹo (6 dòng) phải thấy đủ ở 375×812 không cần cuộn: dòng gọn lại */
+      .wl-list .row{ min-height:44px; padding:8px 16px; }
       .wl-choices{ display:flex; flex-direction:column; gap:10px; margin-top:20px; }
       .wl-choices .btn.tint{ background:var(--accent-tint); color:var(--accent-t); }
       .wl-choices .btn.fill{ background:var(--accent-btn); color:#fff; }
@@ -509,9 +515,9 @@
       @keyframes driftRev{ from{ transform:translateX(calc(100vw + 60px)); } to{ transform:translateX(-60px); } }
       @keyframes bobble{ from{ transform:translateY(-28px) rotate(-30deg); } to{ transform:translateY(28px) rotate(35deg); } }
       /* ---------- Kính mờ kiểu iOS ---------- */
-      html[data-glass="1"]{ --glass:rgba(255,255,255,.56); --glass-edge:rgba(255,255,255,.78); --bar:rgba(255,255,255,.5); --bar-strong:rgba(255,255,255,.78);
+      html[data-glass="1"]{ --glass:rgba(255,255,255,.56); --glass-edge:rgba(255,255,255,.78); --bar:rgba(255,255,255,.85); --bar-strong:rgba(255,255,255,.78);
         --glass-shadow:0 10px 30px rgba(0,0,0,.08), inset 0 1px 0 rgba(255,255,255,.8); }
-      @media (prefers-color-scheme: dark){ html[data-glass="1"]{ --glass:rgba(28,28,30,.5); --glass-edge:rgba(255,255,255,.11); --bar:rgba(0,0,0,.5); --bar-strong:rgba(0,0,0,.8);
+      @media (prefers-color-scheme: dark){ html[data-glass="1"]{ --glass:rgba(28,28,30,.5); --glass-edge:rgba(255,255,255,.11); --bar:rgba(0,0,0,.85); --bar-strong:rgba(0,0,0,.8);
         --glass-shadow:0 10px 30px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.07); } }
       html[data-glass="1"] body::before{ content:""; position:fixed; inset:-10%; z-index:-1; pointer-events:none;
         background:radial-gradient(40% 30% at 50% 0%, rgba(250,45,72,.05), transparent 70%); }
@@ -530,6 +536,9 @@
       html[data-glass="1"] .seg button.on{ background:rgba(255,255,255,.9); }
       @media (prefers-color-scheme: dark){ html[data-glass="1"] .seg button.on{ background:rgba(255,255,255,.2); } }
       html[data-glass="1"] .tabbar, html[data-glass="1"] .nav.solid, html[data-glass="1"] .composer{ -webkit-backdrop-filter:blur(28px) saturate(190%); backdrop-filter:blur(28px) saturate(190%); }
+      /* Thanh tab phải đủ đặc để chữ nội dung phía dưới không lộ qua (kính mờ --bar-strong chỉ .78) */
+      html[data-glass="1"] .tabbar{ background:rgba(255,255,255,.92); }
+      @media (prefers-color-scheme: dark){ html[data-glass="1"] .tabbar{ background:rgba(0,0,0,.92); } }
       html[data-glass="1"] .hero, html[data-glass="1"] .moments .shot{ box-shadow:0 12px 30px rgba(60,30,80,.18); }
       /* ---------- Màn khoá Face ID ---------- */
       html.app-locked main, html.app-locked .tabbar, html.app-locked .nav, html.app-locked .welcome, html.app-locked .sheet,
@@ -591,6 +600,8 @@
 
         <div class="sec-h sec-first" id="todaySec"><h2>Hôm nay &amp; sắp tới</h2></div>
         <div class="list" id="todayList"></div>
+        <div class="sec-h hidden" id="upcomingSec"><h2>Sắp tới · 30 ngày</h2></div>
+        <div class="list hidden" id="upcomingList"></div>
         <div class="quick3" role="group" aria-label="Ghi nhanh">
           <button type="button" class="qbtn p" id="qJob"><span data-i="cam"></span>Buổi chụp<small>khách mới</small></button>
           <button type="button" class="qbtn" id="qThu"><span data-i="inarrow"></span>Thu<small>cọc, tiền về</small></button>
@@ -682,7 +693,7 @@
           <label class="row" style="cursor:pointer;"><span class="ic bg-blue" data-i="upload"></span><span class="txt t1">Mở bản sao lưu</span><span class="chev" data-i="chev"></span><input type="file" id="importFile" accept=".json,application/json" class="hidden" /></label>
           <button class="row" type="button" id="clearSample"><span class="ic bg-red" data-i="trash"></span><span class="txt t1 red" id="clearLabel">Xoá dữ liệu mẫu</span></button>
         </div>
-        <p class="sec-f" id="storageNote">Mọi thứ chỉ nằm trên máy này, không tài khoản, không máy chủ. App tự lưu mỗi lần bạn thêm job hay ghi tiền. Nên tải một bản sao lưu mỗi tuần.</p>
+        <p class="sec-f" id="storageNote">Mọi thứ chỉ nằm trên máy này, không tài khoản, không máy chủ. App tự lưu mỗi lần bạn thêm job hay ghi tiền. Nên tải một bản sao lưu mỗi tuần — bản sao lưu gồm cả ảnh trang chủ.</p>
 
 
         <div class="sec-h"><h2>Góc của bạn</h2></div>
@@ -715,7 +726,7 @@
           <p>Làm cho nhiếp ảnh gia tự do — job, tiền bạc, báo cáo trong một app.</p>
           <p id="footInfo">FotoBro — trợ lý studio ảnh</p>
           <p>Chụp bằng cảm xúc, để con số cho cả nhà lo.</p>
-          <p>FotoBro v2.0</p>
+          <p>FotoBro v2.1</p>
         </div>
       </section>
 
@@ -818,6 +829,9 @@
       if (name === 'chev') return '<svg viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + IC.chev + '</svg>';
       return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (sw || 2) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (IC[name] || '') + '</svg>';
     }
+    /* Logo Apple (tô đặc, theo đúng HIG cho nút Sign in with Apple) — dùng
+       riêng cho mục Tài khoản, không qua I() vì I() vẽ nét (stroke). */
+    function appleLogo(){ return '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2.088-.938-2.692-1.04-3.96-1.04zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.702"/></svg>'; }
     function paintIcons(root){
       Array.prototype.forEach.call((root || document).querySelectorAll('[data-i]'), function(el){ if (!el._p){ el.innerHTML = I(el.getAttribute('data-i')); el._p = 1; } });
     }
@@ -840,10 +854,10 @@
     var TYPE_COLOR = {Portrait:'orange', Couple:'purple', Wedding:'pink', Lookbook:'blue', Event:'teal', 'Khác':'gray'};
     var THU_CATS = ['Cọc','Tiền sau buổi chụp','Tiền sau khi giao ảnh','Thêm giờ chụp','Thêm địa điểm','Thêm ảnh retouch','Lấy file gốc','Album thêm','In thêm ảnh','Thu khác'];
     var CHI_GROUPS = {
-      'Chi cho buổi chụp': ['Makeup','Stylist','Trợ lý','Người mẫu','Thuê studio / địa điểm','Di chuyển','Ăn ở','Album & in ấn','USB / box / gửi ảnh'],
+      'Chi cho buổi chụp': ['Makeup','Stylist','Trợ lý','Người mẫu','Thuê studio / địa điểm','Thuê đèn','Di chuyển','Ăn ở','Album & in ấn','USB / box / gửi ảnh'],
       'Chi vận hành hằng tháng': ['Phần mềm (Lightroom, Photoshop)','Lưu trữ cloud','Quảng cáo','Điện thoại / mạng','Thuê mặt bằng'],
       'Chi thiết bị & dài hạn': ['Mua thiết bị','Sửa chữa / bảo dưỡng','Khấu hao thiết bị'],
-      'Chi khác': ['Thuế & phí ngân hàng','Quà cho khách','Phát sinh khác']
+      'Chi khác': ['Hoàn cọc','Thuế & phí ngân hàng','Quà cho khách','Phát sinh khác']
     };
     var CHI_CATS = [];
     Object.keys(CHI_GROUPS).forEach(function(g){ CHI_GROUPS[g].forEach(function(c){ CHI_CATS.push(c); }); });
@@ -857,11 +871,11 @@
     /* Thông số riêng — chỉnh trong Cài đặt, lưu chung với dữ liệu */
     var DEFAULT_CFG = {
       name:'', studio:'', instagram:'', tagline:'portrait | lookbook | wedding',
-      prices:{ Portrait:0, Couple:0, Wedding:0, Lookbook:0, Event:0 },
+      prices:{ Portrait:2500000, Couple:4000000, Wedding:15000000, Lookbook:8000000, Event:5000000 },
       pricesFilm:{ Portrait:0, Couple:0, Wedding:0, Lookbook:0, Event:0 },
       extraHour:0, extraLoc:0, retouch:0, album:0,
       depositPct:40, deliverDays:14,
-      equipment:[], fixed:[], checkExtra:{}, theme:'warm', petals:false, gCals:[], gFeat:{cal:true, bank:false, leads:false, contacts:false, drive:false, calw:false, send:false}, glass:true, notifAsked:false, locale:'vi', currency:'VND', logo:'', mailTpls:{}
+      equipment:[], fixed:[], checkExtra:{}, theme:'warm', petals:false, gCals:[], gFeat:{cal:true, bank:false, leads:false, contacts:false, drive:false, calw:false, send:false}, glass:true, notifAsked:false, locale:'vi', currency:'VND', logo:'', mailTpls:{}, apple:null
     };
     function mergeCfg(c){
       var o = JSON.parse(JSON.stringify(DEFAULT_CFG));
@@ -883,6 +897,10 @@
       o.locale = o.locale === 'en' ? 'en' : 'vi';
       o.currency = o.currency === 'USD' ? 'USD' : 'VND';
       o.logo = typeof o.logo === 'string' ? o.logo.slice(0, 300000) : '';
+      o.apple = (o.apple && typeof o.apple === 'object' && typeof o.apple.user === 'string' && o.apple.user)
+        ? { user:cleanStr(o.apple.user, 200), name:cleanStr(o.apple.name || '', 80),
+            email:cleanStr(o.apple.email || '', 120), relay:o.apple.relay === true, at:+o.apple.at || 0 }
+        : null;
       var _mt = {}; if (o.mailTpls && typeof o.mailTpls === 'object') Object.keys(o.mailTpls).forEach(function(k){ if (['confirm','deposit','remind','deliver','balance'].indexOf(k) >= 0 && o.mailTpls[k] && typeof o.mailTpls[k] === 'object') _mt[k] = { s:cleanStr(o.mailTpls[k].s, 4000), b:cleanStr(o.mailTpls[k].b, 4000) }; }); o.mailTpls = _mt;
       var ids = {}, next = 900000;
       function cid(v){ var id = /^\d{1,12}$/.test(String(v)) ? +v : null; if (id === null || ids[id]) id = ++next; ids[id] = 1; return id; }
@@ -928,7 +946,7 @@
         var o = { client:cleanStr(j.client, 120).trim() || 'Khách chưa đặt tên', type:TYPES.indexOf(j.type) >= 0 ? j.type : 'Khác', medium:normMedium(j.medium),
           stage:STAGES.indexOf(j.stage) >= 0 ? j.stage : 'Tư vấn', cancelled:!!j.cancelled, cancelledFrom:cleanStr(j.cancelledFrom, 40), stageSince:cleanDate(j.stageSince), shootDate:cleanDate(j.shootDate), shootTime:cleanTime(j.shootTime),
           location:cleanStr(j.location, 200), deadline:cleanDate(j.deadline), price:cleanNum(j.price), phone:cleanStr(j.phone, 30).replace(/[^\d+]/g, ''), email:cleanStr(j.email, 200),
-          fbLink:safeUrl(j.fbLink), msLink:safeUrl(j.msLink), driveLink:safeUrl(j.driveLink), note:cleanStr(j.note, 3000), calUid:cleanStr(j.calUid, 200), gEventId:cleanStr(j.gEventId, 200) };
+          fbLink:safeUrl(j.fbLink), msLink:safeUrl(j.msLink), driveLink:safeUrl(j.driveLink), note:cleanStr(j.note, 3000), calUid:cleanStr(j.calUid, 200), gEventId:cleanStr(j.gEventId, 200), depPrompted:!!j.depPrompted };
         o.id = takeId(j.id, o); return o;
       });
       var jobIds = {}; jobs.forEach(function(j){ if (j.id !== null) jobIds[j.id] = 1; });
@@ -971,7 +989,7 @@
     function showStorageNote(){
       var n = document.getElementById('storageNote'); if (!n) return;
       n.textContent = storageOK
-        ? 'Mọi thứ chỉ nằm trên máy này, không tài khoản, không máy chủ. App tự lưu mỗi lần bạn thêm job hay ghi tiền. Nên tải một bản sao lưu mỗi tuần.'
+        ? 'Mọi thứ chỉ nằm trên máy này, không tài khoản, không máy chủ. App tự lưu mỗi lần bạn thêm job hay ghi tiền. Nên tải một bản sao lưu mỗi tuần — bản sao lưu gồm cả ảnh trang chủ.'
         : 'Máy này không lưu tự động được (trình duyệt chặn bộ nhớ khi mở file). Bạn nhớ bấm “Tải bản sao lưu” sau mỗi ngày chụp nhé.';
       n.classList.toggle('red', !storageOK);
     }
@@ -992,8 +1010,8 @@
     /* i18n v1 tối thiểu: chỉ nhãn chính (tab, Hôm nay, form job, Cài đặt).
        Phần còn lại (chi tiết job, sổ tiền, phòng ban, trợ lý, báo cáo) vẫn tiếng Việt — xem README. */
     var I18N = {
-      vi:{ tab_home:'Hôm nay', tab_jobs:'Buổi chụp', tab_money:'Tiền bạc', tab_depts:'Thêm', tab_ask:'Trợ lý', today:'Hôm nay', remember:'Hôm nay & sắp tới', ask:'Hỏi trợ lý', settings:'Cài đặt', hello:'Chào', morning:'Buổi sáng an lành', afternoon:'Buổi chiều dịu dàng', evening:'Buổi tối ấm áp', tomorrow:'Ngày mai', yesterday:'Hôm qua', no_date:'chưa hẹn ngày' },
-      en:{ tab_home:'Today', tab_jobs:'Shoots', tab_money:'Money', tab_depts:'More', tab_ask:'Assistant', today:'Today', remember:'Today & coming up', ask:'Ask assistant', settings:'Settings', hello:'Hello', morning:'Good morning', afternoon:'Good afternoon', evening:'Good evening', tomorrow:'Tomorrow', yesterday:'Yesterday', no_date:'no date yet' }
+      vi:{ tab_home:'Hôm nay', tab_jobs:'Buổi chụp', tab_money:'Tiền bạc', tab_depts:'Thêm', tab_ask:'Trợ lý', today:'Hôm nay', remember:'Hôm nay & sắp tới', ask:'Hỏi trợ lý', settings:'Cài đặt', hello:'Chào', morning:'Buổi sáng an lành', afternoon:'Buổi chiều dịu dàng', evening:'Buổi tối ấm áp', tomorrow:'Ngày mai', yesterday:'Hôm qua', no_date:'chưa hẹn ngày', apple_account:'Tài khoản', apple_signin:'Đăng nhập bằng Apple', apple_signin_sub:'Dùng Apple ID của bạn — không cần tạo tài khoản mới', apple_signin_note:'Chỉ để nhận diện, không nối Lịch/Gmail — nối Google ở mục dưới.', apple_signed_in:'Đã đăng nhập bằng Apple', apple_hidden_email:'Email ẩn của Apple', apple_signout:'Đăng xuất Apple ID', apple_signout_title:'Đăng xuất Apple ID?', apple_signout_msg:'Chỉ xoá tên và email Apple khỏi máy này. Job, tiền và cài đặt vẫn giữ nguyên. Muốn Apple quên hẳn FotoBro thì vào iPhone Cài đặt → Apple ID → Đăng nhập bằng Apple → FotoBro.', apple_signin_ok:'Đã đăng nhập bằng Apple', apple_signout_ok:'Đã đăng xuất Apple ID', apple_signin_fail:'Chưa đăng nhập được bằng Apple, thử lại nha', apple_native_only:'Đăng nhập bằng Apple chỉ có trên app iPhone' },
+      en:{ tab_home:'Today', tab_jobs:'Shoots', tab_money:'Money', tab_depts:'More', tab_ask:'Assistant', today:'Today', remember:'Today & coming up', ask:'Ask assistant', settings:'Settings', hello:'Hello', morning:'Good morning', afternoon:'Good afternoon', evening:'Good evening', tomorrow:'Tomorrow', yesterday:'Yesterday', no_date:'no date yet', apple_account:'Account', apple_signin:'Sign in with Apple', apple_signin_sub:'Use your Apple ID — no new account needed', apple_signin_note:'For identification only — it does not connect Calendar/Gmail; connect Google below.', apple_signed_in:'Signed in with Apple', apple_hidden_email:'Hidden Apple email', apple_signout:'Sign out Apple ID', apple_signout_title:'Sign out of Apple ID?', apple_signout_msg:'Only removes your Apple name and email from this device. Jobs, money and settings stay. To make Apple forget FotoBro entirely, go to iPhone Settings → Apple ID → Sign in with Apple → FotoBro.', apple_signin_ok:'Signed in with Apple', apple_signout_ok:'Signed out of Apple ID', apple_signin_fail:'Could not sign in with Apple, please try again', apple_native_only:'Sign in with Apple is only available in the iPhone app' }
     };
     function loc(){ return (state.cfg && state.cfg.locale === 'en') ? 'en' : 'vi'; }
     function tr(k){ var d = I18N[loc()] || I18N.vi; return d[k] || I18N.vi[k] || k; }
@@ -1065,7 +1083,7 @@
       if (typeof window.__trolyxeoScheduleReminder !== 'function') return;
       if (state.cfg.notifAsked){ window.__trolyxeoScheduleReminder(j); return; }
       openSheet({ title:'Nhắc lịch chụp', left:'Để sau', tall:false,
-        body:'<div class="jd-head"><span class="ic lg bg-orange">' + I('bell') + '</span><h2>Nhắc trước giờ chụp 12 tiếng</h2><p>App nhắc 1 lần trước giờ chụp 12 tiếng và 1 lần trước hạn giao ảnh 1 ngày — chỉ từ job trên máy bạn, không qua máy chủ.</p></div>' +
+        body:'<div class="jd-head"><span class="ic lg bg-orange">' + I('bell') + '</span><h2>Nhắc trước giờ chụp 12 tiếng</h2><p>App nhắc 1 lần trước giờ chụp 12 tiếng và 1 lần trước hạn giao ảnh 1 ngày — chỉ từ job trên máy bạn, không qua máy chủ. Job gấp quá, mốc 12 tiếng đã qua thì app nhắc 60 phút trước giờ chụp (hoặc nhắc ngay nếu còn dưới 60 phút).</p></div>' +
         '<div class="list"><div class="row"><span class="ic bg-gray">' + I('bell') + '</span><span class="txt"><span class="t1" style="display:block;">Thông báo hiện tên khách + giờ chụp</span><span class="t2" style="display:block;">Tên khách sẽ hiện trên màn hình khoá nếu iPhone đang bật hiện nội dung thông báo. Tắt được trong Cài đặt iPhone → Thông báo → FotoBro.</span></span></div></div>' +
         '<div class="btn-row" style="margin-top:14px;"><button type="button" class="btn fill" id="notifAllow">Cho phép nhắc lịch</button></div>',
         bind:function(api){
@@ -1074,6 +1092,23 @@
     }
     function cancelJobReminders(id){
       try{ if (typeof window.__trolyxeoCancelReminder === 'function') window.__trolyxeoCancelReminder(id); }catch(e){}
+    }
+    /* Tính giờ nhắc lịch chụp cho một job — cùng logic với cầu nối native
+       (capacitor-bridge.js §2) để chi tiết job báo đúng những gì app sẽ
+       làm. Mốc mặc định: nhắc 12 tiếng trước giờ chụp; mốc 12 tiếng đã
+       qua thì nhắc 60 phút trước; 60 phút cũng qua rồi thì nhắc ngay
+       (vài chục giây nữa). Trả về null khi không có ngày chụp hoặc giờ
+       chụp đã qua. nowMs chỉ để test (mặc định Date.now()). */
+    function shootReminderInfo(j, nowMs){
+      if (!j || !j.shootDate) return null;
+      var now = (typeof nowMs === 'number') ? nowMs : Date.now();
+      var shoot = new Date(j.shootDate + 'T' + (j.shootTime || '08:00') + ':00').getTime();
+      if (!(shoot > now)) return null;
+      var at12 = shoot - 12 * 3600000;
+      if (at12 > now) return { mode:'12h', at:at12 };
+      var at60 = shoot - 3600000;
+      if (at60 > now) return { mode:'60m', at:at60 };
+      return { mode:'now', at:now + 30000 };
     }
     function copyText(txt, msg){
       function done(){ toast(msg || 'Đã sao chép'); }
@@ -1112,7 +1147,11 @@
     function thisMonth(){ return dstr(0).slice(0,7); }
     function monthTxs(kind){ return state.txs.filter(function(t){ return t.kind===kind && monthOf(t.date)===thisMonth(); }); }
     function sum(arr){ return arr.reduce(function(s,t){ return s+t.amount; },0); }
-    function totalOwe(){ return state.jobs.filter(function(j){ return j.stage!=='Xong' && !j.cancelled; }).reduce(function(s,j){ return s+jobOwe(j); },0); }
+    function totalOwe(){ return state.jobs.filter(function(j){ return !j.cancelled; }).reduce(function(s,j){ return s+jobOwe(j); },0); }
+    /* Job chưa ghi giá (giá 0) thì không tính là "trả đủ" — hiện riêng để nhắc ghi giá. */
+    function unpricedJobs(){ return state.jobs.filter(function(j){ return !j.cancelled && !(+j.price > 0); }); }
+    /* Tiền cọc đã ghi cho một job (khoản thu hạng mục "Cọc"). */
+    function jobDep(j){ if (!j || j.id == null) return 0; return state.txs.filter(function(t){ return t.kind==='thu' && t.category==='Cọc' && String(t.jobId)===String(j.id); }).reduce(function(s,t){ return s+t.amount; },0); }
     function stageTag(j){
       if (j.cancelled) return '<span class="tagp tg-gray">Đã huỷ</span>';
       if (isStuck(j)) return '<span class="tagp tg-red">Kẹt ở ' + esc(j.stage) + '</span>';
@@ -1172,6 +1211,10 @@
       function tm(e){ if (y0 === null) return; dy = Math.max(0, e.touches[0].clientY - y0); sh.style.transform = 'translateY(' + dy + 'px)'; }
       function te(){ if (y0 === null) return; y0 = null; sh.classList.remove('drag'); sh.style.transform = ''; if (dy > 110) api.close(); }
       [head, grab].forEach(function(el){ el.addEventListener('touchstart', ts, {passive:true}); el.addEventListener('touchmove', tm, {passive:true}); el.addEventListener('touchend', te); });
+      /* Chạm vào thanh kéo (grab) thì đóng sheet — thêm 1 lối thoát rõ ràng
+         ngoài nút Đóng và chạm nền tối (fix-07: sheet che tab bar gây cảm
+         giác app đơ). api.close() đã chặn đóng 2 lần nên an toàn. */
+      grab.addEventListener('click', function(){ api.close(); });
       sheets.push(api); lockScroll();
       api.setBody(o.body || '');
       requestAnimationFrame(function(){ requestAnimationFrame(function(){ bd.classList.add('on'); sh.classList.add('on'); }); });
@@ -1258,7 +1301,7 @@
       state.jobs.forEach(function(j){
         if (j.cancelled) return; /* job huỷ không hiện nhắc trên Hôm nay */
         var owe = jobOwe(j);
-        if (owe > 0 && (j.stage === 'Đã giao' || j.stage === 'Hậu kỳ' || j.stage === 'Chọn ảnh'))
+        if (owe > 0 && (j.stage === 'Đã giao' || j.stage === 'Hậu kỳ' || j.stage === 'Chọn ảnh' || j.stage === 'Xong'))
           items.push({c:'orange', icon:'coin', id:j.id, title:j.client + ' còn thiếu ' + fmt(owe), desc:'Job ' + jobTypeLabel(j) + ' đang ở bước ' + j.stage + ' — nhắc khéo một câu thôi.'});
         var st = stuckInfo(j);
         if (st) items.push({c:'red', icon:'clock', id:j.id, title:'Job kẹt: ' + j.client + ' — kẹt ở bước ' + j.stage, desc:st.reason + '. Mở job để xử lý.'});
@@ -1271,7 +1314,8 @@
     function tile(o){
       var p = o.parts || {num:String(o.num), unit:o.unit};
       return '<button type="button" class="tile" data-tile="' + o.key + '" style="--c:var(--' + o.c + ')"><span class="tl">' + I(o.icon, 2.2) + esc(o.label) + '</span>' +
-        '<span class="tv">' + esc(p.num) + '<span class="tu">' + esc(p.unit) + '</span></span></button>';
+        '<span class="tv">' + esc(p.num) + ' <span class="tu">' + esc(p.unit) + '</span></span>' +
+        (o.exact ? '<span class="tx num">' + esc(o.exact) + '</span>' : '') + '</button>';
     }
     function bindTiles(root){
       $$('[data-tile]', root).forEach(function(t){ t.addEventListener('click', function(){
@@ -1295,15 +1339,30 @@
       var hh = new Date().getHours(); $('#greetLine').textContent = (hh < 11 ? 'Buổi sáng an lành' : (hh < 18 ? 'Buổi chiều dịu dàng' : 'Buổi tối ấm áp')) + (myStudio() ? ' · ' + myStudio() : '');
       var active = state.jobs.filter(function(j){ return j.stage !== 'Xong'; }).length;
       var items = todayItems();
+      /* Lịch xa hơn 7 ngày không lọt vào "Hôm nay & sắp tới" ở trên — hiện riêng
+         ở mục "Sắp tới · 30 ngày" để người mới khỏi tưởng job biến mất.
+         Liệt kê theo ngày chụp, không lọc theo bước pipeline (kể cả job đã Xong
+         hay Đã chụp vẫn thấy) — chỉ trừ job đã huỷ. */
+      var upcoming = state.jobs.filter(function(j){ return !j.cancelled && j.shootDate && j.shootDate > dstr(7) && j.shootDate <= dstr(30); })
+        .sort(function(a, b){ return a.shootDate < b.shootDate ? -1 : 1; });
+      var us = $('#upcomingSec'), ul = $('#upcomingList');
+      if (us && ul){
+        us.classList.toggle('hidden', !upcoming.length);
+        ul.classList.toggle('hidden', !upcoming.length);
+        ul.innerHTML = upcoming.map(function(j){
+          return '<button type="button" class="row" data-job="' + j.id + '"><span class="ic bg-gray">' + I('cal') + '</span><span class="txt"><span class="t1 b wrap2" style="display:block;">' + esc(fmtRel(j.shootDate) + ': ' + j.client + ' (' + jobTypeLabel(j) + ')') + '</span><span class="t2 wrap2" style="display:block;">' + esc([j.shootTime, j.location].filter(Boolean).join(' · ') || 'chưa ghi giờ, địa điểm') + '</span></span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button>';
+        }).join('');
+        bindRows(ul);
+      }
       $('#homeStats').innerHTML =
-        tile({key:'thu', c:'green', icon:'inarrow', label:'Thu tháng này', parts:fmtParts(sum(monthTxs('thu')))}) +
-        tile({key:'owe', c:'red', icon:'wallet', label:'Khách còn thiếu', parts:fmtParts(totalOwe())});
+        tile({key:'thu', c:'green', icon:'inarrow', label:'Thu tháng này', parts:fmtParts(sum(monthTxs('thu'))), exact:fmt(sum(monthTxs('thu')))}) +
+        tile({key:'owe', c:'red', icon:'wallet', label:'Khách còn thiếu', parts:fmtParts(totalOwe()), exact:fmt(totalOwe())});
       bindTiles($('#homeStats'));
       $('#todayList').innerHTML = items.length ? items.map(function(it){
         return '<button type="button" class="row" data-job="' + it.id + '"><span class="ic bg-' + it.c + '">' + I(it.icon) + '</span><span class="txt"><span class="t1 b" style="display:block;">' + esc(it.title) + '</span><span class="t2" style="display:block;">' + esc(it.desc) + '</span></span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button>';
-      }).join('') : '<div class="empty-row">' + '<span class="stk-sm">' + STK('sleep') + '</span>' + '<div><div class="b">Hôm nay thong thả lắm</div><div class="muted" style="font-size:0.875rem;">7 ngày tới chưa có lịch chụp hay hạn giao nào. Có khách mới thì bấm Buổi chụp ở dưới.</div></div></div>';
+      }).join('') : '<div class="empty-row">' + '<span class="stk-sm">' + STK('sleep') + '</span>' + '<div><div class="b">Hôm nay thong thả lắm</div><div class="muted" style="font-size:0.875rem;">' + (upcoming.length ? '7 ngày tới chưa có lịch chụp hay hạn giao nào — lịch xa hơn nằm ở mục “Sắp tới” bên dưới.' : '7 ngày tới chưa có lịch chụp hay hạn giao nào. Có khách mới thì bấm Buổi chụp ở dưới.') + '</div></div></div>';
       if ($('#deptMini')) $('#deptMini').innerHTML = DEPTS.map(function(d){
-        return '<button type="button" class="row" data-dept="' + d.id + '"><span class="ic round ltr bg-gray">' + d.staff.charAt(0) + '</span><span class="txt"><span class="t1 b" style="display:block;">' + esc(d.name) + '</span><span class="t2 clip" style="display:block;">' + esc(deptLines(d.id)[0] || 'Đang rảnh, chờ lệnh của bạn.') + '</span></span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button>';
+        return '<button type="button" class="row" data-dept="' + d.id + '"><span class="ic round ltr bg-gray">' + d.staff.charAt(0) + '</span><span class="txt"><span class="t1 b" style="display:block;">' + esc(d.name) + '</span><span class="t2 wrap2" style="display:block;">' + esc(deptLines(d.id)[0] || 'Đang rảnh, chờ lệnh của bạn.') + '</span></span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button>';
       }).join('');
       bindRows($('#view-home'));
     }
@@ -1384,7 +1443,7 @@
       document.body.appendChild(d);
       requestAnimationFrame(function(){ requestAnimationFrame(function(){ d.classList.add('on'); }); });
       var gone = false, rm = function(){ if (gone) return; gone = true; d.classList.remove('on'); setTimeout(function(){ d.remove(); }, 300); };
-      d.addEventListener('click', rm); setTimeout(rm, 2300);
+      d.addEventListener('click', rm); setTimeout(rm, 1100); /* tắt nhanh để khỏi che nút Thu/Chi (đã pointer-events:none) */
       haptic('warn');
     }
     function addSticker(kind){
@@ -1422,31 +1481,34 @@
       var ten = name || callName(j.client), paid = j.id != null ? jobThu(j.id) : 0, owe = j.id != null ? jobOwe(j) : 0;
       var pct = state.cfg.depositPct || 40, price = +j.price || 0;
       return { ten:ten, Ten:capFirst(ten), loai:j.type ? jobTypeLabel(j) : '', khi:chatWhen(j.shootDate), gio:j.shootTime ? ' lúc ' + j.shootTime : '', noi:j.location ? ' ở ' + j.location : '',
-        gia:price ? fmt(price) : '', pct:pct, coc:price ? fmt(Math.round(price * pct / 100 / 1000) * 1000) : '', da:paid ? fmt(paid) : '', con:owe ? fmt(owe) : '',
+        gia:price ? fmt(price) : '', pct:pct, coc:price ? fmt(depFor({price:price})) : '', depPaid:(j.id != null && jobDep(j) > 0) ? fmt(jobDep(j)) : '', da:paid ? fmt(paid) : '', con:owe ? fmt(owe) : '',
         drive:safeUrl(j.driveLink) || '', ig:state.cfg.instagram || '', intro:selfIntro() };
     }
     var CHAT_TPLS = [
       {k:'lienhe', t:'Chào khách', job:true, f:function(x){ return 'Chào ' + x.ten + '! ' + x.intro + 'Mình nhắn về buổi chụp ' + x.loai + (x.khi ? ' ' + x.khi : '') + x.gio + x.noi + ' nè. Bạn cần gì cứ nhắn mình nha.'; }},
       {k:'hoigia', t:'Trả lời khách hỏi giá', f:function(x){ return 'Chào ' + x.ten + '! ' + x.intro + 'Bạn định chụp dịp gì, ngày nào, ở đâu nè? Mình gửi gói hợp nhất kèm giá liền nha.' + (x.ig ? ' Ảnh mẫu: instagram.com/' + x.ig : ''); }},
       {k:'baogia', t:'Báo giá & xin cọc', f:function(x){ return x.Ten + ' ơi, ' + (x.gia ? 'gói ' + (x.loai || 'chụp') + ' bên mình ' + x.gia + '. Bạn' : 'bạn') + ' cọc trước ' + x.pct + '%' + (x.coc ? ' (' + x.coc + ')' : '') + ' là mình giữ lịch' + (x.khi ? ' ' + x.khi : '') + ' nha.'; }},
-      {k:'coc', t:'Đã nhận cọc', f:function(x){ return 'Mình nhận cọc' + (x.da ? ' ' + x.da : '') + ' rồi nha ' + x.ten + '! Lịch' + (x.khi ? ' ' + x.khi : '') + ' đã giữ chắc rồi, gần ngày mình nhắn nhắc chuẩn bị.'; }},
-      {k:'nhac', t:'Nhắc lịch chụp', f:function(x){ return x.Ten + ' ơi, nhắc lịch chụp ' + (x.khi || 'sắp tới') + x.gio + x.noi + ' nha. Nhớ ngủ sớm, tới sớm 10 phút giúp mình nhé!'; }},
-      {k:'chon', t:'Mời chọn ảnh', f:function(x){ return x.Ten + ' ơi, ảnh đã lên link rồi nè' + (x.drive ? ': ' + x.drive : '') + '. Bạn chọn tấm ưng rồi gửi số ảnh cho mình nha.'; }},
+      {k:'coc', t:'Đã nhận cọc', f:function(x){ return x.depPaid ? 'Mình nhận cọc ' + x.depPaid + ' rồi nha ' + x.ten + '! Lịch' + (x.khi ? ' ' + x.khi : '') + ' đã giữ chắc rồi, gần ngày mình nhắn nhắc chuẩn bị.' : x.Ten + ' ơi, bạn cọc trước ' + x.pct + '%' + (x.coc ? ' (' + x.coc + ')' : '') + ' là mình giữ lịch' + (x.khi ? ' ' + x.khi : '') + ' nha.'; }},
+      {k:'nhac', t:'Nhắc lịch chụp', f:function(x){ return x.Ten + ' ơi, nhắc lịch chụp ' + (x.khi || 'sắp tới') + x.gio + x.noi + ' nha.' + (x.khi === 'hôm nay' ? ' Tới sớm 10 phút giúp mình nhé!' : ' Nhớ ngủ sớm, tới sớm 10 phút giúp mình nhé!'); }},
+      {k:'chon', t:'Mời chọn ảnh', f:function(x){ return x.drive ? x.Ten + ' ơi, ảnh đã lên link rồi nè: ' + x.drive + '. Bạn chọn tấm ưng rồi gửi số ảnh cho mình nha.' : x.Ten + ' ơi, ảnh mình đã chọn xong rồi nè. Bạn xem giúp mình rồi gửi số ảnh ưng cho mình nha.'; }},
       {k:'giao', t:'Giao ảnh', f:function(x){ return 'Ảnh của ' + x.ten + ' xong rồi nè' + (x.drive ? ': ' + x.drive : '') + '. Cần chỉnh tấm nào cứ nói mình nha!'; }},
       {k:'tien', t:'Nhắc thanh toán', f:function(x){ return x.Ten + ' ơi, ' + (x.con ? 'buổi chụp' + (x.loai ? ' ' + x.loai : '') + ' còn ' + x.con + ' nha.' : 'mình nhắc phần thanh toán còn lại của buổi chụp' + (x.loai ? ' ' + x.loai : '') + ' nha.') + ' Bạn chuyển khi tiện giúp mình, cảm ơn bạn nhiều!'; }},
       {k:'camnhan', t:'Xin cảm nhận', f:function(x){ return 'Cảm ơn ' + x.ten + ' đã chọn mình! Nếu ưng ảnh, cho mình xin 1 câu cảm nhận và cho đăng vài tấm nhé.'; }}
     ];
     function chatTpl(k){ return CHAT_TPLS.filter(function(t){ return t.k === k; })[0]; }
     function chatMsg(k, j, name){ return chatTpl(k).f(chatCtx(j, name)); }
-    /* Mẫu hợp với bước hiện tại của job */
+    /* Mẫu hợp với bước hiện tại của job — chỉ gợi ý mẫu mà dữ liệu thật có:
+       "Đã nhận cọc" chỉ khi đã ghi cọc, "Nhắc thanh toán" chỉ khi còn thiếu. */
     function suggestKey(j){
       var owe = j.id != null ? jobOwe(j) : 0;
-      return ({ 'Tư vấn':'lienhe', 'Chốt cọc':'coc', 'Sắp chụp':'nhac', 'Đã chụp':'chon', 'Chọn ảnh':'chon', 'Hậu kỳ':'giao', 'Đã giao':owe ? 'tien' : 'camnhan', 'Xong':'camnhan' })[j.stage || 'Tư vấn'] || 'lienhe';
+      if (j.stage === 'Chốt cọc') return jobDep(j) > 0 ? 'coc' : 'baogia';
+      return ({ 'Tư vấn':'lienhe', 'Sắp chụp':'nhac', 'Đã chụp':'chon', 'Chọn ảnh':'chon', 'Hậu kỳ':'giao', 'Đã giao':owe ? 'tien' : 'camnhan', 'Xong':'camnhan' })[j.stage || 'Tư vấn'] || 'lienhe';
     }
     function msgFor(j){ return chatMsg(suggestKey(j), j); }
     function pickMsg(j){
       var sk = suggestKey(j);
       var keys = [sk].concat(CHAT_TPLS.map(function(t){ return t.k; }).filter(function(k){ return k !== sk && k !== 'hoigia'; }));
+      keys = keys.filter(function(k){ if (k === 'coc' && jobDep(j) === 0) return false; if (k === 'tien' && jobOwe(j) === 0) return false; return true; });
       actionSheet({ title:'Chép tin nhắn cho ' + callName(j.client), msg:'Mẫu đầu tiên hợp với bước “' + (j.stage || 'Tư vấn') + '”. Chạm để chép, rồi dán vào Zalo hoặc Messenger.',
         actions:keys.map(function(k, i){ return {label:chatTpl(k).t + (i === 0 ? ' · gợi ý' : ''), fn:function(){ copyText(chatMsg(k, j), 'Đã chép: ' + chatTpl(k).t); }}; }) });
     }
@@ -1491,8 +1553,8 @@
       var owe = jobOwe(j);
       var sub = [jobTypeLabel(j), fmtRel(j.shootDate) + (j.shootTime ? ' ' + j.shootTime : ''), j.location].filter(Boolean).join(' · ');
       return '<button type="button" class="row" data-job="' + j.id + '">' + typeIcon(j.type) +
-        '<span class="txt"><span class="t1 b wrap2" style="display:block;">' + esc(j.client) + '</span><span class="t2 clip" style="display:block;">' + esc(sub) + '</span>' + stepsBar(j) + '</span>' +
-        '<span class="job-val">' + stageTag(j) + (owe > 0 && j.stage !== 'Xong' ? '<span class="owe">còn ' + fmtTiny(owe) + '</span>' : '') + '</span>' +
+        '<span class="txt"><span class="t1 b wrap2" style="display:block;">' + esc(j.client) + '</span><span class="t2 wrap2" style="display:block;">' + esc(sub) + '</span>' + stepsBar(j) + '</span>' +
+        '<span class="job-val">' + stageTag(j) + (owe > 0 && !j.cancelled ? '<span class="owe">còn ' + fmtTiny(owe) + '</span>' : '') + '</span>' +
         I('chev').replace('<svg', '<svg class="chev"') + '</button>';
     }
     function sortJobs(list){
@@ -1548,20 +1610,35 @@
       else if (st) h += '<div class="list" style="margin-top:14px;"><div class="note-txt" style="color:var(--red);">Kẹt ở bước ' + esc(j.stage) + ' — ' + esc(st.reason) + '.</div></div>';
       h += '<p class="sec-s">Tiến độ</p><div class="list"><div class="stage-box"><div class="sb-top"><span class="b">' + esc(j.cancelled ? 'Đã huỷ' : j.stage) + '</span><span class="muted">Bước ' + (idx + 1) + '/' + STAGES.length + '</span></div>' + stepsBar(j, true, true) +
         (j.cancelled ? '<button type="button" class="btn fill" data-act="restore">Khôi phục về “Tư vấn”</button>'
-        : (j.stage !== 'Xong' ? '<button type="button" class="btn fill" data-act="next">Xong bước này' + I('arrowr', 2.2) + STAGES[idx+1] + '</button>' : '<div class="btn tint" style="margin-top:14px;">' + I('check', 2.4) + 'Đã hoàn tất, giỏi lắm!</div>')) +
+        : (j.stage !== 'Xong' ? '<button type="button" class="btn fill" data-act="next">Xong: ' + esc(j.stage) + ' → ' + esc(STAGES[idx+1]) + '</button>' : '<div class="btn tint" style="margin-top:14px;">' + I('check', 2.4) + 'Đã hoàn tất, giỏi lắm!</div>')) +
         (j.cancelled ? '' : (idx > 0 ? '<button type="button" class="btn plain" data-act="prev">Lùi về “' + STAGES[idx-1] + '”</button>' : '')) + '<p class="sec-f">Chạm vào số bước ở trên để nhảy thẳng tới bước đó.</p></div></div>';
       h += '<p class="sec-s">Lịch</p><div class="list">' +
         infoRow('cal', 'gray', 'Ngày chụp', esc(j.shootDate ? fmtRel(j.shootDate) : 'Chưa hẹn')) +
         infoRow('clock', 'gray', 'Giờ chụp', esc(j.shootTime || '—')) +
         infoRow('pin', 'gray', 'Địa điểm', esc(j.location || '—')) +
         infoRow('doc', 'gray', 'Hạn giao', esc(dl), late ? 'red' : '') + '</div>';
+      /* Job gấp: mốc nhắc 12 tiếng đã qua — báo rõ để người dùng biết app
+         sẽ nhắc muộn hơn (60 phút trước / nhắc ngay), không lặng lẽ bỏ
+         nhắc. Job thường (nhắc 12 tiếng) không hiện gì. */
+      var ri = shootReminderInfo(j);
+      if (ri && ri.mode !== '12h' && !j.cancelled){
+        var atD = new Date(ri.at);
+        var atTxt = pad2(atD.getHours()) + ':' + pad2(atD.getMinutes());
+        var atDate = atD.getFullYear() + '-' + pad2(atD.getMonth()+1) + '-' + pad2(atD.getDate());
+        if (atDate !== dstr(0)) atTxt = fmtRel(atDate) + ' ' + atTxt;
+        h += '<div class="list" style="margin-top:10px;"><div class="note-txt" style="color:var(--orange);">' +
+          (ri.mode === '60m'
+            ? 'Mốc nhắc 12 tiếng trước đã qua — app sẽ nhắc 60 phút trước giờ chụp, lúc ' + esc(atTxt) + '.'
+            : 'Buổi chụp trong chưa tới 60 phút nữa — app sẽ nhắc ngay.') +
+          '</div></div>';
+      }
       if (j.note) h += '<p class="sec-s">Ghi chú</p><div class="list"><div class="note-txt">' + esc(j.note) + '</div></div>';
       h += '<p class="sec-s">Tiền</p><div class="list">' +
         infoRow('tag', 'gray', 'Giá job', j.price ? fmt(j.price) : 'Chưa chốt') +
         infoRow('cam', 'gray', 'Chụp bằng', esc(jobMedium(j))) +
         infoRow('inarrow', 'gray', 'Đã thu', fmt(paid), 'green') +
         infoRow('outarrow', 'gray', 'Đã chi', fmt(spent)) +
-        (owe > 0 ? infoRow('wallet', 'gray', 'Còn thiếu', fmt(owe), 'red b') : infoRow('check', 'gray', 'Thanh toán', 'Đã thu đủ', 'green b')) +
+        (owe > 0 ? infoRow('wallet', 'gray', 'Còn thiếu', fmt(owe), 'red b') : (j.price > 0 ? infoRow('check', 'gray', 'Thanh toán', 'Đã thu đủ', 'green b') : infoRow('tag', 'gray', 'Thanh toán', 'Chưa ghi giá', ''))) +
         infoRow('coin', 'gray', 'Lời tạm tính', fmt(paid - spent), (paid - spent) >= 0 ? 'green' : 'red') +
         '<button type="button" class="row act" data-act="addtx"><span class="ic bg-accent">' + I('plus', 2.4) + '</span><span class="txt t1">Ghi khoản thu / chi cho job này</span></button></div>';
       h += '<p class="sec-s">Liên lạc</p><div class="list">' +
@@ -1582,6 +1659,7 @@
         (googleClientId() && state.cfg.gFeat && state.cfg.gFeat.drive ? actRow('drivepick', 'folder', 'gray', 'Chọn thư mục từ Google Drive', 'Tìm theo tên, khỏi dán link') : '') + '</div>' +
         '<p class="sec-f">Dán link xong là tự lưu.</p>';
       h += '<div class="list" style="margin-top:28px;">' + (j.cancelled ? '' : '<button type="button" class="row center" data-act="cancel">Huỷ job này (không chốt)</button>') + '<button type="button" class="row center destr" data-act="del">Xoá buổi chụp này</button></div>';
+      h += '<div style="margin-top:12px;"><button type="button" class="btn gray" data-act="close">Đóng</button></div>';
       return h;
     }
     function openJob(id){
@@ -1623,12 +1701,16 @@
       j.stage = target; j.stageSince = dstr(0); saveLocal(); renderAll(); refreshJobSheet();
       toast('“' + j.client + '” sang bước ' + target);
       if (target === 'Chốt cọc'){
-        /* Chỉ mở form cọc khi chưa có cọc: lùi về Chốt cọc không mở lại
-           form nếu đã ghi cọc rồi (UNIT-TEST-PLAN). */
-        var hasDep = state.txs.some(function(t){ return String(t.jobId) === String(j.id) && t.kind === 'thu' && t.category === 'Cọc'; });
-        if (!hasDep){
+        /* Chỉ mở form cọc khi chưa có cọc và chưa bấm "Để sau" cho job này:
+           lùi về Chốt cọc không mở lại form nếu đã ghi cọc rồi. Nút "Để sau"
+           chỉ đóng form — việc chuyển bước đã xong, không bị huỷ theo. */
+        var hasDep = jobDep(j) > 0;
+        if (!hasDep && !j.depPrompted){
           var dep = depFor(j);
-          setTimeout(function(){ openTxForm({ jobId:j.id, kind:'thu', category:'Cọc', amount:dep || 0, date:dstr(0), note:'Cọc giữ lịch — ' + j.client }); }, 400);
+          setTimeout(function(){ openTxForm({ jobId:j.id, kind:'thu', category:'Cọc', amount:dep || 0, date:dstr(0), note:'Cọc giữ lịch — ' + j.client,
+            defer:'Chưa có cọc — để sau',
+            onSave:function(){ j.depPrompted = false; saveLocal(); },
+            onClose:function(){ j.depPrompted = true; saveLocal(); } }); }, 400);
         }
       }
       if (target === 'Đã giao'){
@@ -1651,6 +1733,9 @@
       }
       setStage(j, STAGES[ti]);
     }
+    function doCancel(j){
+      j.cancelled = true; j.cancelledFrom = j.stage; cancelJobReminders(j.id); saveLocal(); if (jobSheet) jobSheet.close(); toast('Đã huỷ job', 'del'); renderAll();
+    }
     function jobAction(act, id){
       var j = jobById(id); if (!j) return;
       /* Job đã huỷ thì không tiến/lùi/huỷ nữa — chỉ khôi phục hoặc xoá hẳn. */
@@ -1658,11 +1743,19 @@
       if (act === 'next'){ var i = STAGES.indexOf(j.stage); if (i < STAGES.length-1) setStage(j, STAGES[i+1]); }
       if (act === 'prev'){ var k = STAGES.indexOf(j.stage); if (k > 0) setStage(j, STAGES[k-1]); }
       if (act === 'cancel'){
-        actionSheet({ title:'Huỷ job “' + j.client + '”?', msg:'Job chuyển sang trạng thái Đã huỷ, không nằm trong pipeline đang chạy. Tiền và lịch giữ nguyên, khôi phục được về “Tư vấn”.', actions:[{ label:'Huỷ job này', destructive:true, fn:function(){
-          j.cancelled = true; j.cancelledFrom = j.stage; cancelJobReminders(id); saveLocal(); if (jobSheet) jobSheet.close(); toast('Đã huỷ job', 'del'); renderAll();
-        } }] });
+        var dep = jobDep(j);
+        if (dep > 0){
+          /* Job đã nhận cọc mà huỷ thì tiền cọc thường phải trả lại khách — hỏi
+             luôn, chứ không tự ghi (quyết định trả hay không là của người dùng). */
+          actionSheet({ title:'Huỷ job “' + j.client + '”?', msg:'Job đã nhận cọc ' + fmt(dep) + '. Huỷ xong có cần ghi khoản hoàn cọc cho khách không?', actions:[
+            { label:'Huỷ & ghi hoàn cọc ' + fmt(dep), fn:function(){ doCancel(j); openTxForm({jobId:j.id, kind:'chi', category:'Hoàn cọc', amount:dep, date:dstr(0), note:'Hoàn cọc cho ' + j.client}); } },
+            { label:'Chỉ huỷ, không hoàn cọc', destructive:true, fn:function(){ doCancel(j); } }
+          ]});
+        } else {
+          actionSheet({ title:'Huỷ job “' + j.client + '”?', msg:'Job chuyển sang trạng thái Đã huỷ, không nằm trong pipeline đang chạy. Tiền và lịch giữ nguyên, khôi phục được về “Tư vấn”.', actions:[{ label:'Huỷ job này', destructive:true, fn:function(){ doCancel(j); } }] });
+        }
       }
-      if (act === 'restore'){ j.cancelled = false; j.cancelledFrom = ''; j.stage = 'Tư vấn'; j.stageSince = dstr(0); saveLocal(); renderAll(); refreshJobSheet(); toast('Đã khôi phục job về Tư vấn'); }
+      if (act === 'restore'){ j.cancelled = false; j.cancelledFrom = ''; j.stage = 'Tư vấn'; j.stageSince = dstr(0); saveLocal(); jobFilter = 'Tất cả'; renderAll(); refreshJobSheet(); toast('Đã khôi phục job về Tư vấn'); }
       if (act === 'del'){
         var n = state.txs.filter(function(t){ return String(t.jobId) === String(id); }).length;
         actionSheet({ title:'Xoá “' + j.client + '”?', msg:(n ? 'Kèm theo ' + n + ' khoản thu chi của job này. ' : '') + (j.gEventId ? 'Xoá luôn lịch hẹn này trên Google Lịch. ' : '') + 'Không hoàn tác được.',
@@ -1675,6 +1768,7 @@
             if (jobSheet) jobSheet.close(); toast('Đã xoá buổi chụp', 'del'); renderAll();
           }}] });
       }
+      if (act === 'close'){ if (jobSheet) jobSheet.close(); return; }
       if (act === 'addtx'){ openTxForm({jobId:id, kind: jobOwe(j) > 0 ? 'thu' : 'chi'}); }
       if (act === 'msgr'){ copyText(msgFor(j), 'Đã chép tin nhắn — qua Messenger Dán rồi Gửi'); window.open(safeUrl(j.msLink) || 'https://m.me/', '_blank'); }
       if (act === 'fb'){ copyText(msgFor(j), 'Đã chép tin nhắn — qua Facebook Dán rồi Gửi'); window.open(safeUrl(j.fbLink) || 'https://www.facebook.com/', '_blank'); }
@@ -1721,6 +1815,9 @@
     function frow(label, inner, cls){ return '<label class="frow' + (cls ? ' ' + cls : '') + '"><span>' + label + '</span>' + inner + '</label>'; }
     function openJobForm(j, pre){
       var e = j || Object.assign({client:'', type:'Portrait', medium:'Digital', stage:'Tư vấn', shootDate:'', shootTime:'', location:'', deadline:'', price:state.cfg.prices.Portrait || 0, phone:'', email:'', fbLink:'', msLink:'', driveLink:'', note:''}, pre || {});
+      /* Tạo mới mà pre chỉ định loại chụp (vd từ Gmail) nhưng không ghi giá:
+         lấy giá theo đúng loại + hình thức, khỏi nhầm giá Portrait mặc định. */
+      if (!j && !(pre && pre.price)) e.price = priceFor(e.type, e.medium || 'Digital');
       var opt = function(arr, cur){ return arr.map(function(x){ return '<option' + (x === cur ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join(''); };
       var body = '<form id="jobForm" autocomplete="off">' +
         '<div class="list" style="margin-top:8px;">' +
@@ -1735,8 +1832,9 @@
           frow('Hạn giao ảnh', '<input type="date" name="deadline" value="' + esc(e.deadline) + '" />') + '</div>' +
         (state.cfg.deliverDays > 0 ? '<p class="sec-f">Chọn ngày chụp là hạn giao tự điền ' + state.cfg.deliverDays + ' ngày sau.</p>' : '') +
         '<p class="sec-s">Giá</p><div class="list">' +
-          frow('Tổng giá job', '<input name="price" inputmode="numeric" value="' + (e.price ? (+e.price).toLocaleString('vi-VN') : '') + '" placeholder="6.000.000" />') + '</div>' +
-        '<p class="sec-f">Tiền cọc và các đợt trả ghi ở tab Tiền bạc — app tự trừ ra số khách còn thiếu.</p>' +
+          frow('Tổng giá job', '<input name="price" inputmode="numeric" value="' + (e.price ? (+e.price).toLocaleString('vi-VN') : '') + '" placeholder="VD: 2.500.000" />') +
+          (j ? '' : frow('Cọc đã nhận', '<input name="deposit" inputmode="numeric" placeholder="Chưa nhận thì để trống" />')) + '</div>' +
+        '<p class="sec-f">' + (j ? 'Tiền cọc và các đợt trả ghi ở tab Tiền bạc — app tự trừ ra số khách còn thiếu.' : 'Cọc ghi ở trên sẽ vào tab Tiền bạc — app tự trừ ra số khách còn thiếu.') + '</p>' +
         '<p class="sec-s">Liên lạc</p><div class="list">' +
           frow('Điện thoại', '<input type="tel" name="phone" value="' + esc(e.phone || '') + '" placeholder="0901 234 567" inputmode="tel" />') +
           frow('Email', '<input type="email" name="email" value="' + esc(e.email) + '" placeholder="khach@email.com" inputmode="email" />') +
@@ -1753,7 +1851,21 @@
           deadline:g('deadline'), price:moneyVal(f.elements.price), phone:g('phone').replace(/[^\d+]/g, '').slice(0, 20), email:g('email'), fbLink:link(g('fbLink')), msLink:link(g('msLink')), driveLink:link(g('driveLink')), note:g('note') };
         if (j){ var oldStage = j.stage; Object.keys(data).forEach(function(k){ j[k] = data[k]; }); if (j.stage !== oldStage) j.stageSince = dstr(0); toast('Đã lưu thay đổi'); }
         else { data.id = nid(); data.stageSince = dstr(0); data.cancelled = false; if (pre && pre.calUid) data.calUid = cleanStr(pre.calUid, 200); state.jobs.unshift(data); toast('Đã thêm buổi chụp mới'); }
+        var depEl = f.elements.deposit, depAmt = depEl ? moneyVal(depEl) : 0;
+        if (!j && depAmt > 0){
+          state.txs.unshift({ id:nid(), kind:'thu', category:'Cọc', jobId:data.id, amount:depAmt, date:dstr(0), method:'Chuyển khoản', note:'Cọc giữ lịch — ' + data.client, src:'' });
+        }
         api.close(); renderAll();
+        var savedJob = j || data;
+        /* Job ở bước Chốt cọc trở đi mà chưa có cọc thì hỏi nhập cọc sau khi lưu
+           — như khi chuyển bước bằng tay (cùng nút "Để sau", cùng cờ depPrompted). */
+        if (STAGES.indexOf(savedJob.stage) >= 1 && savedJob.price > 0 && jobDep(savedJob) === 0 && !savedJob.depPrompted){
+          var depSug = depFor(savedJob);
+          setTimeout(function(){ openTxForm({ jobId:savedJob.id, kind:'thu', category:'Cọc', amount:depSug || 0, date:dstr(0), note:'Cọc giữ lịch — ' + savedJob.client,
+            defer:'Chưa có cọc — để sau',
+            onSave:function(){ savedJob.depPrompted = false; saveLocal(); },
+            onClose:function(){ savedJob.depPrompted = true; saveLocal(); } }); }, 400);
+        }
         scheduleJobReminders(j || data);
         if (typeof gAutoCal === 'function') gAutoCal(j || data);
         if (!j && data.shootDate && typeof suggestEmail === 'function') suggestEmail(data, 'confirm', 700);
@@ -1764,6 +1876,7 @@
         bind:function(api){
           var f = $('#jobForm', api.body);
           moneyInput(f.elements.price);
+          if (f.elements.deposit) moneyInput(f.elements.deposit);
           f.addEventListener('submit', function(ev){ ev.preventDefault(); save(api); });
           f.elements.client.addEventListener('input', function(){ $('.frow.req', f).classList.remove('invalid'); });
           if (typeof gContactsBind === 'function') gContactsBind(f);
@@ -1889,18 +2002,18 @@
         if (k === 'thu') return THU_CATS.map(function(c){ return '<option>' + esc(c) + '</option>'; }).join('');
         return Object.keys(CHI_GROUPS).map(function(g){ return '<optgroup label="' + esc(g) + '">' + CHI_GROUPS[g].map(function(c){ return '<option>' + esc(c) + '</option>'; }).join('') + '</optgroup>'; }).join('');
       };
-      var jobOpts = '<option value="">Không gắn job</option>' + sortJobs(state.jobs).map(function(j){ return '<option value="' + j.id + '"' + (String(pre.jobId) === String(j.id) ? ' selected' : '') + '>' + esc(j.client) + ' (' + esc(jobTypeLabel(j)) + ')</option>'; }).join('');
+      var jobOpts = '<option value="">Không gắn job</option>' + sortJobs(state.jobs).map(function(j){ return '<option value="' + j.id + '"' + (String(pre.jobId) === String(j.id) ? ' selected' : '') + '>' + esc(j.client) + '</option>'; }).join('');
       var body = '<form id="txForm" autocomplete="off">' +
         '<div class="seg" id="txKindSeg" style="margin-top:6px;"><button type="button" data-k="thu">Thu — tiền vào</button><button type="button" data-k="chi">Chi — tiền ra</button></div>' +
         '<div class="list amount" id="amtBox" style="margin-top:14px;"><p class="a-lbl">Số tiền</p><div class="a-in"><input name="amount" inputmode="numeric" placeholder="0" aria-label="Số tiền" /><span class="cur">₫</span></div>' +
         '<div class="pills"><button type="button" class="pill" data-q="500000">500k</button><button type="button" class="pill" data-q="1000000">1 triệu</button><button type="button" class="pill" data-q="2000000">2 triệu</button><button type="button" class="pill" data-q="5000000">5 triệu</button></div></div>' +
         '<div class="list" style="margin-top:14px;">' +
           frow('Hạng mục', '<select name="category" id="txCategory"></select>') +
-          frow('Buổi chụp', '<select name="jobId">' + jobOpts + '</select>') +
+          frow('Buổi chụp', '<select name="jobId">' + jobOpts + '</select>', 'stack') +
           frow('Ngày', '<input type="date" name="date" value="' + dstr(0) + '" />') +
           frow('Hình thức', '<select name="method"><option>Chuyển khoản</option><option>Tiền mặt</option><option>Trả góp / đợt</option></select>') +
           frow('Ghi chú', '<input name="note" placeholder="Cọc đợt 1, makeup chị Mai…" />') + '</div>' +
-        '<p class="sec-f" id="txHint"></p></form>';
+        '<p class="sec-f" id="txHint"></p></form>' + (pre.defer ? '<button type="button" class="btn plain" id="txDefer" style="margin-top:4px;">' + esc(pre.defer) + '</button>' : '');
       function setKind(api, k){
         kind = k;
         $$('#txKindSeg button', api.body).forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-k') === k); });
@@ -1917,14 +2030,22 @@
         if (!amt){ var b = $('#amtBox', api.body); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); toast('Nhập số tiền trước nha', 'warn'); f.elements.amount.focus(); return; }
         state.txs.unshift({ id:nid(), kind:kind, category:f.elements.category.value, jobId:f.elements.jobId.value || '', amount:amt,
           date:f.elements.date.value || dstr(0), method:f.elements.method.value, note:f.elements.note.value.trim(), src:cleanStr(pre.src, 80) });
+        savedTx = true;
+        if (pre.onSave) pre.onSave();
         api.close(); toast((kind === 'thu' ? 'Đã ghi khoản thu ' : 'Đã ghi khoản chi ') + fmt(amt)); renderAll();
         var paidJob = f.elements.jobId.value ? jobById(f.elements.jobId.value) : null;
         if (kind === 'thu' && paidJob && paidJob.price && jobOwe(paidJob) === 0) celebrate(paidJob.client + ' trả đủ rồi!', 'party');
         if (kind === 'thu' && paidJob && f.elements.category.value === 'Cọc' && typeof suggestEmail === 'function') suggestEmail(paidJob, 'deposit', 2600);
       }
-      openSheet({ title:'Ghi thu chi', left:'Huỷ', right:'Lưu', body:body, onRight:save,
+      /* Nút trái là "Đóng" khi form mở theo lời nhắc cọc — chỉ đóng form, không
+         huỷ việc chuyển bước (bước đã chuyển xong rồi). pre.onClose chỉ chạy
+         khi đóng mà KHÔNG lưu (đã lưu thì savedTx chặn lại). */
+      var savedTx = false;
+      openSheet({ title:'Ghi thu chi', left:pre.defer ? 'Đóng' : 'Huỷ', right:'Lưu', body:body, onRight:save,
+        onClose:function(){ if (!savedTx && pre.onClose) pre.onClose(); },
         bind:function(api){
           var f = $('#txForm', api.body);
+          var db = $('#txDefer', api.body); if (db) db.addEventListener('click', function(){ api.close(); });
           moneyInput(f.elements.amount);
           f.elements.amount.addEventListener("input", function(){ fitAmount(f.elements.amount); }); fitAmount(f.elements.amount);
           $$('#txKindSeg button', api.body).forEach(function(b){ b.addEventListener('click', function(){ setKind(api, b.getAttribute('data-k')); }); });
@@ -1949,26 +2070,28 @@
     function renderMoney(){
       var sThu = sum(monthTxs('thu')), sChi = sum(monthTxs('chi'));
       var mm = parseD(dstr(0)); $('#moneyEyebrow').textContent = 'Tháng ' + (mm.getMonth()+1) + ', ' + mm.getFullYear();
-      $('#moneyStats').innerHTML = '<div class="msum-c"><span>Thu</span><b class="num green">' + esc(fmtShort(sThu)) + '</b></div>' +
-        '<div class="msum-c"><span>Chi</span><b class="num">' + esc(fmtShort(sChi)) + '</b></div>' +
-        '<div class="msum-c"><span>Lời</span><b class="num' + (sThu - sChi < 0 ? ' red' : '') + '">' + (sThu - sChi < 0 ? '−' : '') + esc(fmtShort(Math.abs(sThu - sChi))) + '</b></div>';
-      var owes = state.jobs.filter(function(j){ return j.stage !== 'Xong' && !j.cancelled && jobOwe(j) > 0; }).sort(function(a, b){ return jobOwe(b) - jobOwe(a); });
-      $('#oweTitle').textContent = 'Khách còn thiếu' + (owes.length ? ' · ' + fmtShort(totalOwe()) : '');
+      $('#moneyStats').innerHTML = '<div class="msum-c"><span>Thu</span><b class="num green">' + esc(fmtShort(sThu)) + '</b><span class="exact num">' + esc(fmt(sThu)) + '</span></div>' +
+        '<div class="msum-c"><span>Chi</span><b class="num">' + esc(fmtShort(sChi)) + '</b><span class="exact num">' + esc(fmt(sChi)) + '</span></div>' +
+        '<div class="msum-c"><span>Lời</span><b class="num' + (sThu - sChi < 0 ? ' red' : '') + '">' + (sThu - sChi < 0 ? '−' : '') + esc(fmtShort(Math.abs(sThu - sChi))) + '</b><span class="exact num">' + esc(fmt(sThu - sChi)) + '</span></div>';
+      var owes = state.jobs.filter(function(j){ return !j.cancelled && jobOwe(j) > 0; }).sort(function(a, b){ return jobOwe(b) - jobOwe(a); });
+      var unpricedN = unpricedJobs().length;
+      $('#oweTitle').textContent = 'Khách còn thiếu' + (owes.length ? ' · ' + fmt(totalOwe()) : '');
       $('#oweList').innerHTML = owes.length ? owes.map(function(j){
         var paid = jobThu(j.id);
-        return '<div class="row owe-row" data-job="' + j.id + '" role="button" tabindex="0"><span class="txt"><span class="t1 b wrap2" style="display:block;">' + esc(j.client) + '</span><span class="t2" style="display:block;">' + esc(jobTypeLabel(j)) + ' · ' + (paid ? 'đã nhận ' + fmtTiny(paid) + ' / ' + fmtTiny(j.price) : 'chưa nhận cọc') + '</span></span>' +
-          '<span class="val num b red">' + fmtTiny(jobOwe(j)) + '</span><button type="button" class="btn tint sm owe-nhac" data-nhac="' + j.id + '" aria-label="Chép tin nhắc thanh toán cho ' + esc(j.client) + '">Nhắc</button></div>';
-      }).join('') : '<div class="empty-row muted">Khách trả đủ hết rồi, không ai còn thiếu.</div>';
+        return '<div class="row owe-row" data-job="' + j.id + '" role="button" tabindex="0"><span class="txt"><span class="t1 b wrap2" style="display:block;">' + esc(j.client) + '</span><span class="t2" style="display:block;">' + esc(jobTypeLabel(j)) + ' · ' + (paid ? 'đã nhận ' + fmt(paid) + ' / ' + fmt(j.price) : 'chưa nhận cọc') + '</span></span>' +
+          '<span class="val num b red">' + fmt(jobOwe(j)) + '</span><button type="button" class="btn tint sm owe-nhac" data-nhac="' + j.id + '" aria-label="Chép tin nhắc thanh toán cho ' + esc(j.client) + '">Nhắc</button></div>';
+      }).join('') : (unpricedN ? '<div class="empty-row muted">Có ' + unpricedN + ' buổi chụp chưa ghi giá — ghi giá để app tính khách còn thiếu.</div>' : '<div class="empty-row muted">Khách trả đủ hết rồi, không ai còn thiếu.</div>');
       $$('#oweList [data-nhac]').forEach(function(b){ b.addEventListener('click', function(e){ e.stopPropagation(); var j = jobById(b.getAttribute('data-nhac')); if (j) copyText(chatMsg('tien', j), 'Đã chép tin nhắc — dán vào Zalo hoặc Messenger'); }); });
       $$('#oweList .owe-row').forEach(function(r){ r.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openJob(r.getAttribute('data-job')); } }); });
-      /* Nhiều job (> 6): mặc định chỉ hiện job đang chạy, job đã xong gom vào nút "Xem thêm" — Sổ thu chi đỡ bị đẩy xuống xa. */
-      var pjAll = sortJobs(state.jobs), pjDone = pjAll.filter(function(j){ return j.stage === 'Xong'; }).length;
+      /* Job đã huỷ không nằm trong "Lời theo từng job" — tiền của nó vẫn nằm trong
+         tổng Thu/Chi tháng, nhưng không tính là thiếu hay lời của job đang chạy. */
+      var pjAll = sortJobs(state.jobs.filter(function(j){ return !j.cancelled; })), pjDone = pjAll.filter(function(j){ return j.stage === 'Xong'; }).length;
       var pjFold = !profitShowAll && pjAll.length > 6 && pjDone > 0;
       var pjList = pjFold ? pjAll.filter(function(j){ return j.stage !== 'Xong'; }) : pjAll;
-      $('#jobProfit').innerHTML = (state.jobs.length ? pjList.map(function(j){
+      $('#jobProfit').innerHTML = (pjList.length ? pjList.map(function(j){
         var t = jobThu(j.id), c = jobChi(j.id), owe = jobOwe(j), p = t - c;
-        return '<button type="button" class="row" data-job="' + j.id + '">' + typeIcon(j.type) + '<span class="txt"><span class="t1 b wrap2" style="display:block;">' + esc(j.client) + '</span><span class="t2" style="display:block;">Thu ' + fmtTiny(t) + ' · Chi ' + fmtTiny(c) + (owe && j.stage !== 'Xong' ? ' · <span class="red">thiếu ' + fmtTiny(owe) + '</span>' : '') + '</span></span>' +
-          (p === 0 ? '<span class="val num">0₫</span>' : '<span class="val num b ' + (p > 0 ? 'green' : 'red') + '" style="font-size:1.0625rem;">' + (p > 0 ? '+' : '−') + esc(fmtShort(Math.abs(p))) + '</span>') + I('chev').replace('<svg', '<svg class="chev"') + '</button>';
+        return '<button type="button" class="row" data-job="' + j.id + '">' + typeIcon(j.type) + '<span class="txt"><span class="t1 b wrap2" style="display:block;">' + esc(j.client) + '</span><span class="t2" style="display:block;">Thu ' + fmt(t) + ' · Chi ' + fmt(c) + (owe > 0 ? ' · <span class="red">thiếu ' + fmt(owe) + '</span>' : '') + '</span></span>' +
+          (p === 0 ? '<span class="val num">0₫</span>' : '<span class="val num b ' + (p > 0 ? 'green' : 'red') + '" style="font-size:1.0625rem;">' + (p > 0 ? '+' : '−') + esc(fmt(Math.abs(p))) + '</span>') + I('chev').replace('<svg', '<svg class="chev"') + '</button>';
       }).join('') : '<div class="empty-row muted">Chưa có job nào.</div>') +
         (pjFold ? '<button type="button" class="row" id="profitMore"><span class="txt t1" style="color:var(--accent-t);">Xem thêm ' + pjDone + ' job đã xong</span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button>' : '');
       var pm = $('#profitMore'); if (pm) pm.addEventListener('click', function(){ profitShowAll = true; renderMoney(); });
@@ -1984,10 +2107,10 @@
         list.forEach(function(t){ if (!cur || cur.date !== t.date){ cur = {date:t.date, items:[]}; groups.push(cur); } cur.items.push(t); });
         $('#txList').innerHTML = groups.map(function(g){
           var net = g.items.reduce(function(s, t){ return s + (t.kind === 'thu' ? t.amount : -t.amount); }, 0);
-          return '<p class="sec-s" style="display:flex;justify-content:space-between;"><span>' + esc(fmtHeaderDate(g.date)) + '</span><span class="num" style="text-transform:none;">' + (net >= 0 ? '+' : '−') + fmtTiny(Math.abs(net)) + '</span></p><div class="list">' + g.items.map(function(t){
-            var j = t.jobId ? jobById(t.jobId) : null, sub = [j ? j.client : 'Khoản chung', t.method, t.note].filter(Boolean).join(' · ');
+          return '<p class="sec-s" style="display:flex;justify-content:space-between;"><span>' + esc(fmtHeaderDate(g.date)) + '</span><span class="num" style="text-transform:none;">' + (net >= 0 ? '+' : '−') + fmt(Math.abs(net)) + '</span></p><div class="list">' + g.items.map(function(t){
+            var j = t.jobId ? jobById(t.jobId) : null, sub = [j ? j.client : 'Khoản chung', t.method].filter(Boolean).join(' · ');
             return '<button type="button" class="row" data-tx="' + t.id + '"><span class="ic round ' + (t.kind === 'thu' ? 'bg-green' : 'bg-red') + '">' + I(t.kind === 'thu' ? 'inarrow' : 'outarrow', 2.4) + '</span>' +
-              '<span class="txt"><span class="t1 clip" style="display:block;">' + esc(t.category) + '</span><span class="t2 clip" style="display:block;">' + esc(sub) + '</span></span>' +
+              '<span class="txt"><span class="t1 clip" style="display:block;">' + esc(t.category) + '</span><span class="t2 wrap2" style="display:block;">' + esc(sub) + '</span>' + (t.note ? '<span class="t2 tx-note" style="display:block;">' + esc(t.note) + '</span>' : '') + '</span>' +
               '<span class="val num b ' + (t.kind === 'thu' ? 'green' : '') + '" style="color:' + (t.kind === 'thu' ? '' : 'var(--label)') + ';">' + (t.kind === 'thu' ? '+' : '−') + fmt(t.amount) + '</span></button>';
           }).join('') + '</div>';
         }).join('');
@@ -2020,8 +2143,9 @@
         var cc = state.jobs.filter(function(j){ return j.stage==='Chốt cọc'; });
         lines.push(tu.length ? 'Có ' + tu.length + ' khách đang chờ tư vấn: ' + tu.map(function(j){ return j.client; }).join(', ') + '.' : 'Không có khách nào đang chờ tư vấn.');
         lines.push(cc.length ? cc.length + ' job vừa chốt cọc, sẵn sàng lên lịch.' : 'Chưa có job mới chốt cọc.');
-        var oweN = state.jobs.filter(function(j){ return jobOwe(j) > 0; }).length;
-        lines.push(oweN ? oweN + ' khách còn thiếu tiền — tin nhắn nhắc khéo có sẵn trong từng buổi chụp.' : 'Khách đã trả đủ hết, vui quá!');
+        var oweN = state.jobs.filter(function(j){ return !j.cancelled && jobOwe(j) > 0; }).length;
+        var unpN = unpricedJobs().length;
+        lines.push(oweN ? oweN + ' khách còn thiếu tiền — tin nhắn nhắc khéo có sẵn trong từng buổi chụp.' : (unpN ? 'Có ' + unpN + ' buổi chụp chưa ghi giá — ghi giá để biết khách còn thiếu bao nhiêu.' : 'Khách đã trả đủ hết, vui quá!'));
       }
       if (id === 'buoichup'){
         var st = state.jobs.filter(function(j){ return j.shootDate===today && j.stage!=='Xong'; });
@@ -2039,7 +2163,7 @@
       if (id === 'tienbac'){
         var sThu = sum(monthTxs('thu')), sChi = sum(monthTxs('chi'));
         lines.push('Tháng này thu ' + fmt(sThu) + ', chi ' + fmt(sChi) + ', lời ' + fmt(sThu - sChi) + '.');
-        lines.push(totalOwe() > 0 ? 'Khách còn thiếu tổng cộng ' + fmt(totalOwe()) + ' — chi tiết ở tab Tiền bạc.' : 'Không ai nợ đồng nào.');
+        lines.push(totalOwe() > 0 ? 'Khách còn thiếu tổng cộng ' + fmt(totalOwe()) + ' — chi tiết ở tab Tiền bạc.' : (unpricedJobs().length ? 'Có ' + unpricedJobs().length + ' buổi chụp chưa ghi giá — ghi giá để biết khách còn thiếu bao nhiêu.' : 'Không ai nợ đồng nào.'));
         var big = biggestChiCat();
         lines.push(big ? 'Khoản chi lớn nhất tháng này: ' + big.cat + ' — ' + fmt(big.total) + '.' : 'Tháng này chưa ghi khoản chi nào.');
         if (typeof totalDep === 'function' && totalDep() > 0) lines.push('Khấu hao thiết bị ' + fmt(totalDep()) + '/tháng' + (recordedThisMonth(DEP_NOTE) ? ' — đã ghi vào sổ tháng này.' : ' — chưa ghi vào sổ tháng này (vào Cài đặt bấm một nút là xong).'));
@@ -2066,8 +2190,20 @@
     var CAPTION = 'Có những buổi sáng, ánh nắng tự nó đã là một bài thơ — việc của mình chỉ là đứng đúng chỗ và bấm máy.';
     function tplRows(name){
       var nm = String(name || '').trim();
-      return CHAT_TPLS.filter(function(t){ return !t.job; }).map(function(t){
+      /* "Đã nhận cọc" là mẫu riêng từng job — không hiện ở danh sách chung vì
+         ở đây không biết khách đã cọc hay chưa, nói "nhận cọc rồi" là nói sai. */
+      return CHAT_TPLS.filter(function(t){ return !t.job && t.k !== 'coc'; }).map(function(t){
         return '<button type="button" class="row tpl-row" data-tpl="' + t.k + '"><span class="txt"><span class="t1 b" style="display:block;">' + esc(t.t) + '</span><span class="t2 wrap2" style="display:block;">' + esc(chatMsg(t.k, null, nm || 'bạn')) + '</span></span><span class="tpl-copy" aria-hidden="true">' + I('copy') + '</span></button>';
+      }).join('');
+    }
+    /* Nhãn dropdown máy tính giá theo đúng medium đang chọn: chọn Film thì
+       hiện giá film (hoặc "chưa đặt giá" khi = 0), không hiện giá Digital. */
+    function calcPkgOptions(medium){
+      return Object.keys(state.cfg.prices).filter(function(t){
+        return (state.cfg.prices[t] || 0) > 0 || ((state.cfg.pricesFilm || {})[t] || 0) > 0;
+      }).map(function(t){
+        var p = priceFor(t, medium);
+        return '<option value="' + esc(t) + '">' + esc(t) + ' — ' + (p > 0 ? fmt(p) : 'chưa đặt giá') + '</option>';
       }).join('');
     }
     function deptTools(id){
@@ -2077,7 +2213,7 @@
           '<div class="list" style="margin-top:12px;" id="tplList">' + tplRows('') + '</div>' +
           '<p class="sec-f">Chạm một mẫu là chép. Trong từng buổi chụp, nút “Chép tin nhắn mẫu” tự điền ngày, giờ, số tiền của khách đó.</p>';
         h += '<p class="sec-s">Tính giá nhanh</p><div class="list">' +
-          frow('Gói chụp', '<select id="calcPkg">' + Object.keys(state.cfg.prices).filter(function(t){ return state.cfg.prices[t] > 0; }).map(function(t){ return '<option value="' + esc(t) + '">' + esc(t) + ' — ' + fmt(state.cfg.prices[t]) + '</option>'; }).join('') + '</select>') +
+          frow('Gói chụp', '<select id="calcPkg">' + calcPkgOptions('Digital') + '</select>') +
           frow('Chụp bằng', '<select id="calcMedium">' + MEDIUMS.map(function(m){ return '<option>' + esc(m) + '</option>'; }).join('') + '</select>') +
           frow('Thêm giờ', '<input type="number" id="calcHours" min="0" value="0" inputmode="numeric" />') +
           frow('Thêm địa điểm', '<input type="number" id="calcLocs" min="0" value="0" inputmode="numeric" />') +
@@ -2122,10 +2258,17 @@
           var upd = function(){
             var c = state.cfg, base = priceFor($('#calcPkg', b).value, $('#calcMedium', b).value), missFilm = base === 0 && $('#calcMedium', b).value !== 'Digital';
             total = base + (+$('#calcHours', b).value || 0) * c.extraHour + (+$('#calcLocs', b).value || 0) * c.extraLoc + (+$('#calcPhotos', b).value || 0) * c.retouch + (+$('#calcAlbum', b).value);
-            coc = Math.round(total * (+c.depositPct || 0) / 100 / 10000) * 10000;
+            coc = depFor({ price:total });
             $('#calcOut', b).textContent = missFilm ? 'Chưa đặt giá film cho gói ' + $('#calcPkg', b).value + ' — vào Cài đặt → Bảng giá film để điền giá trước nha.' : 'Tổng:                 ' + fmt(total) + '\nCọc trước (' + c.depositPct + '%):  ' + fmt(coc) + '\nCòn lại sau giao:   ' + fmt(total - coc);
           };
           ['calcPkg','calcMedium','calcHours','calcLocs','calcPhotos','calcAlbum'].forEach(function(cid){ $('#' + cid, b).addEventListener('input', upd); $('#' + cid, b).addEventListener('change', upd); });
+          /* Đổi medium thì dựng lại nhãn giá theo medium đó, giữ nguyên gói đang chọn. */
+          $('#calcMedium', b).addEventListener('change', function(){
+            var sel = $('#calcPkg', b), cur = sel.value;
+            sel.innerHTML = calcPkgOptions($('#calcMedium', b).value);
+            if (sel.querySelector('option[value="' + cur + '"]')) sel.value = cur;
+            upd();
+          });
           $('#calcCopy', b).addEventListener('click', function(){
             var missFilm = priceFor($('#calcPkg', b).value, $('#calcMedium', b).value) === 0 && $('#calcMedium', b).value !== 'Digital';
             copyText(missFilm ? 'Chưa đặt giá film cho gói ' + $('#calcPkg', b).value + ' — bạn đang cập nhật bảng giá film, mình báo lại bạn ngay nha!' : 'Báo giá từ ' + state.cfg.studio + ' nè: gói ' + $('#calcPkg', b).value + ' — ' + $('#calcMedium', b).value + ', tổng ' + fmt(total) + ', cọc trước ' + fmt(coc) + ' để giữ lịch, còn lại ' + fmt(total - coc) + ' trả sau khi giao ảnh. Bạn xem có ưng không nha!', 'Đã chép báo giá');
@@ -2136,7 +2279,7 @@
     }
     function renderDepts(){
       $('#deptGrid').innerHTML = DEPTS.map(function(d){
-        return '<button type="button" class="row" data-dept="' + d.id + '"><span class="ic round ltr bg-gray">' + d.staff.charAt(0) + '</span><span class="txt"><span class="t1 b" style="display:block;">' + esc(d.name) + '</span><span class="t2 clip" style="display:block;">Bạn ' + esc(d.staff) + ' · ' + esc(deptLines(d.id)[0] || '') + '</span></span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button>';
+        return '<button type="button" class="row" data-dept="' + d.id + '"><span class="ic round ltr bg-gray">' + d.staff.charAt(0) + '</span><span class="txt"><span class="t1 b" style="display:block;">' + esc(d.name) + '</span><span class="t2 wrap2" style="display:block;">Bạn ' + esc(d.staff) + ' · ' + esc(deptLines(d.id)[0] || '') + '</span></span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button>';
       }).join('');
       bindRows($('#deptGrid'));
       $('#dailyReport').textContent = dailyReportText();
@@ -2168,13 +2311,23 @@
     /* ================= HỎI TRỢ LÝ ================= */
     var QUICK_QS = ['Hôm nay chụp gì?', 'Ai chưa trả tiền?', 'Tháng này lời bao nhiêu?', 'Chi nhiều nhất vào đâu?', 'Job nào sắp tới hạn giao?', 'Tuần này chụp gì?', 'Đọc báo cáo hôm nay'];
     function debtorsText(){
-      var list = state.jobs.filter(function(j){ return !j.cancelled && jobOwe(j) > 0 && j.stage !== 'Xong'; });
-      if (!list.length) return 'Không ai nợ đồng nào hết, bạn ơi. Khách trả đủ hết rồi, vui quá!';
+      var list = state.jobs.filter(function(j){ return !j.cancelled && jobOwe(j) > 0; });
+      if (!list.length){
+        /* Job chưa ghi giá không tính là "trả đủ" — nợ của nó chưa biết bao nhiêu. */
+        var unp = unpricedJobs().length;
+        if (unp) return 'Chưa thấy khách nào còn thiếu tiền trong các job đã ghi giá. Nhưng có ' + unp + ' buổi chụp chưa ghi giá nên app chưa tính được số thiếu — ghi giá vào là app tính ngay.';
+        return 'Không ai nợ đồng nào hết, bạn ơi. Khách trả đủ hết rồi, vui quá!';
+      }
       return 'Danh sách khách còn thiếu tiền nè:\n' + list.map(function(j){ return '• ' + j.client + ' (' + jobTypeLabel(j) + ') — còn thiếu ' + fmt(jobOwe(j)) + ', đang ở bước ' + j.stage; }).join('\n') + '\nTổng cộng còn thiếu: ' + fmt(totalOwe()) + '. Tin nhắn nhắc khéo có sẵn trong từng buổi chụp đó.';
     }
     function answer(qRaw){
       var q = norm(qRaw);
-      if (q.indexOf('chua tra') >= 0 || q.indexOf('con no') >= 0 || q.indexOf('no tien') >= 0 || q.indexOf('thieu tien') >= 0 || q.indexOf('ai no') >= 0) return debtorsText();
+      /* THỨ TỰ NHÁNH QUAN TRỌNG: 'tháng' → 'thang' và 'thanh toán' → 'thanh' đều
+         chứa chuỗi con 'han', nên nhánh nợ/lời/thu/chi phải đứng TRƯỚC nhánh hạn
+         giao — không là "Tháng này lời bao nhiêu?" bị trả lời về hạn giao.
+         Nhánh hạn chỉ khớp 'han' khi nó là từ riêng (' han'/'han '), không khớp
+         chuỗi con trong 'thang'/'thanh'. */
+      if (q.indexOf('chua tra') >= 0 || q.indexOf('chua thanh toan') >= 0 || q.indexOf('thanh toan') >= 0 || q.indexOf('con thieu') >= 0 || q.indexOf('con no') >= 0 || q.indexOf('no tien') >= 0 || q.indexOf('thieu tien') >= 0 || q.indexOf('ai no') >= 0) return debtorsText();
       if (q.indexOf('bao cao') >= 0) return dailyReportText();
       if (q.indexOf('hom nay') >= 0 && (q.indexOf('chup') >= 0 || q.indexOf('job') >= 0 || q.indexOf('viec') >= 0 || q.indexOf('lam gi') >= 0)){
         var st = state.jobs.filter(function(j){ return j.shootDate === dstr(0) && j.stage !== 'Xong'; });
@@ -2182,19 +2335,15 @@
         if (!st.length && !items.length) return 'Hôm nay không có buổi chụp nào và cũng không có hạn nào dí hết. Ngày thong thả đó bạn!';
         return 'Hôm nay của bạn nè:\n' + items.map(function(i){ return '• ' + i.title + ' — ' + i.desc; }).join('\n');
       }
-      if (q.indexOf('tuan') >= 0){
-        var wk = state.jobs.filter(function(j){ return j.shootDate >= dstr(0) && j.shootDate <= dstr(7) && j.stage !== 'Xong'; });
-        return wk.length ? '7 ngày tới có ' + wk.length + ' buổi chụp:\n' + wk.map(function(j){ return '• ' + fmtDate(j.shootDate) + ': ' + j.client + ' — ' + jobTypeLabel(j) + (j.location ? ' ở ' + j.location : ''); }).join('\n') : '7 ngày tới chưa có buổi chụp nào. Thời gian đẹp để đăng bài kiếm khách mới đó bạn.';
-      }
-      if (q.indexOf('han') >= 0 || q.indexOf('tre') >= 0 || q.indexOf('sap') >= 0){
-        var dl = state.jobs.filter(function(j){ return j.deadline && j.deadline <= dstr(7) && ['Xong','Đã giao'].indexOf(j.stage) < 0; }).sort(function(a,b){ return a.deadline < b.deadline ? -1 : 1; });
-        return dl.length ? 'Các hạn giao ảnh gần nhất:\n' + dl.map(function(j){ return '• ' + j.client + ' — hạn ' + fmtDate(j.deadline) + (j.deadline < dstr(0) ? ' (ĐÃ QUÁ HẠN)' : '') + ', đang ở bước ' + j.stage; }).join('\n') : 'Không có hạn giao nào trong 7 ngày tới. Thong thả lắm.';
-      }
       if (q.indexOf('loi') >= 0 || q.indexOf('lai') >= 0){
         var sT = sum(monthTxs('thu')), sC = sum(monthTxs('chi'));
         var best = null;
         state.jobs.forEach(function(j){ var p = jobThu(j.id) - jobChi(j.id); if (!best || p > best.p) best = {j:j, p:p}; });
         return 'Tháng này: thu ' + fmt(sT) + ', chi ' + fmt(sC) + ', lời ' + fmt(sT - sC) + '.\n' + (best ? 'Job lời nhất tới giờ: ' + best.j.client + ' (' + jobTypeLabel(best.j) + ') — lời ' + fmt(best.p) + '.' : '') + '\nKhách còn thiếu tổng cộng ' + fmt(totalOwe()) + ' chưa về túi đó nha.';
+      }
+      if (q.indexOf('tuan') >= 0){
+        var wk = state.jobs.filter(function(j){ return j.shootDate >= dstr(0) && j.shootDate <= dstr(7) && j.stage !== 'Xong'; });
+        return wk.length ? '7 ngày tới có ' + wk.length + ' buổi chụp:\n' + wk.map(function(j){ return '• ' + fmtDate(j.shootDate) + ': ' + j.client + ' — ' + jobTypeLabel(j) + (j.location ? ' ở ' + j.location : ''); }).join('\n') : '7 ngày tới chưa có buổi chụp nào. Thời gian đẹp để đăng bài kiếm khách mới đó bạn.';
       }
       if (q.indexOf('thu') >= 0){
         var m = {};
@@ -2208,6 +2357,12 @@
         monthTxs('chi').forEach(function(t){ m2[t.category] = (m2[t.category] || 0) + t.amount; });
         var rows2 = Object.keys(m2).sort(function(a,b){ return m2[b]-m2[a]; }).map(function(k){ return '• ' + k + ': ' + fmt(m2[k]); });
         return 'Chi tháng này tổng cộng ' + fmt(sum(monthTxs('chi'))) + (big ? ', nhiều nhất là ' + big.cat + ' — ' + fmt(big.total) : '') + '.\n' + (rows2.join('\n') || 'Chưa có khoản chi nào.');
+      }
+      /* Nhánh hạn giao đứng SAU lời/thu/chi (xem chú thích ở đầu hàm): 'han'
+         chỉ khớp khi là từ riêng, để 'tháng'/'thanh toán' không lọt vào đây. */
+      if (q.indexOf(' han') >= 0 || q.indexOf('han ') >= 0 || q.indexOf('tre') >= 0 || q.indexOf('sap') >= 0){
+        var dl = state.jobs.filter(function(j){ return j.deadline && j.deadline <= dstr(7) && ['Xong','Đã giao'].indexOf(j.stage) < 0; }).sort(function(a,b){ return a.deadline < b.deadline ? -1 : 1; });
+        return dl.length ? 'Các hạn giao ảnh gần nhất:\n' + dl.map(function(j){ return '• ' + j.client + ' — hạn ' + fmtDate(j.deadline) + (j.deadline < dstr(0) ? ' (ĐÃ QUÁ HẠN)' : '') + ', đang ở bước ' + j.stage; }).join('\n') : 'Không có hạn giao nào trong 7 ngày tới. Thong thả lắm.';
       }
       if (q.indexOf('job') >= 0 || q.indexOf('khach') >= 0 || q.indexOf('bao nhieu') >= 0){
         return 'Hiện có ' + state.jobs.length + ' job trong sổ:\n' + STAGES.filter(function(s){ return state.jobs.some(function(j){ return j.stage===s; }); }).map(function(s){
@@ -2272,8 +2427,8 @@
     function voiceCategory(n, kind){
       var map = [
         ['makeup', 'Makeup'], ['trang diem', 'Makeup'], ['stylist', 'Stylist'], ['tro ly', 'Trợ lý'], ['nguoi mau', 'Người mẫu'],
-        ['studio', 'Thuê studio / địa điểm'], ['dia diem', 'Thuê studio / địa điểm'], ['di chuyen', 'Di chuyển'], ['grab', 'Di chuyển'], ['xang', 'Di chuyển'], ['ve may bay', 'Di chuyển'],
-        ['an o', 'Ăn ở'], ['khach san', 'Ăn ở'], ['album', 'Album & in ấn'], ['in anh', 'Album & in ấn'],
+        ['studio', 'Thuê studio / địa điểm'], ['dia diem', 'Thuê studio / địa điểm'], ['thue den', 'Thuê đèn'], ['di chuyen', 'Di chuyển'], ['grab', 'Di chuyển'], ['xang', 'Di chuyển'], ['ve may bay', 'Di chuyển'],
+        ['an o', 'Ăn ở'], ['khach san', 'Ăn ở'], ['album', 'Album & in ấn'], ['in anh', 'Album & in ấn'], ['hoan coc', 'Hoàn cọc'], ['tra coc', 'Hoàn cọc'],
         ['phan mem', 'Phần mềm (Lightroom, Photoshop)'], ['lightroom', 'Phần mềm (Lightroom, Photoshop)'], ['cloud', 'Lưu trữ cloud'], ['drive', 'Lưu trữ cloud'],
         ['quang cao', 'Quảng cáo'], ['sua', 'Sửa chữa / bảo dưỡng'], ['mua may', 'Mua thiết bị'], ['lens', 'Mua thiết bị'], ['thiet bi', 'Mua thiết bị']
       ];
@@ -2338,7 +2493,7 @@
     var recog = null, pendingVoice = '', listening = false;
     function stopListening(){ listening = false; $('#micBtn').classList.remove('listening'); askInput.placeholder = 'Hỏi trợ lý…'; }
     function startListening(){
-      if (isNativeApp()){ toast('Giọng nói sẽ có ở bản v2.1 — giờ gõ câu hỏi nha', 'warn'); askInput.focus(); return; }
+      if (isNativeApp()){ toast('Giọng nói sẽ có ở bản sau — giờ gõ câu hỏi nha', 'warn'); askInput.focus(); return; }
       if (!SR){ toast('Máy này chưa nghe được giọng nói — gõ câu hỏi nha', 'warn'); askInput.focus(); return; }
       if (listening){ try{ recog.stop(); }catch(e){} stopListening(); return; }
       try{
@@ -2383,27 +2538,167 @@
       return _askAndAnswer(q);
     };
 
-    /* ================= SAO LƯU ================= */
-    $('#exportBtn').addEventListener('click', function(){
-      var data = JSON.stringify({jobs: state.jobs, txs: state.txs, cfg: state.cfg, checkDone: checkDone}, null, 2);
+    /* ================= SAO LƯU v2 (kèm ảnh) =================
+       Định dạng theo BACKUP-V2.md §2.1: envelope fotobro-backup v2
+       {format, version:2, app, appVersion, exportedAt, counts,
+       jobs, txs, cfg, checkDone, uid, photos:[{id, dataUrl, addedAt}]}.
+       Ảnh trong IndexedDB lưu dạng Blob nên phải đổi sang dataUrl khi
+       xuất, đổi lại Blob khi khôi phục. Mã hoá (§2.2/§4) CHƯA làm trong
+       đợt này — file xuất ra là JSON đọc được, ai cầm file là đọc được
+       tên khách + số tiền; sẽ làm riêng khi Việt chốt mật khẩu. */
+    var BACKUP_SPLIT_MB = 25;
+    function blobToDataUrl(blob){ return new Promise(function(res, rej){ var r = new FileReader(); r.onload = function(){ res(r.result); }; r.onerror = function(){ rej(r.error); }; r.readAsDataURL(blob); }); }
+    function dataUrlToBlob(u){
+      var m = /^data:([^;,]+)?(;base64)?,(.*)$/.exec(String(u || ''));
+      if (!m) return null;
+      var type = m[1] || 'image/jpeg', b64 = m[3] || '';
+      try{
+        var bin = atob(b64), len = bin.length, arr = new Uint8Array(len);
+        for (var i = 0; i < len; i++) arr[i] = bin.charCodeAt(i);
+        return new Blob([arr], { type:type });
+      }catch(e){ return null; }
+    }
+    function downloadJson(obj, name){
+      var data = JSON.stringify(obj);
       var a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob([data], {type:'application/json'}));
-      a.download = 'fotobro-sao-luu.json'; document.body.appendChild(a); a.click();
+      a.download = name; document.body.appendChild(a); a.click();
       setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 400);
-      lsSet('troLyXeo.lastBackup', dstr(0));
-      toast('Đã tải bản sao lưu về máy');
+      return data.length;
+    }
+    function backupFileName(dateStr){ return 'fotobro-backup-' + String(dateStr || '').replace(/-/g, '') + '.json'; }
+    function photosFileName(dateStr){ return 'fotobro-photos-' + String(dateStr || '').replace(/-/g, '') + '.json'; }
+    async function buildBackupData(){
+      var photos = [];
+      try{
+        var rows = await idbAll();
+        for (var i = 0; i < rows.length; i++){
+          var r = rows[i];
+          if (!r || !r.blob) continue;
+          try{ photos.push({ id:String(r.id), dataUrl:await blobToDataUrl(r.blob), addedAt:new Date(+r.added || Date.now()).toISOString() }); }catch(e){}
+        }
+      }catch(e){}
+      /* Deep-copy: envelope là ảnh chụp tại thời điểm xuất, không phải tham
+         chiếu sống vào state (không thì dùng app tiếp là file sao lưu đổi theo). */
+      var snap = JSON.parse(JSON.stringify({ jobs:state.jobs, txs:state.txs, cfg:state.cfg, checkDone:checkDone }));
+      return {
+        format:'fotobro-backup', version:2, app:'FotoBro', appVersion:(typeof APP_VERSION !== 'undefined' ? APP_VERSION : '2.1'), exportedAt:new Date().toISOString(),
+        counts:{ jobs:snap.jobs.length, txs:snap.txs.length, photos:photos.length },
+        jobs:snap.jobs, txs:snap.txs, cfg:snap.cfg, checkDone:snap.checkDone, uid:uid, photos:photos
+      };
+    }
+    /* Phân loại file người dùng chọn: v2 / v1 cũ / mã hoá / file ảnh riêng / rác. */
+    function parseBackupFile(d){
+      if (!d || typeof d !== 'object') return { kind:'invalid' };
+      if (d.format === 'fotobro-backup' && d.version === 2 && Array.isArray(d.jobs) && Array.isArray(d.txs)) return { kind:'v2', data:d };
+      if (d.format === 'fotobro-encrypted-backup') return { kind:'encrypted' };
+      if (d.format === 'fotobro-photos' && Array.isArray(d.photos)) return { kind:'photos', data:d };
+      if (Array.isArray(d.jobs) && Array.isArray(d.txs)) return { kind:'v1', data:d };
+      return { kind:'invalid' };
+    }
+    async function putBackupPhotos(photos){
+      var ok = 0, bad = 0;
+      for (var i = 0; i < (photos || []).length; i++){
+        var p = photos[i];
+        if (!p || !p.dataUrl){ bad++; continue; }
+        var blob = dataUrlToBlob(p.dataUrl);
+        if (!blob){ bad++; continue; }
+        try{ await idbPut({ id:String(p.id), blob:blob, added:p.addedAt ? Date.parse(p.addedAt) : Date.now() }); ok++; }catch(e){ bad++; }
+      }
+      try{ if (typeof loadMyShots === 'function') loadMyShots(); }catch(e){}
+      return { photos:ok, badPhotos:bad };
+    }
+    async function restoreBackupData(env){
+      /* Bản sao lưu an toàn của dữ liệu hiện tại — ghi đè vào bộ nhớ tạm
+         trong app TRƯỚC khi thay thế, để khôi phục nhầm còn đường quay lại. */
+      try{ var cur = await buildBackupData(); lsSet('troLyXeo.backupSafety', JSON.stringify(cur)); }catch(e){}
+      var d = env, cd = cleanData(d);
+      state.jobs = cd.jobs; state.txs = cd.txs;
+      if (d.cfg) state.cfg = mergeCfg(d.cfg);
+      state.sample = false;
+      if (d.format === 'fotobro-backup'){
+        uid = Math.max(uid, +d.uid || 0, cd.maxId, cfgMaxId(state.cfg));
+        checkDone = (d.checkDone && typeof d.checkDone === 'object') ? d.checkDone : {};
+      } else {
+        /* File v1 cũ không có uid/checkDone → giữ hiện tại (chỉ nâng uid
+           lên nếu id trong file lớn hơn, để job mới không trùng id). */
+        uid = Math.max(uid, cd.maxId, cfgMaxId(state.cfg));
+      }
+      checkSel = null;
+      var pr = await putBackupPhotos(d.photos || []);
+      renderAll();
+      return { jobs:state.jobs.length, txs:state.txs.length, photos:pr.photos, badPhotos:pr.badPhotos };
+    }
+    /* Hỏi riêng file ảnh khi bản sao lưu chính tách ảnh (BACKUP-V2 §5.2). */
+    function pickPhotosFile(cb){
+      var inp = document.createElement('input');
+      inp.type = 'file'; inp.accept = '.json,application/json';
+      inp.addEventListener('change', function(){
+        var f = inp.files[0]; if (!f){ cb(null); return; }
+        var r = new FileReader();
+        r.onload = function(){
+          var d2 = null; try{ d2 = JSON.parse(r.result); }catch(e){}
+          var p2 = parseBackupFile(d2);
+          cb(p2.kind === 'photos' ? d2 : null);
+        };
+        r.readAsText(f);
+      });
+      inp.click();
+    }
+    $('#exportBtn').addEventListener('click', async function(){
+      var btn = $('#exportBtn'); if (btn) btn.disabled = true;
+      try{
+        var env = await buildBackupData();
+        var dateStr = dstr(0), nPhotos = env.photos.length;
+        var mainLen = JSON.stringify(env).length;
+        if (mainLen > BACKUP_SPLIT_MB * 1024 * 1024){
+          /* > 25 MB: tách ảnh ra file riêng (BACKUP-V2 §5.2). counts.photos
+             giữ nguyên tổng số ảnh — để lúc khôi phục biết còn thiếu bao nhiêu. */
+          var photosEnv = { format:'fotobro-photos', version:1, exportedAt:env.exportedAt, photos:env.photos };
+          env.photos = []; env.photosSplit = true; env.photosFile = photosFileName(dateStr);
+          downloadJson(photosEnv, photosFileName(dateStr));
+          downloadJson(env, backupFileName(dateStr));
+          lsSet('troLyXeo.lastBackup', dateStr); lsSet('fotobro.lastBackupAt', env.exportedAt);
+          toast('Bản sao lưu nặng hơn 25 MB nên tách ảnh ra file riêng — đã tải 2 file (' + env.counts.jobs + ' job, ' + env.counts.txs + ' khoản thu chi, ' + nPhotos + ' ảnh). Giữ cả 2 file mới khôi phục đủ ảnh.', 'warn');
+        } else {
+          downloadJson(env, backupFileName(dateStr));
+          lsSet('troLyXeo.lastBackup', dateStr); lsSet('fotobro.lastBackupAt', env.exportedAt);
+          toast('Đã sao lưu xong — ' + env.counts.jobs + ' job, ' + env.counts.txs + ' khoản thu chi, ' + env.counts.photos + ' ảnh');
+        }
+      }catch(e){
+        toast('Chưa sao lưu được, bạn thử lại nha', 'warn');
+      } finally { if (btn) btn.disabled = false; }
     });
     $('#importFile').addEventListener('change', function(e){
       var input = e.target, file = input.files[0]; if (!file) return;
       var r = new FileReader();
       r.onload = function(){
         input.value = '';
-        try{
-          var d = JSON.parse(r.result);
-          if (!(Array.isArray(d.jobs) && Array.isArray(d.txs))){ toast('File này không giống bản sao lưu của FotoBro', 'warn'); return; }
-          actionSheet({ title:'Mở bản sao lưu?', msg:'Bản sao lưu có ' + d.jobs.length + ' buổi chụp và ' + d.txs.length + ' khoản thu chi. Dữ liệu đang có trên máy sẽ được thay bằng bản này.',
-            actions:[{label:'Thay bằng bản sao lưu', destructive:true, fn:function(){ var cd = cleanData(d); state.jobs = cd.jobs; state.txs = cd.txs; if (d.cfg) state.cfg = mergeCfg(d.cfg); state.sample = false; uid = Math.max(uid, cd.maxId, cfgMaxId(state.cfg)); checkDone = (d.checkDone && typeof d.checkDone === 'object') ? d.checkDone : {}; checkSel = null; renderAll(); toast('Đã mở lại bản sao lưu'); }}] });
-        }catch(err){ toast('Chưa đọc được file này, bạn thử lại nha', 'warn'); }
+        var d = null;
+        try{ d = JSON.parse(r.result); }catch(err){ toast('Chưa đọc được file này, bạn thử lại nha', 'warn'); return; }
+        var parsed = parseBackupFile(d);
+        if (parsed.kind === 'invalid'){ toast('File này không giống bản sao lưu của FotoBro', 'warn'); return; }
+        if (parsed.kind === 'encrypted'){ toast('Bản sao lưu này đã mã hoá — bản v2.1 chưa mở được file mã hoá, sẽ có ở bản sau', 'warn'); return; }
+        if (parsed.kind === 'photos'){ toast('Đây chỉ là file ảnh kèm theo, cần chọn file sao lưu chính trước', 'warn'); return; }
+        var env = parsed.data;
+        var nPhotos = (env.counts && typeof env.counts.photos === 'number') ? env.counts.photos : (Array.isArray(env.photos) ? env.photos.length : 0);
+        var warn = parsed.kind === 'v1' ? ' Đây là bản sao lưu cũ, không có ảnh. Khôi phục xong ảnh trang chủ vẫn trống.' : '';
+        var splitWarn = env.photosSplit ? ' Bản này tách ảnh riêng — khôi phục xong app sẽ hỏi file ảnh ' + (env.photosFile || '') + '.' : '';
+        var expAt = env.exportedAt ? ' Xuất ngày ' + fmtDate(String(env.exportedAt).slice(0, 10)) + '.' : '';
+        actionSheet({ title:'Mở bản sao lưu?', msg:'Bản sao lưu có ' + env.jobs.length + ' buổi chụp, ' + env.txs.length + ' khoản thu chi' + (parsed.kind === 'v2' ? ', ' + nPhotos + ' ảnh' : '') + '.' + expAt + ' Dữ liệu đang có trên máy sẽ được thay bằng bản này.' + warn + splitWarn,
+          actions:[{label:'Thay bằng bản sao lưu', destructive:true, fn:async function(){
+            var res = await restoreBackupData(env);
+            if (env.photosSplit){
+              toast('Đã khôi phục job và tiền — giờ chọn file ảnh riêng để khôi phục đủ ảnh', 'warn');
+              pickPhotosFile(async function(photosEnv){
+                if (!photosEnv){ toast('Chưa chọn file ảnh riêng — đã khôi phục job và tiền, thiếu ' + nPhotos + ' ảnh', 'warn'); return; }
+                var pr = await putBackupPhotos(photosEnv.photos || []);
+                toast('Đã khôi phục xong — ' + res.jobs + ' job, ' + res.txs + ' khoản thu chi, ' + pr.photos + ' ảnh' + (pr.badPhotos ? ' (' + pr.badPhotos + ' ảnh lỗi, bỏ qua)' : ''));
+              });
+            } else {
+              toast('Đã khôi phục xong — ' + res.jobs + ' job, ' + res.txs + ' khoản thu chi, ' + res.photos + ' ảnh' + (res.badPhotos ? ' (' + res.badPhotos + ' ảnh lỗi, bỏ qua)' : ''));
+            }
+          }}] });
       };
       r.readAsText(file);
     });
@@ -2413,7 +2708,7 @@
        File sao lưu JSON người dùng đã tải về máy KHÔNG xoá được từ trong
        app, phải tự xoá trong Files; sự kiện đã ghi trên Google Lịch cũng
        vẫn còn. Dùng chung 1 hàm duy nhất, không rải rác từng chỗ xoá. */
-    var WIPE_KEYS = ['troLyXeo.v1', 'troLyXeo.lock', 'troLyXeo.gtoken', 'troLyXeo.gcal', 'troLyXeo.gmail', 'troLyXeo.gseen', 'troLyXeo.gcontacts', 'troLyXeo.gstate', 'troLyXeo.grefresh', 'troLyXeo.ghadRefresh', 'troLyXeo.heroPin', 'troLyXeo.lastBackup', 'troLyXeo.welcomed'];
+    var WIPE_KEYS = ['troLyXeo.v1', 'troLyXeo.lock', 'troLyXeo.gtoken', 'troLyXeo.gcal', 'troLyXeo.gmail', 'troLyXeo.gseen', 'troLyXeo.gcontacts', 'troLyXeo.gstate', 'troLyXeo.grefresh', 'troLyXeo.ghadRefresh', 'troLyXeo.heroPin', 'troLyXeo.lastBackup', 'fotobro.lastBackupAt', 'troLyXeo.backupSafety', 'troLyXeo.lockTries', 'troLyXeo.welcomed'];
     function wipeAll(){
       /* Pháp lý: thu hồi token + xoá IndexedDB XONG mới reload — reload ngay
          sẽ cắt ngang fetch revoke / deleteDatabase. Chờ tối đa 3s rồi reload. */
@@ -2508,19 +2803,38 @@
       var upd = typeof updReady === 'function' && updReady();
       h += '<p class="sec-s">Phiên bản</p><div class="list"><div class="row"><span class="ic bg-gray">' + I('sparkle') + '</span><span class="txt"><span class="t1" style="display:block;">FotoBro v' + (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '') + '</span><span class="t2" style="display:block;">' + (upd ? 'Có bản mới đã tải sẵn' : 'Chạy offline bằng bản đã lưu trên máy') + '</span></span>' +
         ((typeof isNativeApp === 'function' && isNativeApp()) ? '' : '<button type="button" class="btn ' + (upd ? 'fill' : 'tint') + ' sm" id="updCheck">' + (upd ? 'Cập nhật' : 'Kiểm tra') + '</button>') + '</div></div>';
-      h += '<p class="sec-s">Liên hệ</p><div class="list"><a class="row" href="mailto:support@fotobro.app"><span class="ic bg-gray">' + I('mail') + '</span><span class="txt"><span class="t1" style="display:block;">Email hỗ trợ — support@fotobro.app</span><span class="t2" style="display:block;">Email này đang thiết lập, chưa gửi được ngay — trong lúc chờ, liên hệ qua Facebook của studio.</span></span>' + chevSvg() + '</a></div>';
+      var sup = (window.FOTOBRO_CONFIG && window.FOTOBRO_CONFIG.supportEmail) || 'supportfotobro@gmail.com';
+      h += '<p class="sec-s">Liên hệ</p><div class="list"><a class="row" href="mailto:' + esc(sup) + '"><span class="ic bg-gray">' + I('mail') + '</span><span class="txt"><span class="t1" style="display:block;">Email hỗ trợ — ' + esc(sup) + '</span><span class="t2" style="display:block;">Gửi email cho đội hỗ trợ FotoBro — trả lời trong vòng 3 ngày làm việc.</span></span>' + chevSvg() + '</a></div>';
+      h += '<p class="sec-s">Quyền riêng tư</p><div class="list"><button type="button" class="row" id="privacyRow"><span class="ic bg-gray">' + I('doc') + '</span><span class="txt"><span class="t1" style="display:block;">Quyền riêng tư</span><span class="t2" style="display:block;">Dữ liệu ở trên máy bạn, app không gửi dữ liệu lên máy chủ nào — xem chi tiết</span></span>' + chevSvg() + '</button></div>';
       h += '<p class="sec-s">Nhập dữ liệu</p><div class="list"><button type="button" class="row" id="cfgCal"><span class="ic bg-red">' + I('cal') + '</span><span class="txt"><span class="t1" style="display:block;">Nhập từ Lịch iPhone</span><span class="t2" style="display:block;">Lịch iPhone 30 ngày tới thành job</span></span>' + chevSvg() + '</button></div>';
       var gt = typeof gToken === 'function' ? gToken() : null, gc = typeof gcal !== 'undefined' ? gcal : null;
+      /* Tài khoản Apple (v2.1, native iOS): chỉ hiện khi plugin có sẵn — bản web
+         ẩn hẳn như cách mục Google ẩn khi chưa có Client ID. */
+      var appleAv = (typeof isNativeApp === 'function' && isNativeApp() && typeof window.__fotobroAppleAvailable === 'function' && window.__fotobroAppleAvailable());
+      if (appleAv){
+        var ap = (c.apple && c.apple.user) ? c.apple : null;
+        var who = ap ? (ap.name || ap.email || ('ID ' + String(ap.user).slice(0, 12) + '…')) : '';
+        h += '<p class="sec-s">' + tr('apple_account') + '</p><div class="list">' +
+          (ap
+            ? '<div class="row"><span class="ic bg-green">' + I('check', 2.6) + '</span><span class="txt"><span class="t1" style="display:block;">' + tr('apple_signed_in') + '</span><span class="t2" style="display:block;">' + esc(who) + (ap.relay ? ' · ' + tr('apple_hidden_email') : '') + '</span></span></div>' +
+              '<button type="button" class="row center destr" id="aDisc">' + tr('apple_signout') + '</button>'
+            : '<button type="button" class="row act" id="aConnRow"><span class="ic bg-gray">' + appleLogo() + '</span><span class="txt"><span class="t1" style="display:block;">' + tr('apple_signin') + '</span><span class="t2" style="display:block;">' + tr('apple_signin_sub') + '</span></span>' + chevSvg() + '</button>') +
+          '</div><p class="sec-f">' + tr('apple_signin_note') + '</p>';
+      }
       h += '<p class="sec-s">Kết nối Google</p><div class="list">' +
         (googleClientId() ? (gt || gc
           ? '<div class="row"><span class="ic bg-green">' + I('check', 2.6) + '</span><span class="txt"><span class="t1" style="display:block;">' + (gt ? 'Đang kết nối' : 'Đã kết nối (hết hạn, bấm Kết nối lại)') + '</span><span class="t2" style="display:block;">' + (gc ? gc.events.length + ' sự kiện · cập nhật ' + agoText(gc.fetchedAt) : 'Chưa tải lịch') + '</span></span><button type="button" class="btn tint sm" id="gConnRow2">' + (gt ? 'Làm mới' : 'Kết nối lại') + '</button></div>' +
             '<button type="button" class="row center destr" id="gDisc">Ngắt kết nối Google Lịch</button>'
           : '<button type="button" class="row act" id="gConnRow"><span class="ic bg-blue">' + I('cal') + '</span><span class="txt t1">Kết nối Google</span></button>') : '<div class="row"><span class="ic bg-gray">' + I('doc') + '</span><span class="txt"><span class="t1" style="display:block;">Google chưa sẵn sàng ở bản v2.0</span><span class="t2" style="display:block;">Đang chờ tạo Client ID chung 1 lần — app vẫn dùng bình thường, không gửi dữ liệu nào lên Google.</span></span></div>') +
-        (googleClientId() ? '<button type="button" class="row" id="gGuideRow"><span class="ic bg-gray">' + I('doc') + '</span><span class="txt"><span class="t1" style="display:block;">Đăng nhập Google để làm gì?</span><span class="t2" style="display:block;">Bấm 1 lần là có Lịch, Gmail, Danh bạ, Drive — không cần tự tạo gì</span></span>' + chevSvg() + '</button>' : '') + '</div>';
+        (googleClientId() ? '<button type="button" class="row" id="gGuideRow"><span class="ic bg-gray">' + I('doc') + '</span><span class="txt"><span class="t1" style="display:block;">Đăng nhập Google để làm gì?</span><span class="t2" style="display:block;">Xem từng tính năng dùng quyền gì, bật/tắt trước khi kết nối</span></span>' + chevSvg() + '</button>' : '') + '</div>';
       var F = c.gFeat || {};
       var feat = function(key, icon, color, title, sub){
         var miss = F[key] && gt && typeof gNeeds === 'function' && gNeeds(key);
-        return '<label class="row" style="cursor:pointer;"><span class="ic bg-' + color + '">' + I(icon) + '</span><span class="txt"><span class="t1" style="display:block;">' + title + '</span><span class="t2' + (miss ? ' orange' : '') + '" style="display:block;">' + (miss ? 'Chưa cấp quyền — bấm Kết nối lại' : sub) + '</span></span><input type="checkbox" class="switch" role="switch" aria-checked="' + (F[key] ? 'true' : 'false') + '" data-gfeat="' + key + '"' + (F[key] ? ' checked' : '') + ' /></label>';
+        /* 'Google Lịch' là tính năng gốc — công tắc chỉ bật được khi đã kết nối,
+           không thì hiện mờ + chưa bật để khỏi tưởng đang chạy. */
+        var off = key === 'cal' && !gt;
+        var on = off ? false : !!F[key];
+        return '<label class="row"' + (off ? ' style="opacity:.55;"' : ' style="cursor:pointer;"') + '><span class="ic bg-' + color + '">' + I(icon) + '</span><span class="txt"><span class="t1" style="display:block;">' + title + '</span><span class="t2' + (miss ? ' orange' : '') + '" style="display:block;">' + (miss ? 'Chưa cấp quyền — bấm Kết nối lại' : (off ? 'Kết nối Google trước đã' : sub)) + '</span></span><input type="checkbox" class="switch" role="switch" aria-checked="' + (on ? 'true' : 'false') + '" data-gfeat="' + key + '"' + (on ? ' checked' : '') + (off ? ' disabled' : '') + ' /></label>';
       };
       h += '<p class="sec-s">Lấy gì từ Google</p><div class="list">' +
         feat('cal', 'cal', 'red', 'Google Lịch', 'Xem lịch trong tab Buổi chụp → Lịch') +
@@ -2530,14 +2844,27 @@
         feat('drive', 'folder', 'blue', 'Google Drive', 'Chọn thư mục ảnh của job, chỉ xem tên thư mục') +
         feat('calw', 'calplus', 'blue', 'Ghi buổi chụp vào Google Lịch', 'Lưu job có ngày chụp thẳng vào lịch, nhắc trước 12 tiếng') +
         feat('send', 'send', 'purple', 'Gửi email cho khách bằng Gmail', 'App soạn sẵn, bạn xem lại rồi tự bấm Gửi') + '</div>' +
-        '<p class="sec-f">Bật tính năng nào thì app xin đúng quyền đọc cho tính năng đó. Không có gì tự ghi vào sổ — app chỉ gợi ý, bạn bấm mới ghi.</p>';
+        (function(){
+          /* Chân trang ĐỘNG: liệt kê đúng các quyền sẽ xin ở màn hình Google —
+             khớp 100% với gScopes() (bật tính năng nào thì xin quyền đó). */
+          var lines = [];
+          if (F.cal) lines.push('đọc Lịch');
+          if (F.bank || F.leads) lines.push('đọc Gmail');
+          if (F.contacts) lines.push('đọc Danh bạ');
+          if (F.drive) lines.push('xem tên thư mục Drive');
+          if (F.calw) lines.push('ghi buổi chụp vào Lịch');
+          if (F.send) lines.push('gửi email bạn đã duyệt');
+          /* Không bật tính năng nào thì gScopes() rỗng và gConnect từ chối mở
+             màn hình Google — nên KHÔNG được viết "chỉ xin quyền đọc Lịch". */
+          if (!lines.length) return '<p class="sec-f">Chưa bật tính năng nào — bật 1 tính năng ở trên rồi bấm Kết nối, Google sẽ chỉ hỏi quyền của tính năng đó. Không có gì tự ghi vào sổ — app chỉ gợi ý, bạn bấm mới ghi. Mã đăng nhập chỉ nằm trên máy này và tự hết hạn sau khoảng 1 giờ. Lịch đã tải được lưu lại để mất mạng vẫn xem.</p>';
+          return '<p class="sec-f">Khi bấm Kết nối, Google sẽ hỏi đúng các quyền của tính năng đang bật: <b>' + lines.join(' · ') + '</b>. Không có gì tự ghi vào sổ — app chỉ gợi ý, bạn bấm mới ghi. Mã đăng nhập chỉ nằm trên máy này và tự hết hạn sau khoảng 1 giờ. Lịch đã tải được lưu lại để mất mạng vẫn xem.</p>';
+        })();
       if (gc && gc.cals && gc.cals.length){
         var chosenIds = gChosen(gc.cals).map(function(x){ return x.id; });
         h += '<p class="sec-s">Lịch hiển thị trong app</p><div class="list">' + gc.cals.map(function(cl){
           return '<label class="row" style="cursor:pointer;"><span class="ic round" style="background:' + cl.color + '">' + I('cal') + '</span><span class="txt t1 clip">' + esc(cl.name) + '</span><input type="checkbox" class="switch" role="switch" aria-checked="' + (chosenIds.indexOf(cl.id) >= 0 ? 'true' : 'false') + '" data-gcal="' + esc(cl.id) + '"' + (chosenIds.indexOf(cl.id) >= 0 ? ' checked' : '') + ' /></label>';
         }).join('') + '</div>';
       }
-      h += '<p class="sec-f">App chỉ xin quyền <b>đọc</b>, không gửi, sửa hay xoá gì. Mã đăng nhập chỉ nằm trên máy này và tự hết hạn sau khoảng 1 giờ. Lịch đã tải được lưu lại để mất mạng vẫn xem.</p>';
       h += '<p class="sec-s">Thông tin</p><div class="list">' +
         frow('Tên gọi', '<input data-cfg="name" value="' + esc(c.name) + '" placeholder="Tên của bạn" />') +
         frow('Tên studio', '<input data-cfg="studio" value="' + esc(c.studio) + '" placeholder="Tên studio của bạn" />') +
@@ -2634,6 +2961,10 @@
       var lk2 = $('#lkNow', b); if (lk2) lk2.addEventListener('click', function(){ sheets.slice().reverse().forEach(function(s){ s.close(); }); setTimeout(function(){ showLock(false); }, 350); });
       var lk3 = $('#lkOff', b); if (lk3) lk3.addEventListener('click', function(){ disableLock(); });
       var gcr = $('#gConnRow', b); if (gcr) gcr.addEventListener('click', function(){ gConnect(false); });
+      var ggr = $('#gGuideRow', b); if (ggr) ggr.addEventListener('click', function(){ openGGuide(); });
+      var pr = $('#privacyRow', b); if (pr) pr.addEventListener('click', function(){ openPrivacy(); });
+      var acr = $('#aConnRow', b); if (acr) acr.addEventListener('click', function(){ aConnect(); });
+      var ads = $('#aDisc', b); if (ads) ads.addEventListener('click', function(){ aDisconnect(); });
       var gcr2 = $('#gConnRow2', b); if (gcr2) gcr2.addEventListener('click', function(){ if (gToken()) gSyncAll(true); else gConnect(true); });
       var gds = $('#gDisc', b); if (gds) gds.addEventListener('click', function(){
         actionSheet({ title:'Ngắt kết nối Google Lịch?', msg:'Xoá lịch, email gợi ý và danh bạ đã lưu trên máy; thu hồi mã đăng nhập tại Google. Buổi chụp và sổ thu chi vẫn giữ nguyên. Sự kiện đã ghi trên Google Lịch vẫn còn — xoá trong app Lịch nếu muốn.', actions:[{ label:'Ngắt kết nối', destructive:true, fn:function(){
@@ -2828,11 +3159,10 @@
           guideRow('person', 'purple', 'Thêm', 'Trợ lý, sáu phòng ban, báo cáo cuối ngày, cài đặt, sao lưu, ảnh của bạn') +
           '</div></div>',
         '<div class="wl-in"><div class="wl-mini">' + STK('party') + '</div><h2>Vài mẹo nhỏ</h2><p class="wl-sub">Biết mấy cái này là dùng như dân chuyên.</p><div class="list wl-list">' +
-          guideRow('plusc', 'accent', 'Nút Ghi ở giữa', 'Thêm buổi chụp mới, ghi khoản thu chi — ở tab nào cũng bấm được') +
           guideRow('arrowr', 'gray', 'Chạm vào một dòng', 'Mở chi tiết: tiến độ, tiền, nhắn khách, lịch, Drive. Kéo xuống để đóng') +
           guideRow('gear', 'gray', 'Bánh răng = Cài đặt', 'Giá gói, % cọc, số ngày giao ảnh, thiết bị, chi cố định, màu giao diện, nhập lịch') +
-          guideRow('cal', 'red', 'Nhập từ Lịch iPhone', 'Bấm 1 chạm trong app iOS — sự kiện 30 ngày tới thành buổi chụp; hoặc đăng nhập Google để đọc Lịch Google') +
-          guideRow('mic', 'red', 'Giọng nói (bản v2.1)', 'Giọng nói sẽ có ở bản v2.1 — giờ gõ câu hỏi nha') +
+          guideRow('cal', 'red', 'Nhập từ Lịch iPhone', '1 chạm trong app iOS — sự kiện 30 ngày tới thành buổi chụp, hoặc đăng nhập Google') +
+          guideRow('mic', 'red', 'Giọng nói (bản sau)', 'Giọng nói sẽ có ở bản sau — giờ gõ câu hỏi nha') +
           guideRow('download', 'green', 'Sao lưu mỗi tuần', 'Thêm → Tải bản sao lưu. Đổi máy thì mở lại file đó') +
           guideRow('heart', 'red', 'Dữ liệu ở trên máy', 'Không tài khoản, không máy chủ — job và sổ tiền chỉ lưu trên điện thoại của bạn') + '</div></div>',
         '<div class="wl-in"><img src="icon-192.png" alt="FotoBro" style="width:72px;height:72px;border-radius:17px;margin:0 auto;box-shadow:0 0 0 .5px var(--sep);" />' +
@@ -3153,9 +3483,37 @@
        định nghĩa (không bọc bằng hàm cùng tên — sẽ tự đệ quy vô hạn). */
     function gToken(){ try{ var t = JSON.parse(ssGet(GT_KEY) || 'null'); return t && t.t && t.exp > Date.now() + 60000 ? t.t : null; }catch(e){ return null; } }
     function gLinked(){ return !!(googleClientId() && (gToken() || gcal)); }
+    /* Đăng nhập bằng Apple (v2.1, native iOS) — xem APPLE-SIGNIN-PLAN.md §4.4.
+       Mirror cụm Google nhưng đơn giản hơn: không token hết hạn, không scope
+       từng tính năng. Định danh chỉ lưu trên máy (cfg.apple), không có server. */
+    function aLinked(){ return !!(state.cfg.apple && state.cfg.apple.user); }
+    async function aConnect(){
+      if (!isNativeApp() || typeof window.__fotobroAppleSignIn !== 'function'){ toast(tr('apple_native_only'), 'warn'); return; }
+      var r = null;
+      try { r = await window.__fotobroAppleSignIn(); } catch (e) { toast(tr('apple_signin_fail'), 'warn'); return; }
+      if (!r || !r.user) return; // người dùng bấm Huỷ: im lặng
+      var name = [r.givenName, r.familyName].filter(Boolean).join(' ').trim();
+      var prev = (state.cfg.apple && state.cfg.apple.user === r.user) ? state.cfg.apple : null;
+      state.cfg.apple = {
+        user: String(r.user),
+        name: name || (prev && prev.name) || '',               // tên CHỈ có lần đầu — giữ lại tên cũ nếu lần này không có
+        email: r.email || (prev && prev.email) || '',
+        relay: !!r.email && /@privaterelay\.appleid\.com$/.test(r.email),
+        at: Date.now()
+      };
+      saveLocal(); renderAll(); refreshSettings();
+      toast(tr('apple_signin_ok'), 'ok');
+    }
+    function aDisconnect(){
+      actionSheet({ title:tr('apple_signout_title'), msg:tr('apple_signout_msg'), actions:[{ label:tr('apple_signout'), destructive:true, fn:function(){
+        state.cfg.apple = null; saveLocal(); renderAll(); refreshSettings();
+        toast(tr('apple_signout_ok'), 'del');
+      } }] });
+    }
     /* Google AUTO 1 chạm (iOS v1): 1 Client ID chung + PKCE, KHÔNG client_secret,
        KHÔNG bắt người dùng tự tạo Google Cloud project hay dán Client ID.
-       Xin đủ quyền 1 lần: đọc Lịch, đọc Gmail, đọc Danh bạ, xem Drive, ghi Lịch, gửi Gmail. */
+       Chỉ xin scope của tính năng đang bật (xem gScopes()): bật thêm tính năng
+       sau thì xin thêm qua include_granted_scopes (quyền cũ vẫn giữ). */
     function pkceVerifier(){
       var a = new Uint8Array(32); (window.crypto || {}).getRandomValues ? crypto.getRandomValues(a) : a.forEach(function(_, i){ a[i] = Math.floor(Math.random() * 256); });
       return btoa(String.fromCharCode.apply(null, a)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -3168,11 +3526,13 @@
     async function gConnect(silent){
       var cid = googleClientId();
       if (!cid){ toast('Đăng nhập Google chưa sẵn sàng — FotoBro đang tạo Client ID chung, xong là bấm 1 cái là vào', 'warn'); return; }
+      var scopes = gScopes();
+      if (!scopes){ toast('Chưa bật tính năng Google nào — bật 1 tính năng ở Cài đặt → Lấy gì từ Google rồi kết nối lại', 'warn'); return; }
       var verifier = pkceVerifier(), challenge = await pkceChallenge(verifier);
       if (!challenge){ toast('Máy này chưa hỗ trợ đăng nhập Google an toàn (PKCE)', 'warn'); return; }
       var nonce = Math.random().toString(36).slice(2) + Date.now().toString(36);
       lsSet(GS_KEY, JSON.stringify({ state:nonce, verifier:verifier }));
-      var p = { client_id:cid, redirect_uri:gRedirectUri(), response_type:'code', code_challenge:challenge, code_challenge_method:'S256', scope:gScopes(), include_granted_scopes:'true', state:nonce };
+      var p = { client_id:cid, redirect_uri:gRedirectUri(), response_type:'code', code_challenge:challenge, code_challenge_method:'S256', scope:scopes, include_granted_scopes:'true', state:nonce };
       if (silent) p.prompt = 'none';
       /* KHÔNG xin access_type:'offline': v1 không lưu refresh token (xem
          gExchangeCode), hết hạn thì đăng nhập lại im lặng bằng prompt=none. */
@@ -3294,7 +3654,7 @@
     function gEventById(id){ return gcal ? gcal.events.filter(function(e){ return e.id === id; })[0] : null; }
     function gRow(e){
       var sub = [e.time || 'Cả ngày', e.cal, e.location].filter(Boolean).join(' · ');
-      return '<button type="button" class="row" data-gev="' + esc(e.id) + '"><span class="ic round" style="background:' + e.color + '">' + I('cal') + '</span><span class="txt"><span class="t1 clip" style="display:block;">' + esc(e.summary) + '</span><span class="t2 clip" style="display:block;">' + esc(sub) + '</span></span><span class="tagp tg-blue">Google</span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button>';
+      return '<button type="button" class="row" data-gev="' + esc(e.id) + '"><span class="ic round" style="background:' + e.color + '">' + I('cal') + '</span><span class="txt"><span class="t1 clip" style="display:block;">' + esc(e.summary) + '</span><span class="t2 wrap2" style="display:block;">' + esc(sub) + '</span></span><span class="tagp tg-blue">Google</span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button>';
     }
     function gOpenEvent(id){
       var e = gEventById(id); if (!e) return;
@@ -3325,7 +3685,7 @@
         h += googleClientId()
           ? '<div class="list" style="padding:20px 16px 12px;text-align:center;"><span class="ic lg bg-blue" style="margin:0 auto 10px;">' + I('cal') + '</span>' +
             '<div class="b" style="font-size:1.1875rem;">Xem Google Lịch ngay trong app</div>' +
-            '<p class="muted" style="font-size:0.9375rem;margin:6px 0 14px;">Kết nối một lần là thấy lịch hẹn chụp ở đây, không cần xuất file. App chỉ đọc lịch, không sửa gì.</p>' +
+            '<p class="muted" style="font-size:0.9375rem;margin:6px 0 14px;">Kết nối một lần là thấy lịch hẹn chụp ở đây, không cần xuất file.' + (typeof gFeat === 'function' && gFeat('calw') ? ' App đọc lịch và ghi buổi chụp do app tạo lên lịch.' : ' App chỉ đọc lịch, không sửa gì.') + '</p>' +
             '<button type="button" class="btn fill" id="gConnectBtn">' + (gState.loading ? 'Đang tải lịch…' : 'Kết nối Google Lịch') + '</button>' +
             '<a class="btn plain" href="https://calendar.google.com/" target="_blank" rel="noopener">Mở Google Lịch</a></div>'
           : '<div class="list" style="padding:20px 16px 12px;text-align:center;"><span class="ic lg bg-blue" style="margin:0 auto 10px;">' + I('cal') + '</span>' +
@@ -3375,18 +3735,52 @@
       tl.insertAdjacentHTML('beforeend', evs.map(gRow).join('')); bindGev(tl);
     };
 
-    /* openGGuide (sheet "Đăng nhập Google") ĐÃ GỠ ở v2.0 (20/11/2026):
-       Google đang TẮT vì chưa có Client ID chung — sheet chỉ toàn chữ giải
-       thích mà không có nút đăng nhập thật nên là ngõ cụt. Khi đã có Client
-       ID thì khôi phục lại cùng các điểm vào đã gỡ (gGuideRow, gSetupBtn). */
+    /* Mở trang Quyền riêng tư: trên app native dùng Capacitor Browser (giữ
+       người dùng trong app), trên web mở tab mới. */
+    function openPrivacy(){
+      var url = 'https://hoangviet1397.github.io/fotobro/PRIVACY.html';
+      if (typeof isNativeApp === 'function' && isNativeApp() && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser && window.Capacitor.Plugins.Browser.open){
+        window.Capacitor.Plugins.Browser.open({ url:url }).catch(function(){ window.open(url, '_blank'); });
+        return;
+      }
+      window.open(url, '_blank');
+    }
+    /* Sheet "Đăng nhập Google để làm gì?" — khôi phục ở v2.1: liệt kê từng tính
+       năng dùng đúng quyền nào (khớp 100% với gScopes() — bật tính năng nào thì
+       Google chỉ hỏi quyền đó). Bật/tắt được ngay tại đây. */
+    function openGGuide(){
+      var rows = [
+        ['cal', 'Google Lịch', 'Đọc lịch để xem buổi chụp trong tab Lịch.'],
+        ['bank', 'Gmail · tiền về', 'Đọc email báo số dư của ngân hàng để gợi ý ghi khoản thu.'],
+        ['leads', 'Gmail · khách hỏi chụp', 'Đọc email hỏi lịch / giá để gợi ý tạo buổi chụp.'],
+        ['contacts', 'Danh bạ', 'Đọc danh bạ để gợi ý số điện thoại, email khi gõ tên khách.'],
+        ['drive', 'Google Drive', 'Chỉ xem tên thư mục ảnh của job, không mở hay sửa file.'],
+        ['calw', 'Ghi buổi chụp vào Google Lịch', 'GHI vào lịch của bạn (thêm / sửa / xoá sự kiện do app tạo), nhắc trước 12 tiếng.'],
+        ['send', 'Gửi email cho khách bằng Gmail', 'GỬI email — nhưng chỉ những email bạn đã xem và tự bấm Gửi.']
+      ];
+      var body = '<p class="muted" style="font-size:0.9375rem;margin:6px 0 10px;">Đăng nhập Google 1 lần, app chỉ xin quyền của tính năng bạn bật. Bật thêm tính năng sau thì Google hỏi thêm quyền đó.</p><div class="list">' + rows.map(function(r){
+        var on = gFeat(r[0]), off = r[0] === 'cal' && !gToken();
+        return '<label class="row"' + (off ? ' style="opacity:.55;"' : ' style="cursor:pointer;"') + '><span class="txt"><span class="t1" style="display:block;">' + r[1] + '</span><span class="t2" style="display:block;">' + (off ? 'Kết nối Google trước đã' : r[2]) + '</span></span><input type="checkbox" class="switch" role="switch" data-gguide="' + r[0] + '"' + (on && !off ? ' checked' : '') + (off ? ' disabled' : '') + ' /></label>';
+      }).join('') + '</div>' +
+        '<div style="margin-top:16px;"><button type="button" class="btn fill" id="gGuideConn">' + (gToken() ? 'Cập nhật quyền trên Google' : 'Kết nối Google') + '</button></div>' +
+        '<p class="sec-f">Tắt tính năng thì app không xin quyền đó nữa. Quyền đã cấp trước đó vẫn còn trên tài khoản Google — thu hồi tại myaccount.google.com → Bảo mật → Quyền truy cập của bên thứ ba.</p>';
+      openSheet({ title:'Đăng nhập Google để làm gì?', tall:true, body:body, bind:function(api){
+        $$('[data-gguide]', api.body).forEach(function(sw){ sw.addEventListener('change', function(){
+          var k = sw.getAttribute('data-gguide'); state.cfg.gFeat = state.cfg.gFeat || {}; state.cfg.gFeat[k] = sw.checked; saveLocal(); renderAll(); refreshSettings();
+        }); });
+        var cb = $('#gGuideConn', api.body); if (cb) cb.addEventListener('click', function(){ api.close(); gConnect(false); });
+      } });
+    }
     renderAll();
     if (gToken() && (!gcal || Date.now() - gcal.fetchedAt > 10 * 60000)) gFetch(false);
     </script>
 
     <script>
     /* ================= KẾT NỐI GOOGLE: GMAIL (tiền về, khách hỏi), DANH BẠ, DRIVE =================
-       Cùng một lần đăng nhập với Google Lịch. Đăng nhập 1 lần xin đủ 6 scope (đọc Lịch/Gmail/Danh bạ/Drive, ghi Lịch, gửi Gmail) — xem gScopes().
-       Không có gì tự ghi vào sổ: app chỉ GỢI Ý, bạn bấm đồng ý mới ghi. */
+       Cùng một lần đăng nhập với Google Lịch — NHƯNG chỉ xin scope của tính năng
+       đang bật (xem gScopes()): bật thêm tính năng sau thì xin thêm quyền đó
+       qua include_granted_scopes trong gConnect. Không có gì tự ghi vào sổ:
+       app chỉ GỢI Ý, bạn bấm đồng ý mới ghi. */
     var SC = {
       cal:'https://www.googleapis.com/auth/calendar.readonly',
       gmail:'https://www.googleapis.com/auth/gmail.readonly',
@@ -3397,8 +3791,17 @@
     var GM_KEY = 'troLyXeo.gmail', GSEEN_KEY = 'troLyXeo.gseen', GCT_KEY = 'troLyXeo.gcontacts';
     function gFeat(k){ return !!(state.cfg.gFeat && state.cfg.gFeat[k]); }
     function gScopes(){
-      /* AUTO: xin đủ quyền 1 lần, không bật từng tính năng rồi xin thêm từng lần. */
-      var s = [SC.cal, SC.gmail, SC.contacts, SC.drive, FEAT_SCOPE.calw, FEAT_SCOPE.send];
+      /* Xin scope THEO ĐÚNG công tắc đang bật: bật tính năng nào thì xin quyền
+         của tính năng đó, không xin thừa. Bật thêm sau thì gConnect xin thêm
+         qua include_granted_scopes (quyền cũ vẫn giữ). Không bật tính năng nào
+         thì trả về rỗng — gConnect sẽ báo và không mở màn hình Google. */
+      var s = [];
+      if (gFeat('cal')) s.push(SC.cal);
+      if (gFeat('bank') || gFeat('leads')) s.push(SC.gmail);
+      if (gFeat('contacts')) s.push(SC.contacts);
+      if (gFeat('drive')) s.push(SC.drive);
+      if (gFeat('calw') && FEAT_SCOPE.calw) s.push(FEAT_SCOPE.calw);
+      if (gFeat('send') && FEAT_SCOPE.send) s.push(FEAT_SCOPE.send);
       return s.filter(function(x, i){ return x && s.indexOf(x) === i; }).join(' ');
     }
     function gTokObj(){ try{ return JSON.parse(ssGet(GT_KEY) || 'null'); }catch(e){ return null; } }
@@ -3457,7 +3860,7 @@
     function matchJob(amount, content){
       var n = norm(content), best = null;
       state.jobs.forEach(function(j){
-        if (j.stage === 'Xong') return;
+        if (j.cancelled) return;
         var s = 0;
         norm(j.client).split(/[^a-z0-9]+/).forEach(function(w){ if (w.length > 2 && n.indexOf(w) >= 0) s += 3; });
         var owe = jobOwe(j); if (owe && amount === owe) s += 2;
@@ -3724,10 +4127,12 @@
 
     /* ---------- Email cho khách ---------- */
     function mailCtx(j){
-      var c = state.cfg, dep = Math.round((j.price || 0) * (+c.depositPct || 0) / 100 / 10000) * 10000;
+      var c = state.cfg, dep = depFor(j), depPaid = jobDep(j);
       return { ten:callName(j.client), type:jobTypeLabel(j), date:j.shootDate ? fmtDate(j.shootDate) : 'ngày mình hẹn', time:j.shootTime ? ' lúc ' + j.shootTime : '',
-        loc:j.location || 'mình sẽ chốt và báo bạn sau', price:j.price ? fmt(j.price) : 'theo gói mình đã báo', dep:dep ? fmt(dep) : '', pct:c.depositPct,
-        paid:fmt(jobThu(j.id)), owe:fmt(jobOwe(j)), oweN:jobOwe(j), drive:j.driveLink || '', studio:c.studio || '', sign:(function(){ var l = [c.name, [c.studio, c.instagram ? 'instagram.com/' + c.instagram : ''].filter(Boolean).join(' · ')].filter(Boolean); return l.length ? '\n\n' + l.join('\n') : ''; })() };
+        loc:j.location || 'mình sẽ chốt và báo bạn sau', price:j.price ? fmt(j.price) : 'theo gói mình đã báo', dep:dep ? fmt(dep) : '', depPaid:depPaid ? fmt(depPaid) : '', pct:c.depositPct,
+        paid:fmt(jobThu(j.id)), owe:fmt(jobOwe(j)), oweN:jobOwe(j), drive:j.driveLink || '', studio:c.studio || '',
+        prepLine:j.shootDate === dstr(0) ? 'Chuẩn bị trang phục như đã hẹn và tới sớm 10–15 phút nha.' : 'Bạn nhớ ngủ sớm, chuẩn bị trang phục như đã hẹn và tới sớm 10–15 phút nha.',
+        sign:(function(){ var l = [c.name, [c.studio, c.instagram ? 'instagram.com/' + c.instagram : ''].filter(Boolean).join(' · ')].filter(Boolean); return l.length ? '\n\n' + l.join('\n') : ''; })() };
     }
     /* Mẫu tin nhắn/email — v1: 5 mẫu gốc + cho sửa câu chữ trong Cài đặt (cfg.mailTpls).
        Chỗ trống {ten} {type} {date} {time} {loc} {price} {dep} {pct} {paid} {owe} {drive} {studio} {sign}
@@ -3736,22 +4141,22 @@
       confirm:{ t:'Xác nhận lịch chụp', s:'Xác nhận lịch chụp {loại}',
         b:'Chào {tên},\n\nMình xác nhận lịch chụp {loại} của bạn:\n• Lịch: {lịch}\n• Địa điểm: {địa điểm}\n• Chi phí: {giá}{phần cọc}\n\nTrước buổi chụp mình sẽ nhắn bạn về trang phục và giờ giấc. Có gì thay đổi bạn cứ trả lời email này nha.\n\nCảm ơn bạn!{ký tên}' },
       deposit:{ t:'Đã nhận cọc', s:'Đã nhận cọc — lịch chụp {loại} đã được giữ',
-        b:'Chào {tên},\n\nMình đã nhận {đã trả} cho buổi chụp {loại} ({lịch}). Lịch của bạn đã được giữ chắc rồi nha.{phần còn lại}\n\nGần tới ngày mình sẽ nhắn nhắc chuẩn bị. Cảm ơn bạn!{ký tên}' },
+        b:'Chào {tên},\n\nMình đã nhận {tiền cọc} cho buổi chụp {loại} ({lịch}). Lịch của bạn đã được giữ chắc rồi nha.{phần còn lại}\n\nGần tới ngày mình sẽ nhắn nhắc chuẩn bị. Cảm ơn bạn!{ký tên}' },
       remind:{ t:'Nhắc trước ngày chụp', s:'Nhắc lịch chụp {lịch}',
-        b:'Chào {tên},\n\nMình nhắc lịch chụp {loại} nè:\n• Lịch: {lịch}\n• Địa điểm: {địa điểm}\n\nBạn nhớ ngủ sớm, chuẩn bị trang phục như đã hẹn và tới sớm 10–15 phút nha. Cần đổi giờ thì báo mình sớm.\n\nHẹn gặp bạn!{ký tên}' },
+        b:'Chào {tên},\n\nMình nhắc lịch chụp {loại} nè:\n• Lịch: {lịch}\n• Địa điểm: {địa điểm}\n\n{nhắc chuẩn bị} Cần đổi giờ thì báo mình sớm.\n\nHẹn gặp bạn!{ký tên}' },
       deliver:{ t:'Giao ảnh', s:'Ảnh buổi chụp {loại} của bạn đã xong',
         b:'Chào {tên},\n\nẢnh buổi chụp {loại} của bạn xong rồi nè. Bạn xem và tải ảnh ở đây:\n{link hoặc ghi chú}\n\nTấm nào muốn chỉnh thêm bạn cứ nói mình nha.{phần còn lại 2}\n\nNếu ưng ảnh, cho mình xin một câu cảm nhận và cho phép đăng vài tấm lên trang nhé. Cảm ơn bạn!{ký tên}' },
       balance:{ t:'Nhắc thanh toán', s:'Thanh toán buổi chụp {loại}',
         b:'Chào {tên},\n\nMình gửi thông tin thanh toán buổi chụp {loại} ({lịch}):\n• Tổng: {giá}\n• Đã nhận: {đã trả}\n• Còn lại: {còn lại}\n\nBạn chuyển khoản giúp mình khi tiện nha. Cảm ơn bạn!{ký tên}' }
     };
     function fillTpl(str, x){
-      var map = { ten:x.ten, type:x.type, date:x.date, time:x.time, loc:x.loc, price:x.price, dep:x.dep, pct:x.pct, paid:x.paid, owe:x.owe, drive:x.drive, studio:state.cfg.studio || '', sign:x.sign,
+      var map = { ten:x.ten, type:x.type, date:x.date, time:x.time, loc:x.loc, price:x.price, dep:x.dep, depPaid:x.depPaid, pct:x.pct, paid:x.paid, owe:x.owe, drive:x.drive, studio:state.cfg.studio || '', sign:x.sign, prepLine:x.prepLine,
         depPart:x.dep ? ' (cọc trước ' + x.pct + '% là ' + x.dep + ' để giữ lịch)' : '',
         owePart:x.oweN ? '\nPhần còn lại ' + x.owe + ' bạn thanh toán sau khi nhận ảnh.' : '',
         owePart2:x.oweN ? '\n\nPhần thanh toán còn lại: ' + x.owe + '.' : '',
         driveOrNote:x.drive || '(mình gửi link ngay sau email này)' };
       /* Chỗ trống tiếng Việt (mẫu mới) — chỗ trống tiếng Anh cũ vẫn chạy cho mẫu bạn đã sửa trước đây */
-      var vi = { 'tên':'ten', 'loại':'type', 'ngày':'date', 'địa điểm':'loc', 'giá':'price', 'cọc':'dep', '% cọc':'pct', 'đã trả':'paid', 'còn lại':'owe', 'link':'drive', 'ký tên':'sign',
+      var vi = { 'tên':'ten', 'loại':'type', 'ngày':'date', 'địa điểm':'loc', 'giá':'price', 'cọc':'dep', 'tiền cọc':'depPaid', '% cọc':'pct', 'đã trả':'paid', 'còn lại':'owe', 'link':'drive', 'ký tên':'sign', 'nhắc chuẩn bị':'prepLine',
         'phần cọc':'depPart', 'phần còn lại':'owePart', 'phần còn lại 2':'owePart2', 'link hoặc ghi chú':'driveOrNote' };
       map['lịch'] = x.date + (x.time || ''); map['giờ'] = x.time ? x.time.replace(/^ lúc /, '') : ''; map.studio = map.studio;
       return String(str).replace(/\{([^{}\n]{1,24})\}/g, function(all, k){ var key = vi[k] || k; if (k === 'lịch' || k === 'giờ') return map[k]; if (!Object.prototype.hasOwnProperty.call(map, key)) return all; return map[key] == null ? '' : String(map[key]); });
@@ -3776,10 +4181,10 @@
       var j = jobById(id); if (!j) return;
       key = MAIL_TPLS[key] ? key : (jobThu(j.id) ? (['Đã giao', 'Xong'].indexOf(j.stage) >= 0 ? 'balance' : (STAGES.indexOf(j.stage) >= 6 ? 'deliver' : 'remind')) : 'confirm');
       var canSend = gFeat('send') && gToken() && gHas(FEAT_SCOPE.send);
-      var body = (state.cfg.logo ? '<img class="mail-logo" src="' + esc(state.cfg.logo) + '" alt="Logo studio" />' : '') + '<div class="pills" id="mailTpls" style="margin-top:6px;">' + Object.keys(MAIL_TPLS).map(function(k){ return '<button type="button" class="pill" data-mt="' + k + '">' + esc(MAIL_TPLS[k].t) + '</button>'; }).join('') + '</div>' +
+      var body = (state.cfg.logo ? '<img class="mail-logo" src="' + esc(state.cfg.logo) + '" alt="Logo studio" />' : '') + '<div class="pills" id="mailTpls" style="margin-top:6px;">' + Object.keys(MAIL_TPLS).map(function(k){ return '<button type="button" class="pill" data-mt="' + k + '"' + (k === 'deposit' && jobDep(j) === 0 ? ' disabled title="Chưa ghi cọc"' : '') + '>' + esc(MAIL_TPLS[k].t) + '</button>'; }).join('') + '</div>' +
         '<form id="mailForm" autocomplete="off"><div class="list" style="margin-top:12px;">' +
-        frow('Gửi tới', '<input type="email" name="to" value="' + esc(j.email || '') + '" placeholder="khach@email.com" inputmode="email" autocapitalize="off" />') +
-        '<label class="frow stack"><span>Tiêu đề</span><input name="subject" style="text-align:left;text-align-last:left;color:var(--label);" /></label>' +
+        '<label class="frow stack"><span>Gửi tới</span><textarea name="to" rows="2" class="tpl-subj" inputmode="email" autocapitalize="off" style="text-align:left;color:var(--label);">' + esc(j.email || '') + '</textarea></label>' +
+        '<label class="frow stack"><span>Tiêu đề</span><textarea name="subject" rows="2" class="tpl-subj" style="text-align:left;color:var(--label);"></textarea></label>' +
         '<label class="frow stack"><span>Nội dung — sửa thoải mái trước khi gửi</span><textarea name="body" style="min-height:300px;"></textarea></label></div></form>' +
         '<div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;">' +
         (canSend ? '<button type="button" class="btn fill" id="mailSend">' + I('send', 2.4) + 'Gửi bằng Gmail</button>' : '') +
@@ -3788,7 +4193,9 @@
         (canSend ? '' : '<p class="sec-f">Muốn bấm Gửi ngay trong app: Cài đặt → Lấy gì từ Google → bật “Gửi email cho khách bằng Gmail”.</p>');
       openSheet({ title:'Email cho khách', left:'Huỷ', tall:true, body:body, bind:function(api){
         var f = $('#mailForm', api.body);
-        function fill(k){ key = k; var x = mailCtx(j); f.elements.subject.value = MAIL_TPLS[k].s(x); f.elements.body.value = MAIL_TPLS[k].b(x); $$('#mailTpls .pill', api.body).forEach(function(p){ p.classList.toggle('on', p.getAttribute('data-mt') === k); }); }
+        function fill(k){
+          if (k === 'deposit' && jobDep(j) === 0){ toast('Job chưa ghi cọc — ghi cọc trước rồi mới gửi email này nha', 'warn'); k = 'confirm'; }
+          key = k; var x = mailCtx(j); f.elements.subject.value = MAIL_TPLS[k].s(x); f.elements.body.value = MAIL_TPLS[k].b(x); $$('#mailTpls .pill', api.body).forEach(function(p){ p.classList.toggle('on', p.getAttribute('data-mt') === k); }); }
         $$('#mailTpls .pill', api.body).forEach(function(p){ p.addEventListener('click', function(){ fill(p.getAttribute('data-mt')); }); });
         fill(key);
         function keepEmail(){ var to = f.elements.to.value.trim(); if (validEmail(to) && !j.email){ j.email = to; saveLocal(); } return to; }
@@ -3819,7 +4226,22 @@
     }
 
     /* ---------- Khoá app bằng Face ID / vân tay (passkey) + PIN dự phòng ---------- */
-    var LOCK_KEY = 'troLyXeo.lock', lockTries = 0, lockUntil = 0, hiddenAt = 0;
+    var LOCK_KEY = 'troLyXeo.lock', LOCK_TRIES_KEY = 'troLyXeo.lockTries', lockTries = 0, lockUntil = 0, hiddenAt = 0;
+    /* Bộ đếm sai PIN lưu vào localStorage để đếm xuyên phiên — tải lại trang
+       không reset (bản cũ để trong bộ nhớ nên tải lại là sai lại từ đầu). */
+    function lockStateSave(){ try{ localStorage.setItem(LOCK_TRIES_KEY, JSON.stringify({ tries:lockTries, until:lockUntil })); }catch(e){} }
+    function lockStateLoad(){
+      try{
+        var s = JSON.parse(localStorage.getItem(LOCK_TRIES_KEY) || 'null');
+        if (s && typeof s.tries === 'number'){ lockTries = s.tries; lockUntil = +s.until || 0; }
+      }catch(e){}
+      /* Chỉ reset khi ĐÃ từng bị khoá (lockUntil > 0) mà khoá đã hết hạn.
+         lockUntil = 0 nghĩa là chưa bị khoá lần nào — số lần sai (1–4)
+         phải giữ nguyên qua lần tải lại trang, không reset về 0
+         (bản trước reset cả khi chưa khoá nên tải lại là đếm lại từ đầu). */
+      if (lockUntil && Date.now() >= lockUntil){ lockTries = 0; lockUntil = 0; }
+    }
+    lockStateLoad();
     function lockCfg(){ try{ var c = JSON.parse(lsGet(LOCK_KEY) || 'null'); return c && c.id && c.pin ? c : null; }catch(e){ return null; } }
     function b64u(buf){ var s = '', u = new Uint8Array(buf); for (var i = 0; i < u.length; i++) s += String.fromCharCode(u[i]); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
     function unb64u(s){ s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; var b = atob(s), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
@@ -3860,8 +4282,8 @@
       $('#lkPinForm', d).addEventListener('submit', async function(e){
         e.preventDefault();
         if (Date.now() < lockUntil){ msg.textContent = 'Sai nhiều lần — đợi ' + Math.ceil((lockUntil - Date.now()) / 1000) + ' giây rồi thử lại.'; return; }
-        if (await pinCheck($('#lkPin', d).value)){ lockTries = 0; unlockApp(); }
-        else { lockTries++; $('#lkPin', d).value = ''; if (lockTries >= 5){ lockUntil = Date.now() + 30000 * Math.pow(2, lockTries - 5); msg.textContent = 'Sai ' + lockTries + ' lần — tạm khoá một lúc.'; } else msg.textContent = 'Mã PIN chưa đúng.'; }
+        if (await pinCheck($('#lkPin', d).value)){ lockTries = 0; lockUntil = 0; lockStateSave(); unlockApp(); }
+        else { lockTries++; $('#lkPin', d).value = ''; if (lockTries >= 5){ lockUntil = Date.now() + 30000 * Math.pow(2, lockTries - 5); msg.textContent = 'Sai ' + lockTries + ' lần — tạm khoá một lúc.'; } else msg.textContent = 'Mã PIN chưa đúng.'; lockStateSave(); }
       });
       if (auto) setTimeout(tryBio, 350);
     }
@@ -3892,7 +4314,7 @@
       try{ await bioCheck(); }catch(e){
         var pin = prompt('Nhập mã PIN để tắt khoá'); if (!pin || !(await pinCheck(pin))){ toast('Chưa xác nhận được', 'warn'); return; }
       }
-      lsSet(LOCK_KEY, ''); refreshSettings(); toast('Đã tắt khoá Face ID');
+      lsSet(LOCK_KEY, ''); lockTries = 0; lockUntil = 0; try{ localStorage.removeItem(LOCK_TRIES_KEY); }catch(e){} refreshSettings(); toast('Đã tắt khoá Face ID');
     }
 
     /* ---------- Gắn vào app ---------- */
@@ -4014,7 +4436,7 @@
     /* ================= CẬP NHẬT PHẦN MỀM =================
        App luôn chạy bản đã lưu trên máy (dùng offline). Có mạng thì kiểm tra GitHub,
        có bản mới thì tải sẵn rồi hiện nút "Cập nhật" — bạn bấm mới chuyển, dữ liệu giữ nguyên. */
-    var APP_VERSION = '2.0';
+    var APP_VERSION = '2.1';
     var swReg = null, swReloading = false;
     function updReady(){ return !!(swReg && swReg.waiting && navigator.serviceWorker.controller); }
     function showUpdate(){
