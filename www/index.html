@@ -2,7 +2,7 @@
 <html lang="vi">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
     <!-- Bảo mật: chỉ cho app nói chuyện với chính nó và Google; không nhúng được vào trang khác -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://www.googleapis.com https://gmail.googleapis.com https://people.googleapis.com https://oauth2.googleapis.com; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'" />
@@ -64,7 +64,7 @@
       html.locked, html.locked body{ overflow:hidden; }
       /* Chỉ chạm + vuốt dọc: không chụm zoom, không chạm đúp zoom, không kéo ngang trang */
       html{ touch-action:pan-y; }
-      html, body{ overflow-x:hidden; max-width:100%; }
+      html, body{ overflow-x:hidden; overflow-x:clip; max-width:100%; }
       body{ overflow-wrap:break-word; }
       button, a, label.row, .row, .tile, .pill, .tabbar, .nav, .seg, .shot, .q-stk, .wl-foot, .sheet-head{
         -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
@@ -87,7 +87,7 @@
 
       /* ---------- Khung trang ---------- */
       .wrap{ max-width:720px; margin:0 auto;
-        padding:calc(44px + env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) calc(var(--tabh) + 40px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+        padding:calc(56px + env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) calc(var(--tabh) + 40px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
       .view{ display:none; }
       .view.on{ display:block; animation:fadeIn .22s ease; }
       @keyframes fadeIn{ from{ opacity:.75; } to{ opacity:1; } }
@@ -95,7 +95,8 @@
       /* ---------- Thanh điều hướng trên ---------- */
       .nav{ position:fixed; top:0; left:0; right:0; z-index:40; padding-top:env(safe-area-inset-top);
         transition:background-color .2s ease, box-shadow .2s ease; }
-      .nav.solid{ background:var(--bar); -webkit-backdrop-filter:saturate(180%) blur(20px); backdrop-filter:saturate(180%) blur(20px); box-shadow:0 .5px 0 var(--sep); }
+      /* v2.0-fix: nền nav đặc (var(--bg)) thay cho mờ — nội dung cuộn lên biến mất gọn dưới nav thay vì nhòe xuyên qua, tránh cảm giác "đầu trang bị kẹp" */
+      .nav.solid{ background:var(--bg); box-shadow:0 .5px 0 var(--sep); }
       .nav-in{ height:44px; max-width:720px; margin:0 auto; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; padding:0 6px; }
       .nav-t{ font-weight:600; font-size:1.0625rem; opacity:0; transition:opacity .18s ease; white-space:nowrap; }
       .nav.solid .nav-t{ opacity:1; }
@@ -330,7 +331,7 @@
         -webkit-backdrop-filter:saturate(180%) blur(20px); backdrop-filter:saturate(180%) blur(20px);
         box-shadow:0 -.5px 0 var(--sep); padding-bottom:env(safe-area-inset-bottom); transition:transform .2s ease; }
       .tabbar-in{ display:flex; max-width:620px; margin:0 auto; height:var(--tabh); }
-      .tabbar button{ flex:1; border:0; background:none; color:var(--gray); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; font-size:0.75rem; font-weight:500; letter-spacing:.01em; padding-top:2px; }
+      .tabbar button{ flex:1; min-width:0; border:0; background:none; color:var(--gray); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; font-size:0.75rem; font-weight:500; letter-spacing:.01em; padding-top:2px; }
       .tabbar svg{ width:26px; height:26px; }
       .tabbar svg .f{ fill:none; }
       .tabbar button.on{ color:var(--accent-t); }
@@ -547,15 +548,6 @@
           <button type="button" class="btn fill" id="sampleUseReal">Dùng thật — xoá dữ liệu mẫu</button>
         </div>
 
-        <div class="list banner hidden" id="installCard">
-          <img src="icon-192.png" alt="" />
-          <div class="txt">
-            <div class="b" style="font-size:1rem;">Cài lên màn hình chính</div>
-            <div class="t2 muted" id="installHint" style="font-size:0.8125rem;">Mở như app thật, cả khi mất mạng.</div>
-          </div>
-          <button class="btn fill sm" id="installBtn" type="button">Cài</button>
-          <button class="x" id="installDismiss" type="button" aria-label="Ẩn gợi ý cài app"></button>
-        </div>
 
         <div class="sec-h sec-first" id="todaySec"><h2>Cần nhớ hôm nay</h2></div>
         <div class="list" id="todayList"></div>
@@ -1464,7 +1456,7 @@
         actRow('mail', 'mail', 'gray', 'Soạn email cho khách', (j.email || 'Chưa có email') + ' · xác nhận lịch, cọc, giao ảnh…') +
         actRow('copymsg', 'copy', 'gray', 'Chép tin nhắn mẫu') + '</div>';
       h += '<p class="sec-s">Lịch &amp; nhắc việc</p><div class="list">' +
-        (state.cfg.gFeat && state.cfg.gFeat.calw ? actRow('gcalsave', 'calplus', 'gray', j.gEventId ? 'Cập nhật trên Google Lịch' : 'Thêm vào Google Lịch', j.gEventId ? 'Đã có trên Google Lịch — bấm để đồng bộ lại' : 'Ghi thẳng vào lịch của bạn, nhắc trước 12 tiếng') : '') +
+        (googleClientId() && state.cfg.gFeat && state.cfg.gFeat.calw ? actRow('gcalsave', 'calplus', 'gray', j.gEventId ? 'Cập nhật trên Google Lịch' : 'Thêm vào Google Lịch', j.gEventId ? 'Đã có trên Google Lịch — bấm để đồng bộ lại' : 'Ghi thẳng vào lịch của bạn, nhắc trước 12 tiếng') : '') +
         actRow('ics', 'cal', 'gray', 'Lưu vào app Lịch', 'Tải file .ics, có nhắc trước 12 tiếng') +
         '<a class="row" target="_blank" rel="noopener" href="' + (j.shootDate ? esc(gcalLink(j)) : '#') + '" data-gcal="1"><span class="ic bg-gray">' + I('calplus') + '</span><span class="txt t1">Thêm vào Google Lịch</span>' + I('chev').replace('<svg', '<svg class="chev"') + '</a>' +
         actRow('remind', 'bell', 'gray', 'Tạo nhắc việc') +
@@ -1472,7 +1464,7 @@
       h += '<p class="sec-s">Google Drive</p><div class="list">' +
         '<label class="frow full"><input id="driveInp" value="' + esc(j.driveLink || '') + '" placeholder="Dán link thư mục Drive của job…" inputmode="url" autocomplete="off" /></label>' +
         actRow('drive', 'folder', 'gray', 'Mở thư mục Drive') +
-        (state.cfg.gFeat && state.cfg.gFeat.drive ? actRow('drivepick', 'folder', 'gray', 'Chọn thư mục từ Google Drive', 'Tìm theo tên, khỏi dán link') : '') + '</div>' +
+        (googleClientId() && state.cfg.gFeat && state.cfg.gFeat.drive ? actRow('drivepick', 'folder', 'gray', 'Chọn thư mục từ Google Drive', 'Tìm theo tên, khỏi dán link') : '') + '</div>' +
         '<p class="sec-f">Dán link xong là tự lưu.</p>';
       h += '<div class="list" style="margin-top:28px;">' + (j.cancelled ? '' : '<button type="button" class="row center" data-act="cancel">Huỷ job này (không chốt)</button>') + '<button type="button" class="row center destr" data-act="del">Xoá buổi chụp này</button></div>';
       return h;
@@ -2299,7 +2291,7 @@
        File sao lưu JSON người dùng đã tải về máy KHÔNG xoá được từ trong
        app, phải tự xoá trong Files; sự kiện đã ghi trên Google Lịch cũng
        vẫn còn. Dùng chung 1 hàm duy nhất, không rải rác từng chỗ xoá. */
-    var WIPE_KEYS = ['troLyXeo.v1', 'troLyXeo.lock', 'troLyXeo.gtoken', 'troLyXeo.gcal', 'troLyXeo.gmail', 'troLyXeo.gseen', 'troLyXeo.gcontacts', 'troLyXeo.gstate', 'troLyXeo.grefresh', 'troLyXeo.ghadRefresh', 'troLyXeo.heroPin', 'troLyXeo.lastBackup', 'troLyXeo.welcomed', 'troLyXeo.installDismissed'];
+    var WIPE_KEYS = ['troLyXeo.v1', 'troLyXeo.lock', 'troLyXeo.gtoken', 'troLyXeo.gcal', 'troLyXeo.gmail', 'troLyXeo.gseen', 'troLyXeo.gcontacts', 'troLyXeo.gstate', 'troLyXeo.grefresh', 'troLyXeo.ghadRefresh', 'troLyXeo.heroPin', 'troLyXeo.lastBackup', 'troLyXeo.welcomed'];
     function wipeAll(){
       /* Pháp lý: thu hồi token + xoá IndexedDB XONG mới reload — reload ngay
          sẽ cắt ngang fetch revoke / deleteDatabase. Chờ tối đa 3s rồi reload. */
@@ -2402,7 +2394,7 @@
           ? '<div class="row"><span class="ic bg-green">' + I('check', 2.6) + '</span><span class="txt"><span class="t1" style="display:block;">' + (gt ? 'Đang kết nối' : 'Đã kết nối (hết hạn, bấm Kết nối lại)') + '</span><span class="t2" style="display:block;">' + (gc ? gc.events.length + ' sự kiện · cập nhật ' + agoText(gc.fetchedAt) : 'Chưa tải lịch') + '</span></span><button type="button" class="btn tint sm" id="gConnRow2">' + (gt ? 'Làm mới' : 'Kết nối lại') + '</button></div>' +
             '<button type="button" class="row center destr" id="gDisc">Ngắt kết nối Google Lịch</button>'
           : '<button type="button" class="row act" id="gConnRow"><span class="ic bg-blue">' + I('cal') + '</span><span class="txt t1">Kết nối Google</span></button>') : '<div class="row"><span class="ic bg-gray">' + I('doc') + '</span><span class="txt"><span class="t1" style="display:block;">Google chưa sẵn sàng ở bản v2.0</span><span class="t2" style="display:block;">Đang chờ tạo Client ID chung 1 lần — app vẫn dùng bình thường, không gửi dữ liệu nào lên Google.</span></span></div>') +
-        '<button type="button" class="row" id="gGuideRow"><span class="ic bg-gray">' + I('doc') + '</span><span class="txt"><span class="t1" style="display:block;">Đăng nhập Google để làm gì?</span><span class="t2" style="display:block;">Bấm 1 lần là có Lịch, Gmail, Danh bạ, Drive — không cần tự tạo gì (đang chờ Client ID chung, chưa dùng được ở v2.0)</span></span>' + chevSvg() + '</button></div>';
+        (googleClientId() ? '<button type="button" class="row" id="gGuideRow"><span class="ic bg-gray">' + I('doc') + '</span><span class="txt"><span class="t1" style="display:block;">Đăng nhập Google để làm gì?</span><span class="t2" style="display:block;">Bấm 1 lần là có Lịch, Gmail, Danh bạ, Drive — không cần tự tạo gì</span></span>' + chevSvg() + '</button>' : '') + '</div>';
       var F = c.gFeat || {};
       var feat = function(key, icon, color, title, sub){
         var miss = F[key] && gt && typeof gNeeds === 'function' && gNeeds(key);
@@ -2521,7 +2513,6 @@
       var lk3 = $('#lkOff', b); if (lk3) lk3.addEventListener('click', function(){ disableLock(); });
       var gcr = $('#gConnRow', b); if (gcr) gcr.addEventListener('click', function(){ gConnect(false); });
       var gcr2 = $('#gConnRow2', b); if (gcr2) gcr2.addEventListener('click', function(){ if (gToken()) gSyncAll(true); else gConnect(true); });
-      var ggr = $('#gGuideRow', b); if (ggr) ggr.addEventListener('click', function(){ openGGuide(); });
       var gds = $('#gDisc', b); if (gds) gds.addEventListener('click', function(){
         actionSheet({ title:'Ngắt kết nối Google Lịch?', msg:'Xoá lịch, email gợi ý và danh bạ đã lưu trên máy; thu hồi mã đăng nhập tại Google. Buổi chụp và sổ thu chi vẫn giữ nguyên. Sự kiện đã ghi trên Google Lịch vẫn còn — xoá trong app Lịch nếu muốn.', actions:[{ label:'Ngắt kết nối', destructive:true, fn:function(){
           /* H3 (SECURITY-AUDIT): thu hồi CẢ access token lẫn refresh token
@@ -2990,8 +2981,8 @@
       calImportEvents = []; calImportRange = 'up'; calImportClearSample = !!state.sample;
       var guide = '<div class="jd-head"><span class="ic lg bg-red">' + I('cal') + '</span><h2>Nhập từ Lịch iPhone</h2><p>Lịch hẹn chụp có sẵn → thành buổi chụp trong app</p></div>' +
         (isNativeApp()
-          ? '<div style="margin-top:14px;"><button type="button" class="btn fill" id="calNativeBtn">' + I('cal', 2.2) + 'Nhập từ Lịch iPhone</button></div><p class="sec-f">Bấm 1 cái là lấy hết sự kiện 30 ngày tới từ Lịch iPhone, thành buổi chụp trong app. App chỉ đọc lịch, không sửa gì. Hoặc đăng nhập Google để đọc Lịch Google.</p>'
-          : '<p class="sec-f">Nhập lịch chỉ có trong app iOS trên iPhone (Lịch iPhone 1 chạm) hoặc qua đăng nhập Google (đọc Lịch Google). Bản này không nhập file lịch.</p><div style="margin-top:14px;"><button type="button" class="btn fill" id="calGoogleBtn">Đăng nhập Google</button></div>') +
+          ? '<div style="margin-top:14px;"><button type="button" class="btn fill" id="calNativeBtn">' + I('cal', 2.2) + 'Nhập từ Lịch iPhone</button></div><p class="sec-f">Bấm 1 cái là lấy hết sự kiện 30 ngày tới từ Lịch iPhone, thành buổi chụp trong app. App chỉ đọc lịch, không sửa gì.</p>'
+          : '<p class="sec-f">Nhập lịch chỉ có trong app iOS trên iPhone (Lịch iPhone 1 chạm). Bản này không nhập file lịch.</p>' + (googleClientId() ? '<div style="margin-top:14px;"><button type="button" class="btn fill" id="calGoogleBtn">Đăng nhập Google</button></div>' : '<p class="sec-f">Google Lịch sẽ có ở bản sau.</p>')) +
         '<div id="calResult"></div>';
       var sheet = openSheet({ title:'Nhập từ Lịch iPhone', left:'Huỷ', right:'Nạp', tall:true, body:guide,
         onRight:function(api){ doImport(api); },
@@ -3206,11 +3197,19 @@
       if (!showCal) return;
       var h = '', tok = gToken();
       if (!googleClientId() || !gcal){
-        h += '<div class="list" style="padding:20px 16px 12px;text-align:center;"><span class="ic lg bg-blue" style="margin:0 auto 10px;">' + I('cal') + '</span>' +
-          '<div class="b" style="font-size:1.1875rem;">Xem Google Lịch ngay trong app</div>' +
-          '<p class="muted" style="font-size:0.9375rem;margin:6px 0 14px;">Kết nối một lần là thấy lịch hẹn chụp ở đây, không cần xuất file. App chỉ đọc lịch, không sửa gì.</p>' +
-          (googleClientId() ? '<button type="button" class="btn fill" id="gConnectBtn">' + (gState.loading ? 'Đang tải lịch…' : 'Kết nối Google Lịch') + '</button>' : '<button type="button" class="btn fill" id="gSetupBtn">Thiết lập kết nối (làm 1 lần)</button>') +
-          '<a class="btn plain" href="https://calendar.google.com/" target="_blank" rel="noopener">Mở Google Lịch</a></div>';
+        /* v2.0 chưa có Client ID Google chung: KHÔNG hiện nút "Thiết lập kết nối"
+           (bấm vào chỉ mở sheet chữ, không đăng nhập được — ngõ cụt). Chỉ hiện
+           dòng "sẽ có ở bản sau" + link thường "Mở Google Lịch" (mở web, vẫn dùng được). */
+        h += googleClientId()
+          ? '<div class="list" style="padding:20px 16px 12px;text-align:center;"><span class="ic lg bg-blue" style="margin:0 auto 10px;">' + I('cal') + '</span>' +
+            '<div class="b" style="font-size:1.1875rem;">Xem Google Lịch ngay trong app</div>' +
+            '<p class="muted" style="font-size:0.9375rem;margin:6px 0 14px;">Kết nối một lần là thấy lịch hẹn chụp ở đây, không cần xuất file. App chỉ đọc lịch, không sửa gì.</p>' +
+            '<button type="button" class="btn fill" id="gConnectBtn">' + (gState.loading ? 'Đang tải lịch…' : 'Kết nối Google Lịch') + '</button>' +
+            '<a class="btn plain" href="https://calendar.google.com/" target="_blank" rel="noopener">Mở Google Lịch</a></div>'
+          : '<div class="list" style="padding:20px 16px 12px;text-align:center;"><span class="ic lg bg-blue" style="margin:0 auto 10px;">' + I('cal') + '</span>' +
+            '<div class="b" style="font-size:1.1875rem;">Google Lịch sẽ có ở bản sau</div>' +
+            '<p class="muted" style="font-size:0.9375rem;margin:6px 0 14px;">Hiện xem lịch hẹn chụp trong app ở dòng thời gian bên dưới.</p>' +
+            '<a class="btn plain" href="https://calendar.google.com/" target="_blank" rel="noopener">Mở Google Lịch</a></div>';
       } else {
         var st = gState.loading ? 'Đang tải lịch…' : ('Google Lịch · cập nhật ' + agoText(gcal.fetchedAt));
         h += '<div class="list" style="padding:12px 14px;display:flex;align-items:center;gap:10px;"><span class="ic round bg-blue">' + I('cal') + '</span><div style="flex:1;min-width:0;"><div class="b" style="font-size:0.9375rem;">' + esc(st) + '</div>' +
@@ -3235,7 +3234,6 @@
       box.innerHTML = h;
       bindRows(box); bindGev(box);
       var b1 = $('#gConnectBtn', box); if (b1) b1.addEventListener('click', function(){ gConnect(false); });
-      var b2 = $('#gSetupBtn', box); if (b2) b2.addEventListener('click', function(){ openGGuide(); });
       var b3 = $('#gRefresh', box); if (b3) b3.addEventListener('click', function(){ gFetch(true); });
       var b4 = $('#gReconnect', box); if (b4) b4.addEventListener('click', function(){ gConnect(true); });
     }
@@ -3255,13 +3253,10 @@
       tl.insertAdjacentHTML('beforeend', evs.map(gRow).join('')); bindGev(tl);
     };
 
-    /* Đăng nhập Google để làm gì — iOS v1: 1 chạm, không tự tạo Cloud project. */
-    function openGGuide(){
-      var body = '<div class="jd-head"><span class="ic lg bg-blue">' + I('cal') + '</span><h2>Đăng nhập Google</h2><p>Bấm 1 lần, có hết — không cần tự tạo gì</p></div>' +
-        '<p class="sec-s">Có gì sau khi đăng nhập</p><div class="list">' +
-        '<div class="note-txt" style="font-size:0.9375rem;">• Google Lịch: xem lịch hẹn chụp trong app, ghi buổi chụp vào lịch.<br/>• Gmail: tìm email báo tiền về và khách hỏi chụp, gửi email cho khách.<br/>• Danh bạ: gõ tên khách là gợi ý số điện thoại, email.<br/>• Google Drive: chọn thư mục ảnh của job.<br/><br/>Đăng nhập 1 lần xin đủ 6 quyền (đọc Lịch, đọc Gmail, đọc Danh bạ, xem Drive, ghi Lịch, gửi Gmail) — không xin lẻ từng tính năng.<br/><br/>Client ID dùng chung của FotoBro do app tự lo — bạn chỉ cần bấm “Đăng nhập Google” trong Cài đặt. Mã đăng nhập chỉ nằm trên máy này.</div></div>';
-      openSheet({ title:'Google', left:'Xong', tall:true, body:body, bind:function(api){} });
-    }
+    /* openGGuide (sheet "Đăng nhập Google") ĐÃ GỠ ở v2.0 (20/11/2026):
+       Google đang TẮT vì chưa có Client ID chung — sheet chỉ toàn chữ giải
+       thích mà không có nút đăng nhập thật nên là ngõ cụt. Khi đã có Client
+       ID thì khôi phục lại cùng các điểm vào đã gỡ (gGuideRow, gSetupBtn). */
     renderAll();
     if (gToken() && (!gcal || Date.now() - gcal.fetchedAt > 10 * 60000)) gFetch(false);
     </script>
@@ -3505,7 +3500,7 @@
 
     /* ---------- Drive: chọn thư mục của job ---------- */
     function openDrivePicker(j){
-      if (!googleClientId()){ toast('Thiết lập kết nối Google trong Cài đặt trước nha', 'warn'); return; }
+      if (!googleClientId()){ toast('Google Drive sẽ có ở bản sau', 'warn'); return; }
       if (!gToken() || !gHas(SC.drive)){ actionSheet({ title:'Cần cho phép xem tên thư mục Drive', msg:'App chỉ xem tên và link thư mục, không mở hay sửa file.', actions:[{ label:'Kết nối Google', fn:function(){ if (!gFeat('drive')){ state.cfg.gFeat.drive = true; saveLocal(); } gConnect(false); } }] }); return; }
       var body = '<form id="drvForm" autocomplete="off"><div class="list" style="margin-top:8px;"><label class="frow full"><input name="q" value="' + esc(cleanClient(j.client).split(/\s*[&,]\s*/)[0]) + '" placeholder="Tìm thư mục theo tên…" enterkeyhint="search" /></label></div></form><div id="drvList" style="margin-top:12px;"></div>';
       openSheet({ title:'Chọn thư mục Drive', left:'Huỷ', tall:true, body:body, bind:function(api){
@@ -3886,61 +3881,10 @@
     </script>
 
     <script>
-    /* ================= CÀI LÊN MÀN HÌNH CHÍNH (PWA) =================
-       Android/Chrome: beforeinstallprompt → cài 1 chạm.
-       iPhone Safari: hiện bảng hướng dẫn từng bước.
-       Bản file offline (file://): không đăng ký service worker. */
-    (function(){
-      var card = document.getElementById('installCard');
-      var btn = document.getElementById('installBtn');
-      var hint = document.getElementById('installHint');
-      var dismissBtn = document.getElementById('installDismiss');
-      dismissBtn.innerHTML = I('xmark', 2.6);
-      var dismissed = lsGet('troLyXeo.installDismissed') === '1';
-      var isStandalone = false;
-      try { isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true; } catch (e) {}
-      if (isStandalone || dismissed) return;
-      card.classList.remove('hidden');
-      var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      var isFile = location.protocol === 'file:';
-      if (isFile) hint.textContent = 'Muốn cài thì mở link GitHub Pages bằng Safari hoặc Chrome.';
-      var deferredPrompt = null;
-      window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); deferredPrompt = e; hint.textContent = 'Bấm Cài là xong, một chạm thôi.'; });
-      window.addEventListener('appinstalled', function(){ card.classList.add('hidden'); lsSet('troLyXeo.installDismissed', '1'); });
-      var IOS_STEPS = [
-        ['globe','blue','Mở app này bằng <b>Safari</b>','Đừng mở trong Facebook hay Messenger.'],
-        ['share','blue','Bấm nút <b>Chia sẻ</b>','Hình vuông có mũi tên đi lên, ở dưới màn hình.'],
-        ['plusc','gray','Chọn <b>“Thêm vào MH chính”</b>','Kéo xuống một chút là thấy.'],
-        ['check','green','Bấm <b>“Thêm”</b> ở góc trên','Xong — từ giờ chạm icon FotoBro là vào app.']
-      ];
-      var ANDROID_STEPS = [
-        ['globe','blue','Mở app này bằng <b>Chrome</b>',''],
-        ['list','gray','Bấm dấu <b>ba chấm</b> góc trên bên phải',''],
-        ['download','green','Chọn <b>“Cài đặt ứng dụng”</b>','Hoặc “Thêm vào màn hình chính”.'],
-        ['check','green','Bấm <b>“Cài đặt”</b>','Xong — từ giờ chạm icon FotoBro là vào app.']
-      ];
-      function showSteps(){
-        var list = isIOS ? IOS_STEPS : ANDROID_STEPS;
-        openSheet({ title:'Cài lên màn hình chính', left:'Xong', body:
-          '<div class="jd-head"><img src="icon-192.png" alt="" style="width:72px;height:72px;border-radius:17px;margin:4px auto 12px;box-shadow:0 0 0 .5px var(--sep);" /><h2>FotoBro</h2><p>4 bước, chưa tới một phút</p></div>' +
-          '<div class="list" style="margin-top:18px;">' + list.map(function(s, i){
-            return '<div class="row"><span class="ic bg-' + s[1] + '">' + I(s[0]) + '</span><span class="txt"><span class="t1" style="display:block;">' + (i + 1) + '. ' + s[2] + '</span>' + (s[3] ? '<span class="t2" style="display:block;">' + s[3] + '</span>' : '') + '</span></div>';
-          }).join('') + '</div>' +
-          '<div style="margin-top:20px;"><button type="button" class="btn gray" id="installDone">Đã thêm rồi, ẩn gợi ý này</button></div>',
-          bind:function(api){ $('#installDone', api.body).addEventListener('click', function(){ lsSet('troLyXeo.installDismissed', '1'); card.classList.add('hidden'); api.close(); toast('Đã ẩn gợi ý cài app'); }); } });
-      }
-      btn.addEventListener('click', function(){
-        if (deferredPrompt){
-          var up = deferredPrompt; deferredPrompt = null; up.prompt();
-          if (up.userChoice && up.userChoice.then){
-            up.userChoice.then(function(c){ if (c && c.outcome === 'accepted'){ lsSet('troLyXeo.installDismissed', '1'); card.classList.add('hidden'); toast('Đã thêm FotoBro vào màn hình chính'); } }).catch(function(){});
-          }
-          return;
-        }
-        showSteps();
-      });
-      dismissBtn.addEventListener('click', function(){ lsSet('troLyXeo.installDismissed', '1'); card.classList.add('hidden'); toast('Đã ẩn gợi ý cài app'); });
-    })();
+    /* PWA "Cài lên màn hình chính" ĐÃ GỠ ở bản iOS native v2.0 (20/11/2026):
+       app đã cài qua TestFlight/App Store nên banner cài + beforeinstallprompt
+       + bảng hướng dẫn Safari đều vô nghĩa. Giữ nguyên manifest.webmanifest
+       và sw.js (không xoá file). */
     /* ================= CẬP NHẬT PHẦN MỀM =================
        App luôn chạy bản đã lưu trên máy (dùng offline). Có mạng thì kiểm tra GitHub,
        có bản mới thì tải sẵn rồi hiện nút "Cập nhật" — bạn bấm mới chuyển, dữ liệu giữ nguyên. */
