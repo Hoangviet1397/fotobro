@@ -1740,7 +1740,7 @@ async function loadDom(beforeParse) {
 
     console.log('\n[F10-5] Huỷ job có cọc -> gợi ý hoàn cọc, form điền sẵn');
     const j1 = { id: W.nid(), client: 'Khách Có Cọc', type: 'Wedding', medium: 'Digital', stage: 'Đã chốt',
-      stageSince: W.dstr(0), shootDate: W.dstr(0), shootTime: '08:00', location: '', deadline: '',
+      stageSince: W.dstr(0), shootDate: W.dstr(10), shootTime: '08:00', location: '', deadline: '',
       price: 15000000, phone: '', email: '', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false };
     W.state.jobs.unshift(j1);
     W.state.txs.unshift({ id: W.nid(), kind: 'thu', category: 'Cọc', jobId: j1.id, amount: 6000000, date: W.dstr(0), method: 'Chuyển khoản', note: '', src: '' });
@@ -1749,7 +1749,7 @@ async function loadDom(beforeParse) {
     await sleep(200);
     const asheets5 = [...doc.querySelectorAll('.asheet')];
     const as5 = asheets5[asheets5.length - 1];
-    const refundBtns = [...as5.querySelectorAll('[data-a]')].filter(b => b.textContent.includes('Huỷ & ghi hoàn cọc'));
+    const refundBtns = [...as5.querySelectorAll('[data-a]')].filter(b => b.textContent.includes('Khách huỷ — hoàn cọc'));
     t('huỷ job có cọc: hiện nút "Huỷ & ghi hoàn cọc"', refundBtns.length === 1, [...doc.querySelectorAll('.asheet [data-a]')].map(b => b.textContent).join(' | '));
     t('nút hoàn cọc ghi đúng số 6.000.000', refundBtns.length === 1 && refundBtns[0].textContent.includes('6.000.000'), refundBtns[0] && refundBtns[0].textContent);
     if (refundBtns.length === 1) refundBtns[0].click();
@@ -1776,7 +1776,7 @@ async function loadDom(beforeParse) {
     await sleep(200);
     const asheets6 = [...doc.querySelectorAll('.asheet')];
     const as6 = asheets6[asheets6.length - 1];
-    const noRefund = [...as6.querySelectorAll('[data-a]')].filter(b => b.textContent.includes('Huỷ & ghi hoàn cọc'));
+    const noRefund = [...as6.querySelectorAll('[data-a]')].filter(b => b.textContent.includes('hoàn cọc'));
     t('huỷ job không cọc: không có nút hoàn cọc', noRefund.length === 0, [...as6.querySelectorAll('[data-a]')].map(b => b.textContent).join(' | '));
     const onlyCancel = [...as6.querySelectorAll('[data-a]')].find(b => b.textContent.includes('Huỷ job này'));
     t('huỷ job không cọc: chỉ có nút "Huỷ job này"', !!onlyCancel && onlyCancel.textContent.includes('Huỷ job này'), onlyCancel && onlyCancel.textContent);
@@ -2647,7 +2647,14 @@ async function loadDom(beforeParse) {
   W.autoFlow();
   eq('38: Khách hỏi + đã cọc -> tự sang Đã chốt', near.stage, 'Đã chốt');
   eq('38: Khách hỏi chưa cọc -> đứng yên (Việt: cọc rồi mới nhảy)', noDep.stage, 'Khách hỏi');
-  eq('38: Đã chốt qua ngày chụp -> tự sang Đã chụp', shot.stage, 'Đã chụp');
+  eq('38: Đã chốt qua ngày chụp -> KHÔNG tự nhảy, chờ xác nhận', shot.stage, 'Đã chốt');
+  t('38: Hôm nay hỏi "Đã chụp ... chưa?"', W.todayItems().some(x => x.title === 'Đã chụp Chụp Rồi chưa?'));
+  W.openReschedule(shot); await sleep(200);
+  { const rf = [...d.querySelectorAll('#rsForm')].pop(); rf.elements.d.value = W.dstr(4); rf.elements.t.value = '15:00'; rf.elements.why.value = '0'; [...d.querySelectorAll('.sheet .sh-r')].pop().click(); await sleep(600); }
+  eq('38: dời lịch đổi ngày chụp', shot.shootDate, W.dstr(4));
+  t('38: dời lịch có tin báo khách', [...d.querySelectorAll('.asheet')].some(x => x.textContent.includes('dời sang') && x.textContent.includes('thời tiết')));
+  d.querySelectorAll('.asheet .cancel').forEach(b => b.click()); await sleep(300);
+  W.setStage(shot, 'Đã chụp');
   eq('38: Đã giao thu đủ -> tự sang Xong', paid.stage, 'Xong');
   eq('38: Đã chốt còn 20 ngày -> giữ nguyên', far.stage, 'Đã chốt');
   paid.stage = 'Đã giao'; W.setStage(paid, 'Đang làm ảnh'); W.autoFlow();
@@ -2661,7 +2668,20 @@ async function loadDom(beforeParse) {
   { const dv = d.createElement('div'); dv.innerHTML = W.jobDetailHTML(shot); const main = [...dv.children].filter(x => !x.matches('details')).map(x => x.outerHTML).join('');
     t('38: Đang làm ảnh — phần chính KHÔNG có Tiền và nút Facebook', !main.includes('>Tiền<') && !main.includes('data-act="fb"'));
     t('38: Đang làm ảnh — phần chính có Ảnh + nhắn khách', main.includes('driveInp') && main.includes('jd-chips'));
-    t('38: không còn nút Lùi về', !W.jobDetailHTML(shot).includes('data-act="prev"'));
+    t('38: có cọc -> không có nút Xoá', !W.jobDetailHTML(near).includes('data-act="del"'));
+  { const n0 = W.state.jobs.length; W.jobAction('del', near.id); await sleep(50); eq('38: có cọc -> lệnh xoá bị chặn', W.state.jobs.length, n0); }
+  t('38: Đã chụp -> không có nút Huỷ / Xoá', !W.jobDetailHTML(shot).includes('data-act="del"') && !W.jobDetailHTML(shot).includes('data-act="cancel"'));
+  { const fresh = mk({ client: 'Tạo Nhầm', stage: 'Khách hỏi', shootDate: W.dstr(30) }); t('38: Khách hỏi chưa có tiền -> xoá được', W.jobDetailHTML(fresh).includes('data-act="del"')); }
+  { const lk = mk({ client: 'Sát Ngày', stage: 'Đã chốt', shootDate: W.dstr(2) }); const fr = mk({ client: 'Còn Xa', stage: 'Đã chốt', shootDate: W.dstr(10) });
+    W.state.txs.unshift({ id: W.nid(), kind: 'thu', category: 'Cọc', jobId: lk.id, amount: 1000000, date: W.dstr(0), method: 'Chuyển khoản', note: '', src: '' });
+    t('38: sát ngày vẫn có nút Huỷ + Dời lịch', W.jobDetailHTML(lk).includes('data-act="cancel"') && W.jobDetailHTML(lk).includes('data-act="resched"'));
+    W.jobAction('cancel', lk.id); await sleep(100);
+    { const as = [...d.querySelectorAll('.asheet')].pop(); const first = as && as.querySelector('[data-a="0"]'); t('38: sát ngày -> lựa chọn đầu là KHÔNG hoàn cọc', !!first && first.textContent.includes('giữ cọc') && as.textContent.includes('KHÔNG được hoàn cọc')); }
+    d.querySelectorAll('.asheet .cancel').forEach(x => x.click()); await sleep(300);
+    W.jobAction('cancel', fr.id); await sleep(100);
+    t('38: còn xa ngày -> hỏi huỷ bình thường', [...d.querySelectorAll('.asheet')].some(x => x.textContent.includes('Còn Xa')));
+    d.querySelectorAll('.asheet .cancel').forEach(x => x.click()); await sleep(300); }
+  t('38: không còn nút Lùi về', !W.jobDetailHTML(shot).includes('data-act="prev"'));
   { const st0 = shot.stage; W.jumpToStage(shot.id, 1); eq('38: chạm số bước lùi -> hỏi lại, chưa lùi ngay', shot.stage, st0);
     const lb = [...d.querySelectorAll('.asheet [data-a="0"]')].pop(); t('38: hộp hỏi lùi có nút xác nhận', !!lb && lb.textContent.includes('Lùi về')); if (lb) lb.click(); await sleep(100); eq('38: xác nhận thì lùi', shot.stage, 'Đã chốt'); }
   t('38: Tiền vẫn còn trong Xem thêm', !!dv.querySelector('details.jd-more') && dv.querySelector('details.jd-more').innerHTML.includes('>Tiền<')); }

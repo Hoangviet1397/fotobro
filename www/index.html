@@ -974,7 +974,7 @@
       pricesFilm:{ Portrait:0, Couple:0, Wedding:0, Lookbook:0, Event:0 },
       extraHour:0, extraLoc:0, retouch:0, album:0,
       depositPct:40, deliverDays:14,
-      equipment:[], fixed:[], checkExtra:{}, theme:'warm', petals:false, gCals:[], gFeat:{cal:true, bank:false, leads:false, contacts:false, drive:false, calw:true, send:false}, glass:true, notifAsked:false, locale:'vi', currency:'VND', locAuto:true, curAuto:true, logo:'', phone:'', fb:'', ms:'', threads:'', brand:'', brandAuto:'', setupDone:false, contractTerms:'', dailyNotif:true, email:'', avatar:'', since:'', fbAcc:null, proofDays:3, selectRemindDays:7, mailTpls:{}, apple:null, authAsked:false, appleLastError:null, googleEverLinked:false
+      equipment:[], fixed:[], checkExtra:{}, theme:'warm', petals:false, gCals:[], gFeat:{cal:true, bank:false, leads:false, contacts:false, drive:false, calw:true, send:false}, glass:true, notifAsked:false, locale:'vi', currency:'VND', locAuto:true, curAuto:true, logo:'', phone:'', fb:'', ms:'', threads:'', brand:'', brandAuto:'', setupDone:false, contractTerms:'', dailyNotif:true, email:'', avatar:'', since:'', fbAcc:null, proofDays:3, selectRemindDays:7, cancelLockDays:3, mailTpls:{}, apple:null, authAsked:false, appleLastError:null, googleEverLinked:false
     };
     function mergeCfg(c){
       var o = JSON.parse(JSON.stringify(DEFAULT_CFG));
@@ -987,6 +987,7 @@
       }
       ['extraHour','extraLoc','retouch','album','depositPct','deliverDays'].forEach(function(k){ o[k] = cleanNum(o[k]); });
       o.depositPct = Math.min(100, o.depositPct); o.deliverDays = Math.min(365, o.deliverDays);
+      o.cancelLockDays = Math.min(60, cleanNum(o.cancelLockDays === undefined ? 3 : o.cancelLockDays));
       o.proofDays = Math.min(60, cleanNum(o.proofDays === undefined ? 3 : o.proofDays)); o.selectRemindDays = Math.min(60, cleanNum(o.selectRemindDays === undefined ? 7 : o.selectRemindDays)) || 7;
       ['name','studio','instagram','tagline'].forEach(function(k){ o[k] = cleanStr(o[k], 80).trim() || DEFAULT_CFG[k]; });
       o.instagram = o.instagram.replace(/[^A-Za-z0-9._]/g, '') || DEFAULT_CFG.instagram;
@@ -1074,7 +1075,7 @@
         if (j.backedUp) o.backedUp = true;
         if (j.reviewAsked) o.reviewAsked = true;
         /* v2.7: chọn ảnh — giao trọn bộ (không cho chọn), ngày gửi link chọn, ngày khách chọn xong, đã gửi ảnh xem trước, giữ bước khi lùi tay */
-        if (j.noSelect) o.noSelect = true; if (j.sneakSent) o.sneakSent = true; if (j.holdAuto) o.holdAuto = true; if (j.prepReminded) o.prepReminded = true;
+        if (j.noSelect) o.noSelect = true; if (cleanDate(j.shotAsked)) o.shotAsked = cleanDate(j.shotAsked); if (+j.reschedules > 0) o.reschedules = Math.min(99, Math.floor(+j.reschedules)); if (j.sneakSent) o.sneakSent = true; if (j.holdAuto) o.holdAuto = true; if (j.prepReminded) o.prepReminded = true;
         if (cleanDate(j.proofSentAt)) o.proofSentAt = cleanDate(j.proofSentAt); if (cleanDate(j.selectedAt)) o.selectedAt = cleanDate(j.selectedAt);
         o.id = takeId(j.id, o); return o;
       });
@@ -1449,12 +1450,14 @@
       var items = [], today = dstr(0);
       state.jobs.forEach(function(j){
         if (j.cancelled) return; /* job huỷ không hiện nhắc trên Hôm nay */
-        if (j.shootDate === today && j.stage !== 'Xong')
+        if (j.shootDate === today && j.stage !== 'Xong' && !(j.stage === 'Đã chốt' && shootPassed(j)))
           items.push({c:'accent', icon:'cam', id:j.id, title:'Hôm nay chụp ' + jobTypeLabel(j) + ' — ' + j.client, desc:(j.shootTime ? 'Lúc ' + j.shootTime + ' · ' : '') + (j.location || 'chưa ghi địa điểm')});
         if (j.deadline === today && j.stage !== 'Xong' && j.stage !== 'Đã giao')
           items.push({c:'orange', icon:'clock', id:j.id, title:'Hôm nay tới hạn giao ảnh — ' + j.client, desc:'Job ' + jobTypeLabel(j) + (j.location ? ' ở ' + j.location : '') + ' đang ở bước: ' + j.stage});
         if (isLate(j))
           items.push({c:'red', icon:'clock', id:j.id, title:'Đã quá hạn giao ảnh — ' + j.client, desc:'Hạn là ' + fmtDate(j.deadline) + '. Nhắn khách một câu cho yên tâm nha.'});
+        if (j.stage === 'Đã chốt' && shootPassed(j))
+          items.push({c:'orange', icon:'cam', id:j.id, title:'Đã chụp ' + j.client + ' chưa?', desc:'Hẹn ' + shootWhen(j) + ' — bấm để xác nhận đã chụp, dời lịch hoặc huỷ.'});
         /* v2.7: việc sau buổi chụp */
         if (j.stage === 'Đã chụp' && !j.sneakSent && j.shootDate && dayDiff(j.shootDate) >= -2 && dayDiff(j.shootDate) <= 0)
           items.push({c:'accent', icon:'send', id:j.id, title:'Gửi ảnh xem trước cho ' + j.client, desc:'Trong 48 giờ sau buổi chụp — khách vui, hay khoe.'});
@@ -1915,6 +1918,13 @@
       if (j.cancelled) return '';
       var h = '', note = '';
       if (j.stage === 'Đã chốt' && jobDep(j) === 0) note = 'Chưa ghi cọc — ghi cọc là buổi chụp được giữ lịch.';
+      if (j.stage === 'Đã chốt'){
+        if (shootPassed(j)) note = 'Đã qua giờ hẹn — chụp xong thì bấm nút trên, trời xấu / khách bận thì dời lịch.';
+        else if (j.reschedules) note = 'Đã dời lịch ' + j.reschedules + ' lần.';
+        var lockC = cancelLocked(j);
+        h += '<div style="display:flex;gap:8px;margin-top:10px;"><button type="button" class="btn tint" data-act="resched" style="flex:1;">' + I('cal', 2.2) + 'Dời lịch</button><button type="button" class="btn gray" data-act="cancel" style="flex:1;">Huỷ buổi chụp</button></div>';
+        if (lockC && !shootPassed(j) && jobDep(j) > 0) note = 'Sát ngày chụp (còn ' + Math.max(0, dayDiff(j.shootDate)) + ' ngày) — khách huỷ bây giờ thì không hoàn cọc.';
+      }
       if (j.stage === 'Đã chụp'){
         if (!j.sneakSent) h += '<button type="button" class="btn tint" data-act="sneak" style="margin-top:10px;">' + I('send', 2.2) + 'Gửi ảnh xem trước (48 giờ)</button>';
         if (!j.noSelect) h += '<button type="button" class="btn tint" data-act="proof" style="margin-top:10px;">' + I('folder', 2.2) + 'Gửi link cho khách chọn ảnh</button>';
@@ -1929,6 +1939,10 @@
       if (j.stage === 'Đã giao' && jobOwe(j) > 0) note = 'Thu đủ ' + fmt(jobOwe(j)) + ' là app tự chuyển sang Xong.';
       return h + (note ? '<p class="sec-f" style="text-align:center;margin:10px 0 0;">' + esc(note) + '</p>' : '');
     }
+    /* v2.7b (Việt sửa lại): sát ngày chụp (≤ cancelLockDays ngày, kể cả đã qua) VẪN huỷ được,
+       nhưng khách huỷ sát ngày thì mặc định KHÔNG hoàn cọc (theo hợp đồng). */
+    function cancelLocked(j){ return j.stage === 'Đã chốt' && !!j.shootDate && dayDiff(j.shootDate) <= (+state.cfg.cancelLockDays || 0); }
+    function canDeleteJob(j){ return !state.txs.some(function(t){ return String(t.jobId) === String(j.id); }) && (j.cancelled || ['Khách hỏi','Đã chốt'].indexOf(j.stage) >= 0); }
     function jdChip(act, icon, label, off){ return '<button type="button" class="jd-chip' + (off ? ' off' : '') + '" data-act="' + act + '"><span>' + I(icon) + '</span>' + esc(label) + '</button>'; }
     function jobDetailHTML(j){
       var idx = STAGES.indexOf(j.stage), paid = jobThu(j.id), spent = jobChi(j.id), owe = jobOwe(j);
@@ -1941,7 +1955,7 @@
       /* Tiến độ */
       h += '<div class="list" style="margin-top:14px;"><div class="stage-box">' + stepsBar(j, true, true) +
         (j.cancelled ? '<button type="button" class="btn fill" data-act="restore">Khôi phục về “Khách hỏi”</button>'
-        : (j.stage !== 'Xong' ? '<button type="button" class="btn fill" data-act="next">Xong: ' + esc(j.stage) + ' → ' + esc(STAGES[idx+1]) + '</button>' : '<div class="btn tint" style="margin-top:14px;">' + I('check', 2.4) + 'Đã hoàn tất, giỏi lắm!</div>')) +
+        : (j.stage !== 'Xong' ? '<button type="button" class="btn fill" data-act="next">' + (j.stage === 'Đã chốt' ? 'Đã chụp xong' : 'Xong: ' + esc(j.stage) + ' → ' + esc(STAGES[idx+1])) + '</button>' : '<div class="btn tint" style="margin-top:14px;">' + I('check', 2.4) + 'Đã hoàn tất, giỏi lắm!</div>')) +
         flowHTML(j) +
         (j.cancelled || idx <= 0 ? '' : '<p class="sec-f" style="text-align:center;margin:10px 0 0;">Bấm nhầm? Chạm vào số bước ở trên để lùi lại.</p>') + '</div></div>';
       /* v2.7 (Việt: "phần bên dưới mỗi bước phải phù hợp — đang chọn ảnh rồi còn hiện giá
@@ -2003,7 +2017,12 @@
       var more = lay[1].map(function(k){ return P[k] || ''; }).join('');
       if (j.stage === 'Đang làm ảnh' || j.stage === 'Đã chụp'){ more = '<p class="sec-s">Lịch chụp</p><div class="list">' + infoRow('cal', 'gray', 'Ngày chụp', esc(j.shootDate ? fmtRel(j.shootDate) + (j.shootTime ? ' · ' + j.shootTime : '') : '—')) + infoRow('pin', 'gray', 'Địa điểm', esc(j.location || '—')) + '</div>' + more; }
       if (more) h += '<details class="jd-more"><summary>Xem thêm thông tin buổi chụp</summary>' + more + '</details>';
-      h += '<div class="list" style="margin-top:28px;">' + (j.cancelled || ['Khách hỏi','Đã chốt'].indexOf(j.stage) < 0 ? '' : '<button type="button" class="row center" data-act="cancel">Huỷ job này (không chốt)</button>') + '<button type="button" class="row center destr" data-act="del">Xoá buổi chụp này</button></div>';
+      /* v2.7b (Việt: "khách đã cọc thì sao xoá được — trừ khi khách xin huỷ và hoàn cọc"):
+         • Xoá: chỉ khi CHƯA có khoản tiền nào và còn ở Khách hỏi / Đã chốt (tạo nhầm, khách hỏi rồi thôi)
+         • Huỷ: Khách hỏi chưa cọc ("khách không chốt"); Đã chốt thì nút Huỷ nằm cạnh Dời lịch
+         • Từ Đã chụp trở đi: không xoá, không huỷ — sổ sách phải còn. */
+      var canDel = canDeleteJob(j), canCancel = !j.cancelled && j.stage === 'Khách hỏi';
+      if (canDel || canCancel) h += '<div class="list" style="margin-top:28px;">' + (canCancel ? '<button type="button" class="row center" data-act="cancel">Khách không chốt — huỷ</button>' : '') + (canDel ? '<button type="button" class="row center destr" data-act="del">Xoá buổi chụp này</button>' : '') + '</div>';
       return h;
     }
     function openJob(id){
@@ -2122,10 +2141,14 @@
     }
     function doCancel(j){
       j.cancelled = true; j.cancelledFrom = j.stage; cancelJobReminders(j.id);
+      if (j.gEventId && typeof gCalDelete === 'function'){ gCalDelete(j.gEventId); j.gEventId = ''; }
       if (j.nEventId && typeof nativeAutoCal === 'function') nativeAutoCal(j); saveLocal(); if (jobSheet) jobSheet.close(); toast('Đã huỷ job', 'del'); renderAll();
     }
     function jobAction(act, id){
       var j = jobById(id); if (!j) return;
+      /* v2.7b: luật xoá / huỷ — kiểm tra TRƯỚC mọi xử lý */
+      if (act === 'del' && !canDeleteJob(j)){ toast('Buổi chụp đã có khoản tiền — không xoá được. Khách xin huỷ thì bấm “Huỷ buổi chụp”.', 'warn'); return; }
+      if (act === 'cancel' && ['Khách hỏi','Đã chốt'].indexOf(j.stage) < 0){ toast('Đã chụp rồi thì không huỷ được nữa', 'warn'); return; }
       /* Job đã huỷ thì không tiến/lùi/huỷ nữa — chỉ khôi phục hoặc xoá hẳn. */
       if (j.cancelled && (act === 'next' || act === 'prev' || act === 'cancel')) return;
       if (act === 'next'){ var i = STAGES.indexOf(j.stage); if (i < STAGES.length-1) setStage(j, STAGES[i+1]); }
@@ -2135,10 +2158,12 @@
         if (dep > 0){
           /* Job đã nhận cọc mà huỷ thì tiền cọc thường phải trả lại khách — hỏi
              luôn, chứ không tự ghi (quyết định trả hay không là của người dùng). */
-          actionSheet({ title:'Huỷ job “' + j.client + '”?', msg:'Job đã nhận cọc ' + fmt(dep) + '. Huỷ xong có cần ghi khoản hoàn cọc cho khách không?', actions:[
-            { label:'Huỷ & ghi hoàn cọc ' + fmt(dep), fn:function(){ doCancel(j); openTxForm({jobId:j.id, kind:'chi', category:'Hoàn cọc', amount:dep, date:dstr(0), note:'Hoàn cọc cho ' + j.client}); } },
-            { label:'Chỉ huỷ, không hoàn cọc', destructive:true, fn:function(){ doCancel(j); } }
-          ]});
+          var late = cancelLocked(j);
+          var refundK = { label:'Khách huỷ — hoàn cọc ' + fmt(dep) + (late ? ' (ngoại lệ)' : ''), fn:function(){ doCancel(j); openTxForm({jobId:j.id, kind:'chi', category:'Hoàn cọc', amount:dep, date:dstr(0), note:'Hoàn cọc cho ' + j.client}); } };
+          var keepK = { label:'Khách huỷ — giữ cọc' + (late ? ' (sát ngày, theo hợp đồng)' : ' theo hợp đồng'), destructive:true, fn:function(){ doCancel(j); } };
+          var mine = { label:'Mình huỷ — hoàn cọc ' + fmt(dep), fn:function(){ doCancel(j); openTxForm({jobId:j.id, kind:'chi', category:'Hoàn cọc', amount:dep, date:dstr(0), note:'Mình huỷ, hoàn cọc cho ' + j.client}); } };
+          actionSheet({ title:'Huỷ buổi chụp “' + j.client + '”?', msg:(late ? 'Sát ngày chụp (trong ' + state.cfg.cancelLockDays + ' ngày) — khách huỷ lúc này thường KHÔNG được hoàn cọc ' + fmt(dep) + '. ' : 'Khách đã cọc ' + fmt(dep) + '. ') + 'Huỷ thì lịch hẹn và nhắc lịch được gỡ; buổi chụp và khoản cọc vẫn giữ trong sổ. Chỉ muốn đổi ngày thì dùng “Dời lịch”.',
+            actions: late ? [keepK, mine, refundK] : [refundK, keepK, mine] });
         } else {
           actionSheet({ title:'Huỷ job “' + j.client + '”?', msg:'Job chuyển sang trạng thái Đã huỷ, không nằm trong pipeline đang chạy. Tiền và lịch giữ nguyên, khôi phục được về “Khách hỏi”.', actions:[{ label:'Huỷ job này', destructive:true, fn:function(){ doCancel(j); } }] });
         }
@@ -2179,6 +2204,7 @@
       if (act === 'ncalsave'){ nativeAutoCal(j, true); return; }
       if (act === 'contract'){ openContract(j); return; }
       if (act === 'sneak'){ markSneak(j); return; }
+      if (act === 'resched'){ openReschedule(j); return; }
       if (act === 'proof'){ markProofSent(j); return; }
       if (act === 'selected'){ markSelected(j); return; }
       if (act === 'mail' && typeof openComposer === 'function'){ openComposer(id); return; }
@@ -2450,7 +2476,6 @@
           if (j.cancelled || j.holdAuto) return;
           var to = null;
           if (j.stage === 'Khách hỏi' && jobDep(j) > 0) to = 'Đã chốt';
-          else if (j.stage === 'Đã chốt' && jobDep(j) > 0 && shootPassed(j)) to = 'Đã chụp';
           else if (j.stage === 'Đã giao' && +j.price > 0 && jobOwe(j) === 0) to = 'Xong';
           if (to){ j.stage = to; j.stageSince = dstr(0); moved.push({ j:j, to:to }); }
         });
@@ -2462,12 +2487,57 @@
             moved.forEach(function(m){ if (m.to === 'Xong') celebrate('Xong job ' + m.j.client + ' rồi!', 'party'); });
           }, 300);
         }
+        /* v2.7b (Việt: "trước khi sang Đã chụp xác nhận được không — trời xấu muốn dời lịch"):
+           qua giờ chụp thì HỎI: đã chụp xong / dời lịch / huỷ. Mỗi buổi hỏi tối đa 1 lần mỗi ngày. */
+        var ask = state.jobs.filter(function(j){ return !j.cancelled && j.stage === 'Đã chốt' && shootPassed(j) && j.shotAsked !== dstr(0); })[0];
+        if (ask && !document.querySelector('.sheet.on, .asheet, #authGate, #lockScreen')){ ask.shotAsked = dstr(0); saveLocal(); setTimeout(function(){ askShot(ask); }, 900); return moved.length; }
         var soon = state.jobs.filter(function(j){ return !j.cancelled && j.stage === 'Đã chốt' && !j.prepReminded && j.shootDate && dayDiff(j.shootDate) >= 0 && dayDiff(j.shootDate) <= AUTO_SOON_DAYS && jobPrep(j).some(function(x){ return !prepDone(j)[x]; }); })[0];
         if (soon && !document.querySelector('.sheet.on, .asheet')){ soon.prepReminded = true; saveLocal(); setTimeout(function(){ remindPrep(soon); }, 1200); }
       } finally { _flowBusy = false; }
       return moved.length;
     }
     function autoAdvanceSoon(){ return autoFlow(); } /* tên cũ */
+    function shootWhen(j){ return j.shootDate ? fmtRel(j.shootDate) + (j.shootTime ? ' lúc ' + j.shootTime : '') : 'chưa có ngày'; }
+    function askShot(j){
+      actionSheet({ title:'Buổi chụp ' + j.client + ' đã diễn ra chưa?', msg:'Lịch hẹn: ' + shootWhen(j) + (j.location ? ' ở ' + j.location : '') + '. Xác nhận để app chuyển sang bước tiếp.', actions:[
+        { label:'Đã chụp xong', fn:function(){ setStage(j, 'Đã chụp'); } },
+        { label:'Dời lịch (trời xấu, khách bận, ốm…)', fn:function(){ openReschedule(j); } },
+        { label:'Khách huỷ buổi chụp', destructive:true, fn:function(){ jobAction('cancel', j.id); } } ]});
+    }
+    /* Dời lịch: đổi ngày / giờ / địa điểm, lịch + nhắc tự cập nhật, chép sẵn tin báo khách. */
+    /* v2.7b (Việt): đủ các lý do hay gặp — mỗi lý do một câu báo khách cho tự nhiên. */
+    var RESCHED_REASONS = [
+      ['Mưa bão / thời tiết xấu', 'thời tiết hôm đó không ủng hộ (mưa bão), để ảnh đẹp nhất'],
+      ['Tắc đường / đến muộn', 'đường tắc quá, để không vội vàng ảnh hưởng ảnh'],
+      ['Khách bị ốm', 'bạn đang không khoẻ, mình dời để bạn nghỉ ngơi cho khoẻ hẳn'],
+      ['Mình bị ốm', 'mình bị ốm đột xuất, xin lỗi bạn nhiều'],
+      ['Khách bận việc', 'mình dời theo lịch bận của bạn'],
+      ['Mình bận việc', 'mình có việc đột xuất, xin lỗi bạn nhiều'],
+      ['Lý do khác', 'mình cần đổi lịch một chút']];
+    function openReschedule(j){
+      var body = '<form id="rsForm" autocomplete="off"><p class="sec-f" style="margin-top:0;">Lịch cũ: ' + esc(shootWhen(j)) + (j.location ? ' · ' + esc(j.location) : '') + '</p><div class="list">' +
+        frow('Ngày mới', '<input type="date" name="d" value="' + esc(j.shootDate || '') + '" placeholder="Chọn ngày" />') +
+        frow('Giờ', '<input type="time" name="t" value="' + esc(j.shootTime || '') + '" placeholder="Chọn giờ" />') +
+        frow('Địa điểm', '<input name="loc" value="' + esc(j.location || '') + '" placeholder="Giữ như cũ" />') +
+        frow('Lý do', '<select name="why">' + RESCHED_REASONS.map(function(r, i){ return '<option value="' + i + '">' + esc(r[0]) + '</option>'; }).join('') + '</select>') + '</div>' +
+        '<p class="sec-f">Lưu xong: Google Lịch / Lịch iPhone và nhắc lịch tự đổi theo ngày mới, app chép sẵn tin báo khách.</p></form>';
+      openSheet({ title:'Dời lịch chụp', left:'Huỷ', right:'Lưu', body:body,
+        onRight:function(api){
+          var f = $('#rsForm', api.body), d = f.elements.d.value;
+          if (!d){ toast('Chọn ngày chụp mới nha', 'warn'); return; }
+          var why = RESCHED_REASONS[+f.elements.why.value] || RESCHED_REASONS[RESCHED_REASONS.length - 1], old = shootWhen(j);
+          j.shootDate = d; j.shootTime = f.elements.t.value; if (f.elements.loc.value.trim()) j.location = f.elements.loc.value.trim();
+          j.shotAsked = ''; j.prepReminded = false; j.holdAuto = false;
+          j.reschedules = (j.reschedules || 0) + 1;
+          if (j.stage !== 'Đã chốt' && j.stage !== 'Khách hỏi'){ j.stage = jobDep(j) > 0 ? 'Đã chốt' : 'Khách hỏi'; j.stageSince = dstr(0); }
+          saveLocal(); api.close(); renderAll(); refreshJobSheet();
+          scheduleJobReminders(j); if (typeof gAutoCal === 'function') gAutoCal(j);
+          j.lastReschedWhy = why[0];
+          var msg = callName(j.client) + ' ơi, ' + why[1] +
+            ', nên lịch chụp ' + old + ' dời sang ' + shootWhen(j) + (j.location ? ' ở ' + j.location : '') + ' nha. Cọc giữ nguyên. Bạn thấy ổn không?';
+          setTimeout(function(){ actionSheet({ title:'Đã dời lịch sang ' + shootWhen(j), msg:msg, actions:[{ label:'Chép tin báo khách', fn:function(){ copyText(msg, 'Đã chép — dán gửi khách'); } }] }); }, 450);
+        } });
+    }
     function markSneak(j){ j.sneakSent = true; saveLocal(); copyText(chatMsg('sneak', j), 'Đã chép — dán vào Zalo / Messenger, kèm 10–30 tấm ảnh'); refreshJobSheet(); }
     function markProofSent(j){
       j.proofSentAt = dstr(0); if (j.stage === 'Đã chụp'){ j.stage = 'Đang làm ảnh'; j.stageSince = dstr(0); j.holdAuto = false; }
@@ -3707,10 +3777,11 @@
         money('retouch', 'Retouch / ảnh', c.retouch) + money('album', 'Album', c.album) + '</div>';
       h += '<p class="sec-s">Cọc &amp; giao ảnh</p><div class="list">' +
         frow('Cọc trước (%)', '<input data-cfg="depositPct" data-num="1" type="number" min="0" max="100" inputmode="numeric" value="' + esc(c.depositPct) + '" />') +
+        frow('Khách huỷ sát ngày không hoàn cọc (trong … ngày)', '<input data-cfg="cancelLockDays" data-num="1" type="number" min="0" max="60" inputmode="numeric" value="' + esc(c.cancelLockDays) + '" />') +
         frow('Gửi link chọn ảnh sau chụp (ngày)', '<input data-cfg="proofDays" data-num="1" type="number" min="0" max="60" inputmode="numeric" value="' + esc(c.proofDays) + '" />') +
         frow('Nhắc khách chọn sau (ngày)', '<input data-cfg="selectRemindDays" data-num="1" type="number" min="1" max="60" inputmode="numeric" value="' + esc(c.selectRemindDays) + '" />') +
         frow('Giao ảnh sau khi khách chọn (ngày)', '<input data-cfg="deliverDays" data-num="1" type="number" min="0" max="365" inputmode="numeric" value="' + esc(c.deliverDays) + '" />') + '</div>' +
-        '<p class="sec-f">Như studio chuyên nghiệp: hạn giao ảnh tính từ ngày khách gửi lại ảnh đã chọn (khách chọn chậm không tính là bạn trễ). Buổi giao trọn bộ thì tính từ ngày chụp.</p>';
+        '<p class="sec-f">Khách huỷ sát ngày chụp thì mặc định không hoàn cọc (vẫn chọn hoàn được nếu muốn). Như studio chuyên nghiệp: hạn giao ảnh tính từ ngày khách gửi lại ảnh đã chọn (khách chọn chậm không tính là bạn trễ). Buổi giao trọn bộ thì tính từ ngày chụp.</p>';
 
       h += '<p class="sec-s">Chuẩn bị đồ</p><div class="list"><button type="button" class="row" id="cfgPrep"><span class="ic bg-orange">' + I('list') + '</span><span class="txt"><span class="t1" style="display:block;">Danh sách đồ mẫu</span><span class="t2" style="display:block;">Theo từng loại chụp — buổi chụp mới tự lấy</span></span>' + chevSvg() + '</button></div>';
       h += '<p class="sec-s">Thiết bị &amp; khấu hao</p><div class="list">' + c.equipment.map(function(e){
