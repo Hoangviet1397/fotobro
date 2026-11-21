@@ -3164,13 +3164,14 @@ async function loadDom(beforeParse) {
     await closeSheet();
     t('44-12: source không còn mục Chuẩn bị đồ trong Cài đặt', !html.includes('<p class="sec-s">Chuẩn bị đồ</p>'));
 
-    /* --- (K) Mục 13: tagline thắng specialty, lưu bền --- */
+    /* --- (K) Mục 13: chỉ hiện tagline người dùng đặt, trống thì không ghi (quyết Việt 20:43) --- */
     const { win: W44b, doc: D44b } = await loadDom();
     DOC = D44b;
     const mk44b = (client, type) => { const j = { id: W44b.nid(), client, type, medium: 'Digital', stage: 'Khách hỏi', stageSince: W44b.dstr(0), shootDate: W44b.dstr(3), shootTime: '09:00', location: 'Studio', deadline: '', price: 2000000, phone: '', email: '', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false }; W44b.state.jobs.unshift(j); return j; };
     mk44b('Khách Couple 1', 'Couple'); mk44b('Khách Couple 2', 'Couple');
     W44b.state.cfg.name = 'Xèo'; W44b.state.cfg.studio = 'Xèo nọng'; W44b.saveLocal(); W44b.renderHome();
-    t('44-13: chưa sửa giới thiệu -> thẻ hiện chuyên Couple (auto)', D44b.querySelector('#view-home .idc-sub').textContent.includes('chuyên Couple'));
+    t('44-13: chưa đặt giới thiệu -> thẻ KHÔNG hiện chuyên Couple', !D44b.querySelector('#view-home .idc-sub').textContent.includes('chuyên Couple'));
+    t('44-13: danh thiếp chia sẻ KHÔNG có chuyên Couple tự tính', !W44b.cardText().includes('chuyên Couple'));
     W44b.openSettings(); await sleep(150);
     st44 = [...D44b.querySelectorAll('.sheet .sheet-body')].pop();
     const tagInp = st44.querySelector('input[data-cfg="tagline"]');

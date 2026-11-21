@@ -108,6 +108,13 @@ Test: 1121/1121 sau fixer (xem mục Fixer bên dưới; trước fixer 1130/113
     đẩy qua web UI (push-files không nhận binary). File tối lỗi cũ đã
     sao lưu ở `~/workspace/fotofix-8items/splash14/dark-buggy-backup.png`.
 
+### Giới thiệu studio — chỉ hiện chữ người dùng đặt (quyết Việt 21/11/2026, 20:43)
+
+- Ô Giới thiệu trong Cài đặt: người dùng đặt gì thì thẻ Hôm nay và danh
+  thiếp chia sẻ ghi đúng chữ đó; không đặt thì không ghi gì — bỏ hẳn dòng
+  tự tính "chuyên Couple" (gỡ hàm `specialty()`, cả ở thẻ Hôm nay lẫn
+  `cardText()`).
+
 ### Fixer sau review 10 agent (21/11/2026, 20:25) — gỡ nốt phần sót, không đổi hành vi đã chốt
 
 - **Mục 1 — gỡ hẳn bảng giá cố định còn sót.** Xóa `DEFAULT_CFG.prices` /

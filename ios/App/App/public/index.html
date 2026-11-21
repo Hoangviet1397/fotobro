@@ -2629,11 +2629,6 @@ html[data-decor="m4"] #mascotTagB{ display:block; }
        chuyên chụp gì (tự suy ra từ job), số buổi năm nay, mạng xã hội, lời
        chào nói đúng lịch của họ, gửi danh thiếp cho khách. */
     function monogram(){ var w = String(myStudio() || myName() || 'FotoBro').replace(/\b(studio|photography|photo|media)\b/ig, '').trim().split(/\s+/).filter(Boolean); return ((w[0] || 'F').charAt(0) + (w[1] ? w[1].charAt(0) : '')).toUpperCase(); }
-    function specialty(){
-      var cnt = {}; state.jobs.forEach(function(j){ if (!j.cancelled) cnt[j.type] = (cnt[j.type] || 0) + 1; });
-      var top = Object.keys(cnt).filter(function(t){ return t !== 'Khác'; }).sort(function(a, b){ return cnt[b] - cnt[a]; }).slice(0, 2);
-      return state.jobs.length >= 2 && top.length ? 'chuyên ' + top.join(' & ') : '';
-    }
     function yearStats(){
       var y = dstr(0).slice(0, 4), live = state.jobs.filter(function(j){ return !j.cancelled; });
       var shoots = live.filter(function(j){ return (j.shootDate || '').slice(0, 4) === y; }).length;
@@ -2658,7 +2653,7 @@ html[data-decor="m4"] #mascotTagB{ display:block; }
     }
     function cardText(){
       var c = state.cfg, l = ['📷 ' + (myStudio() || myName() || 'Studio')];
-      if (myName()) l.push('Nhiếp ảnh gia ' + myName() + (specialty() ? ' — ' + specialty() : ''));
+      if (myName()) l.push('Nhiếp ảnh gia ' + myName());
       if (c.tagline) l.push(c.tagline);
       if (c.phone) l.push('Điện thoại / Zalo: ' + c.phone);
       if (c.email) l.push('Email: ' + c.email);
@@ -2673,7 +2668,7 @@ html[data-decor="m4"] #mascotTagB{ display:block; }
         $('#idcSetup').addEventListener('click', function(){ openSetup(true); });
         return;
       }
-      var st = yearStats(), cover = idCardCover(), sp = specialty();
+      var st = yearStats(), cover = idCardCover();
       var av = c.avatar ? '<img class="idc-av" src="' + esc(c.avatar) + '" alt="" referrerpolicy="no-referrer" onerror="this.outerHTML=\'<span class=&quot;idc-av mono&quot;>' + esc(monogram()) + '</span>\'" />'
         : (c.logo ? '<img class="idc-av" src="' + esc(c.logo) + '" alt="" />' : '<span class="idc-av mono">' + esc(monogram()) + '</span>');
       var hs = (typeof mySocials === 'function' ? mySocials() : []).map(function(s){ var h = s.k === 'instagram' ? 'Instagram @' + c.instagram : (s.k === 'threads' ? 'Threads @' + c.threads : s.label); return '<a href="' + esc(s.url) + '" target="_blank" rel="noopener" class="idc-h idc-' + s.k + '">' + esc(h) + '</a>'; }).join('');
@@ -2681,7 +2676,7 @@ html[data-decor="m4"] #mascotTagB{ display:block; }
         '<div class="idc-cover' + (cover ? '' : ' plain') + '"' + (cover ? ' style="background-image:url(\'' + esc(cover) + '\')"' : '') + '><span class="idc-mono-bg">' + (cover ? '' : esc(monogram())) + '</span></div>' +
         '<div class="idc-body">' + av +
           '<div class="idc-name">' + esc(myStudio() || myName()) + '</div>' +
-          '<div class="idc-sub">' + esc([myStudio() && myName() ? 'Nhiếp ảnh gia ' + myName() : '', c.tagline || sp].filter(Boolean).join(' · ') || 'Studio ảnh') + '</div>' +
+          '<div class="idc-sub">' + esc([myStudio() && myName() ? 'Nhiếp ảnh gia ' + myName() : '', c.tagline].filter(Boolean).join(' · ') || 'Studio ảnh') + '</div>' +
           (hs ? '<div class="idc-hs">' + hs + '</div>' : '<button type="button" class="link idc-add" id="idcSoc">+ Thêm Instagram, Threads, Facebook</button>') +
           '<div class="idc-stats"><span><b>' + st.shoots + '</b>buổi chụp ' + st.y + '</span><span><b>' + st.clients + '</b>khách</span><span><b>' + st.days + '</b>ngày cùng FotoBro</span></div>' +
           '<div class="idc-act"><button type="button" class="btn tint sm" id="idcShare">' + I('share') + 'Danh thiếp</button><button type="button" class="btn gray sm" id="idcEdit">Sửa hồ sơ</button></div>' +
