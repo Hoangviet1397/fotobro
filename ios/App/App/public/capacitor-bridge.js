@@ -140,14 +140,29 @@
   }
   window.__trolyxeoCancelReminder = cancelReminder;
 
+  /* v2.6 (Việt): tổng kết mỗi ngày đẩy về thông báo điện thoại. index.html
+     tính sẵn nội dung 7 ngày tới (list [{day, title, body, at}]); mỗi lần
+     mở app / đổi dữ liệu thì huỷ và đặt lại. list rỗng = tắt. */
+  window.__fotobroScheduleDaily = async function (list) {
+    if (!LN) return false;
+    try {
+      var ids = []; for (var i = 0; i < 8; i++) ids.push({ id: notifId('daily', i) });
+      await LN.cancel({ notifications: ids });
+      if (!list || !list.length) return true;
+      var perm = await LN.requestPermissions();
+      if (!perm || perm.display !== 'granted') return false;
+      var notes = list.slice(0, 8).map(function (n, i) {
+        return { id: notifId('daily', i), title: String(n.title || 'FotoBro'), body: String(n.body || '').slice(0, 400), schedule: { at: new Date(n.at) } };
+      }).filter(function (n) { return n.schedule.at.getTime() > Date.now() + 5000; });
+      if (notes.length) await LN.schedule({ notifications: notes });
+      return true;
+    } catch (e) { return false; }
+  };
+
   /* ---------- 3. Haptics: rung nhẹ khi chạm (tôn trọng UX 10 giây) ---------- */
   var Haptics = P.Haptics;
-  if (Haptics && Haptics.impact) {
-    document.addEventListener('click', function (ev) {
-      var t = ev.target && ev.target.closest ? ev.target.closest('button') : null;
-      if (t) { try { Haptics.impact({ style: 'LIGHT' }); } catch (e) {} }
-    }, true);
-  }
+  /* v2.8: KHÔNG rung ở mọi nút nữa — index.html tự rung đúng lúc theo chuẩn Apple
+     (chọn / va chạm / kết quả), xem haptic() trong index.html. */
 
   /* ---------- 4. Chia sẻ hệ thống (Share sheet iOS) ---------- */
   var Share = P.Share;
@@ -213,6 +228,26 @@
   window.__fotobroAppleAvailable = function () {
     return !!(P.AppleSignIn && P.AppleSignIn.signIn);
   };
+
+  /* ---------- 7b. Đăng nhập Facebook (v2.6) ----------
+     Plugin @capacitor-community/facebook-login 8.1.0 (jsName "FacebookLogin"),
+     chỉ có khi đã chạy scripts/enable-facebook.js với App ID thật (thiếu
+     App ID mà gắn SDK thì app văng lúc mở — nên mặc định KHÔNG có plugin).
+     iOS dùng Limited Login: trả về tên, email + mã OIDC (JWT) có ảnh đại
+     diện; không cần máy chủ, không theo dõi người dùng. Huỷ → trả null. */
+  window.__fotobroFbAvailable = function () {
+    return !!(P.FacebookLogin && P.FacebookLogin.login);
+  };
+  window.__fotobroFbLogin = async function () {
+    if (!P.FacebookLogin) throw new Error('fb-unavailable');
+    var nonce = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random();
+    var r = await P.FacebookLogin.login({ permissions: ['public_profile', 'email'], tracking: 'limited', nonce: nonce });
+    var t = r && r.accessToken; if (!t || !t.token) return null;
+    var claims = {};
+    try { var p = t.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'); claims = JSON.parse(decodeURIComponent(escape(atob(p)))); } catch (e) {}
+    return { id: t.userId || claims.sub || null, name: t.name || claims.name || '', email: t.email || claims.email || '', picture: claims.picture || '' };
+  };
+  window.__fotobroFbLogout = async function () { try { if (P.FacebookLogin) await P.FacebookLogin.logout(); } catch (e) {} };
 
   /* ---------- 8. Sinh trắc native (v2.2) ---------- */
   // Plugin @capgo/capacitor-native-biometric 8.9.3 — jsName "NativeBiometric".

@@ -161,12 +161,8 @@
 
   /* ---------- 3. Haptics: rung nhẹ khi chạm (tôn trọng UX 10 giây) ---------- */
   var Haptics = P.Haptics;
-  if (Haptics && Haptics.impact) {
-    document.addEventListener('click', function (ev) {
-      var t = ev.target && ev.target.closest ? ev.target.closest('button') : null;
-      if (t) { try { Haptics.impact({ style: 'LIGHT' }); } catch (e) {} }
-    }, true);
-  }
+  /* v2.8: KHÔNG rung ở mọi nút nữa — index.html tự rung đúng lúc theo chuẩn Apple
+     (chọn / va chạm / kết quả), xem haptic() trong index.html. */
 
   /* ---------- 4. Chia sẻ hệ thống (Share sheet iOS) ---------- */
   var Share = P.Share;

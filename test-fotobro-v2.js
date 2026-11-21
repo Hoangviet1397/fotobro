@@ -56,9 +56,9 @@ async function loadDom(beforeParse) {
   eq('APP_VERSION 2.3', W.APP_VERSION, '2.3');
   eq('storage key giữ troLyXeo.v1', W.LS_KEY, 'troLyXeo.v1');
   // Phương án A (20/11/2026): 5 ô = 4 màn (home, jobs, money, depts/Thêm) + nút Ghi nhanh ở giữa
-  t('đủ 5 ô thanh tab (4 màn + nút Ghi)', doc.querySelectorAll('.tabbar button').length === 5 &&
+  t('v2.8: thanh dưới 4 tab, bỏ nút + Ghi (thêm mới ở góc trên)', doc.querySelectorAll('.tabbar button').length === 4 &&
     [...doc.querySelectorAll('.tabbar button[data-view]')].map(b => b.getAttribute('data-view')).join(',') === 'home,jobs,money,depts' &&
-    !!doc.querySelector('.tabbar #tabAdd'),
+    !doc.querySelector('.tabbar #tabAdd'),
     [...doc.querySelectorAll('.tabbar button[data-view]')].map(b => b.getAttribute('data-view')).join(','));
   t('source chứa fotobro-backup-', html.includes('fotobro-backup-'));
   t('source không chứa fotobro-sao-luu.json', !html.includes('fotobro-sao-luu.json'));
@@ -114,13 +114,12 @@ async function loadDom(beforeParse) {
   W.state.cfg.name = ''; W.state.cfg.studio = ''; W.state.cfg.instagram = '';
   W.renderHome();
   eq('chưa điền tên: lời chào là bạn', doc.querySelector('#view-home .lt h1 em').textContent, 'bạn');
-  t('chưa điền tên: footInfo là FotoBro', doc.querySelector('#footInfo').textContent.includes('FotoBro'),
-    doc.querySelector('#footInfo').textContent);
+  t('v2.7b: không còn chân trang / ảnh trang trí / câu hôm nay', !doc.querySelector('#footInfo') && !doc.querySelector('#heroLink') && !doc.querySelector('#quoteCard'));
   t('chưa điền tên: greetLine không có Sadako', !doc.querySelector('#greetLine').textContent.includes('Sadako'));
   W.state.cfg.name = 'Lan'; W.state.cfg.studio = 'Lan Studio'; W.state.cfg.instagram = 'lanphoto';
   W.renderHome();
   eq('điền tên Lan: lời chào là Lan', doc.querySelector('#view-home .lt h1 em').textContent, 'Lan');
-  t('điền tên: footInfo có Lan Studio', doc.querySelector('#footInfo').textContent.includes('Lan Studio'));
+  t('điền tên: thẻ studio có Lan Studio', !!doc.querySelector('.idc-name') && doc.querySelector('.idc-name').textContent.includes('Lan Studio'));
   const job0 = { client: 'Mai', type: 'Wedding', medium: 'Film', shootDate: '2026-11-20', shootTime: '08:00', location: 'Đà Lạt', deadline: '', price: 20000000 };
   t('msgFor dùng tên Lan + Lan Studio', W.msgFor(job0).includes('Lan') && W.msgFor(job0).includes('Lan Studio'), W.msgFor(job0).slice(0, 80));
   t('msgFor ghi rõ Wedding — Film', W.msgFor(job0).includes('Wedding — Film'));
@@ -137,8 +136,8 @@ async function loadDom(beforeParse) {
   t('body không chứa "Sadako"', !visible.includes('Sadako'));
   t('body không chứa "Trợ lý Xèo"', !visible.includes('Trợ lý Xèo'));
   t('body có "FotoBro"', visible.includes('FotoBro'), 'footer/version');
-  t('6 phòng ban còn đủ Sen/Nắng/Mây/Lúa/Trăng/Đèn',
-    ['Sen', 'Nắng', 'Mây', 'Lúa', 'Trăng', 'Đèn'].every(s => visible.includes(s)));
+  W.renderDepts();
+  t('v2.7b: 6 phòng tên chuyên nghiệp, không còn "bạn Sen/Mây…"', ['Khách hàng & Tư vấn','Lịch chụp & Chuẩn bị','Hậu kỳ & Giao ảnh','Tài chính','Marketing & Đánh giá','Lưu trữ & Thiết bị'].every(s => doc.body.textContent.includes(s)) && !/bạn (Sen|Nắng|Mây|Lúa|Trăng|Đèn)/.test(doc.body.textContent));
 
   console.log('\n[6] Sổ trống + cleanData job cũ');
   eq('sổ trống: 0 job mẫu', W.state.jobs.length, 0);
@@ -1568,7 +1567,7 @@ async function loadDom(beforeParse) {
     console.log('\n[3] Tách file > 25 MB (ép ngưỡng xuống để test nhánh tách)');
     W.BACKUP_SPLIT_MB = 0.000001; // ép ngưỡng ~10 byte để chắc chắn tách
     a.anchorClicks.length = 0;
-    doc.querySelector('#exportBtn').click();
+    W.downloadBackup(); /* v2.7b: nút sao lưu chỉ còn trong Cài đặt — gọi thẳng hàm */
     await sleep(1000);
     eq('tách: tải đúng 2 file', a.anchorClicks.length, 2, JSON.stringify(a.anchorClicks));
     const dlPhotos = a.anchorClicks[0], dlMain = a.anchorClicks[1];
@@ -1669,7 +1668,7 @@ async function loadDom(beforeParse) {
     const st = sheets[sheets.length - 1];
     const pr = st.querySelector('#privacyRow');
     t('Cài đặt có hàng Quyền riêng tư', !!pr);
-    t('hàng Quyền riêng tư ghi đúng nội dung', !!pr && pr.textContent.includes('Quyền riêng tư') && pr.textContent.includes('không có máy chủ riêng'));
+    t('hàng Quyền riêng tư ghi đúng nội dung', !!pr && pr.textContent.includes('Quyền riêng tư')); /* v2.7b: bỏ dòng giải thích dưới nút */
     e.openedUrls.length = 0;
     pr.click();
     await sleep(50);
@@ -2227,12 +2226,11 @@ async function loadDom(beforeParse) {
   // [35f] Mục 6 — hàng Đăng nhập trên Hôm nay + reset authAsked khi ngắt kết nối
   const g6 = await loadDom35();
   const W6 = g6.win, doc6 = g6.doc;
-  t('6: chưa có tài khoản -> Hôm nay hiện hàng Đăng nhập', !doc6.querySelector('#homeLoginRow').classList.contains('hidden'));
+  t('v2.7b: Hôm nay không còn hàng Đăng nhập / Hỏi FotoBro', !doc6.querySelector('#homeLoginRow') && !doc6.querySelector('#homeAsk'));
   doc6.querySelector('#agSkip').click();
   await sleep(700);
-  t('6: sau Dùng thử hàng Đăng nhập vẫn còn', !doc6.querySelector('#homeLoginRow').classList.contains('hidden'));
-  doc6.querySelector('#homeLoginRow').click();
-  t('6: bấm hàng Đăng nhập -> cổng mở lại', !!doc6.querySelector('#authGate'));
+  doc6.querySelector('#sampleUseReal').click(); await sleep(100);
+  t('6: dải Demo "Đăng nhập để dùng thật" -> cổng mở lại', !!doc6.querySelector('#authGate'));
   W6.state.cfg.apple = { user: 'test-user-123', name: 'Test', email: '', at: Date.now() };
   W6.state.cfg.authAsked = true; W6.saveLocal();
   W6.aDisconnect();
@@ -2348,7 +2346,7 @@ async function loadDom(beforeParse) {
   t('14: cổng vẫn giữ ý dữ liệu ở trên máy', !!note14 && note14.textContent.includes('trên máy bạn'));
   const skip14 = doc14.querySelector('#agSkip');
   t('15: nút Dùng thử là nút phụ gray rõ ràng, không còn chữ đỏ plain', !!skip14 && skip14.classList.contains('gray') && !skip14.classList.contains('plain'));
-  t('16: cổng có chú thích Google mở trình duyệt', doc14.body.textContent.includes('mở trình duyệt để đăng nhập Google'));
+  t('v2.7b: cổng không còn chữ giải thích thừa', !doc14.body.textContent.includes('mở trình duyệt để đăng nhập Google'));
 
   // [35o] Mục 17 — thống nhất "Đăng nhập bằng Google" (nguồn + Cài đặt)
   t('17: nguồn không còn "Kết nối Google" (chỗ hành động)', !html.includes('Kết nối Google'));
@@ -2384,13 +2382,13 @@ async function loadDom(beforeParse) {
   const g19 = await loadDom35();
   const W19 = g19.win, doc19 = g19.doc;
   const navBtns19 = doc19.querySelectorAll('.nav-btn');
-  t('19: nav Hôm nay chỉ có 1 nút (Cài đặt)', navBtns19.length === 1, String(navBtns19.length));
-  const navSet19 = doc19.querySelector('.nav-btn.txt');
-  t('19: nút Cài đặt có chữ bên cạnh icon', !!navSet19 && navSet19.textContent.includes('Cài đặt'));
+  t('19 (v2.8): nav Hôm nay có 2 nút: + Ghi và Cài đặt', navBtns19.length === 2 && navBtns19[0].classList.contains('add') && navBtns19[0].textContent.includes('Ghi'), String(navBtns19.length));
+  const navSet19 = doc19.querySelector('.nav-btn:not(.add)');
+  t('19 (v2.8b): nút Cài đặt tròn kiểu Claude, có aria-label', !!navSet19 && navSet19.getAttribute('aria-label') === 'Cài đặt' && !!navSet19.querySelector('svg'));
   W19.go('jobs');
   await sleep(100);
   const navJob19 = doc19.querySelector('.nav-btn');
-  t('19: nút ở màn Buổi chụp vẫn icon-only (không chữ)', !!navJob19 && !navJob19.classList.contains('txt') && navJob19.textContent.trim() === '');
+  t('19 (v2.8): màn Buổi chụp có nút "+ Buổi chụp" có chữ', !!navJob19 && navJob19.classList.contains('add') && navJob19.textContent.includes('Buổi chụp'));
 
   // [35r] Mục 20 — nút lưu form job dính ở header (đã có sẵn — kiểm chứng)
   const g20 = await loadDom35();
@@ -2486,7 +2484,7 @@ async function loadDom(beforeParse) {
   const sebQ2 = docQ2.querySelector('#setExportBtn');
   if (sebQ2) sebQ2.click();
   t('Q2: bấm Tải bản sao lưu trong Cài đặt -> gọi cùng hàm downloadBackup', dlCalled);
-  t('Q2: nút sao lưu ở tab Thêm vẫn còn (không dời hẳn)', !!docQ2.querySelector('#exportBtn'));
+  t('v2.7b: tab Thêm KHÔNG lặp nút sao lưu / cài đặt (chỉ ở Cài đặt)', !docQ2.querySelector('#exportBtn') && !docQ2.querySelector('#settingsRow'));
   t('Q2: hàm dùng chung tồn tại (downloadBackup/restoreBackupFile/clearDataFlow)', typeof WQ2.downloadBackup === 'function' && typeof WQ2.restoreBackupFile === 'function' && typeof WQ2.clearDataFlow === 'function');
   await closeSheet35(docQ2);
 
@@ -2513,8 +2511,7 @@ async function loadDom(beforeParse) {
   t('36: trang tải không lỗi jsdom', g36.errors.length === 0, g36.errors[0] || '');
   // (a) hàng Hỏi FotoBro + chip + bong bóng chào: không còn 'Ai chưa trả tiền?'
   const homeAsk36 = doc36.querySelector('#homeAsk .t2');
-  t('36a: hàng Hỏi FotoBro gợi ý "Tuần này chụp gì?"', !!homeAsk36 && homeAsk36.textContent.includes('Tuần này chụp gì?'), homeAsk36 ? homeAsk36.textContent : 'không có #homeAsk .t2');
-  t('36a: hàng Hỏi FotoBro không còn "Ai chưa trả tiền?"', !!homeAsk36 && !homeAsk36.textContent.includes('Ai chưa trả tiền?'));
+  t('v2.7b: hàng Hỏi FotoBro không còn dòng ví dụ bên dưới', !homeAsk36);
   W36.go('ask'); await sleep(100);
   const chips36 = [...doc36.querySelectorAll('#askChips .pill')].map(c => c.textContent);
   t('36a: chip Trợ lý không còn "Ai chưa trả tiền?"', chips36.length > 0 && !chips36.some(c => c.includes('Ai chưa trả tiền?')), chips36.join(' | '));
@@ -2681,6 +2678,8 @@ async function loadDom(beforeParse) {
     W.jobAction('cancel', fr.id); await sleep(100);
     t('38: còn xa ngày -> hỏi huỷ bình thường', [...d.querySelectorAll('.asheet')].some(x => x.textContent.includes('Còn Xa')));
     d.querySelectorAll('.asheet .cancel').forEach(x => x.click()); await sleep(300); }
+  t('v2.7b: tab thứ 4 tên Phòng ban', d.querySelector('.tabbar button[data-view="depts"]').textContent.trim() === 'Phòng ban');
+  W.renderDepts(); t('v2.7b: tab Phòng ban có ô Hỏi FotoBro + 6 thẻ phòng', !!d.querySelector('#askBoxForm') && d.querySelectorAll('.dtile').length === 6);
   t('38: không còn nút Lùi về', !W.jobDetailHTML(shot).includes('data-act="prev"'));
   { const st0 = shot.stage; W.jumpToStage(shot.id, 1); eq('38: chạm số bước lùi -> hỏi lại, chưa lùi ngay', shot.stage, st0);
     const lb = [...d.querySelectorAll('.asheet [data-a="0"]')].pop(); t('38: hộp hỏi lùi có nút xác nhận', !!lb && lb.textContent.includes('Lùi về')); if (lb) lb.click(); await sleep(100); eq('38: xác nhận thì lùi', shot.stage, 'Đã chốt'); }
