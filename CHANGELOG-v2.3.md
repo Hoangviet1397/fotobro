@@ -2,6 +2,25 @@
 
 Ngày: 20/11/2026. Từ v2.2 (build 2.2 (13) đã lên TestFlight 17:07 20/11).
 
+## Liquid Glass C — Kính Nhuộm (21/11/2026, Việt chọn phương án C)
+
+Dựng giao diện Liquid Glass kiểu iOS 26 vào code thật, chỉ đổi CSS trong
+`www/index.html` (mở rộng khối `html[data-glass="1"]` có sẵn). Giữ nguyên phiên
+bản 2.3, giữ nguyên toàn bộ tính năng và hành vi.
+
+- Kính nhuộm đỏ FotoBro `#FA2D48` + 5 pastel v2.8 (sage/peach/sun/sky/lilac),
+  mỗi khu vực một màu kính riêng, blur 22px; nền sau kính là gradient kem ấm +
+  4 vệt màu mờ; có bản tối riêng (chữ trắng kem `#FFF9F2` trên kính nhuộm tối).
+- Tab bar giữ hình dáng nổi v2.8 (14px/34px/64px), đổi chất liệu sang kính nhuộm
+  đỏ nhạt `rgba(250,45,72,.14)` (tối `.30`); nav trên chuyển sang kính.
+- Mock định nghĩa 6 tint; ở app thật gộp tint studio + sky thành 1 màu xanh
+  (gần như giống nhau) để giữ đúng 5 pastel đã chốt.
+- Hiệu năng: backdrop-filter chỉ ở list/tile/card nổi bật, KHÔNG ở từng dòng
+  `.row` trong danh sách dài; có fallback nền đặc khi không hỗ trợ blur.
+- Đệm đáy nội dung đã đủ sẵn (116px) nên hàng cuối không bị tab nổi che.
+- Test: thêm mục [40] (14 test mới); cập nhật 2 test cũ assert màu tab `.92`
+  đã bỏ (giờ assert `--tab-bg` nhuộm đỏ).
+
 ## v2.3b — Fix batch theo 10 báo cáo test v2.2 (20/11/2026)
 
 10 persona test v2.2 trên giả lập (bản snapshot khớp main). Giữ phiên bản 2.3.

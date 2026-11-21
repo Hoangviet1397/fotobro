@@ -1687,8 +1687,10 @@ async function loadDom(beforeParse) {
 
     console.log('\n[F10-2] Tab bar + celebrate (kiểm tra trên source/CSS)');
     t('tabbar dùng nền đặc --bar-strong', /\.tabbar\{[^}]*background:var\(--bar-strong\)/.test(html));
-    t('glass mode: tabbar .92 (sáng)', html.includes('html[data-glass="1"] .tabbar{ background:rgba(255,255,255,.92); }'));
-    t('glass mode: tabbar .92 (tối)', html.includes('html[data-glass="1"] .tabbar{ background:rgba(0,0,0,.92); }'));
+    t('glass C: tabbar nhuộm đỏ sáng --tab-bg .14', html.includes('--tab-bg:rgba(250,45,72,.14)'));
+    t('glass C: tabbar nhuộm đỏ tối --tab-bg .30', html.includes('--tab-bg:rgba(250,45,72,.30)'));
+    t('glass C: tabbar dùng background:var(--tab-bg)', /html\[data-glass="1"\] \.tabbar\{[^}]*background:var\(--tab-bg\) !important/.test(html));
+    t('glass C: tabbar .92 cũ đã bỏ', !html.includes('background:rgba(255,255,255,.92)') && !html.includes('background:rgba(0,0,0,.92)'));
     t('.stk-pop pointer-events:none', /\.stk-pop\{[^}]*pointer-events:none/.test(html));
     t('celebrate tắt sau 1100ms', html.includes('setTimeout(rm, 1100)'));
     t('màn chào: .wl-list .row gọn 44px', html.includes('.wl-list .row{ min-height:44px; padding:8px 16px; }'));
@@ -2726,6 +2728,24 @@ async function loadDom(beforeParse) {
   eq('39: FB điền tên', W.state.cfg.name, 'Việt Nắng');
   eq('39: FB điền ảnh đại diện', W.state.cfg.avatar, 'https://platform-lookaside.fbsbx.com/x.jpg');
   t('39: đăng nhập FB xong thì cổng đóng', !d.querySelector('#authGate') || !d.querySelector('#authGate').classList.contains('on'));
+  }
+
+  console.log('\n[40] Liquid Glass C — Kính Nhuộm (Việt chọn 21/11/2026)');
+  {
+    t('40: token kính C sáng --glass .50', html.includes('--glass:rgba(255,255,255,.50)'));
+    t('40: token kính C tối --glass .09', html.includes('--glass:rgba(255,255,255,.09)'));
+    t('40: 5 tint sáng đủ', ['--tint-sage:rgba(186,219,178,.55)','--tint-peach:rgba(255,203,168,.55)','--tint-sun:rgba(255,231,150,.55)','--tint-sky:rgba(178,216,243,.50)','--tint-lilac:rgba(216,196,240,.52)'].every(s => html.includes(s)));
+    t('40: 5 tint tối đủ', ['--tint-sage:rgba(52,94,52,.55)','--tint-peach:rgba(146,84,40,.55)','--tint-sun:rgba(146,116,30,.55)','--tint-sky:rgba(52,96,138,.55)','--tint-lilac:rgba(96,66,140,.55)'].every(s => html.includes(s)));
+    t('40: nền sau kính có gradient kem + 4 vệt màu', html.includes('linear-gradient(165deg, #FBF6EF 0%, #FAF0E6 55%, #F7EFE3 100%)') && html.includes('linear-gradient(165deg, #1D1712 0%, #171310 55%, #1C1418 100%)'));
+    t('40: ô Thu = sage, ô Còn thiếu = peach', html.includes('.tile[data-tile="thu"]{ background:var(--tint-sage) !important; }') && html.includes('.tile[data-tile="owe"]{ background:var(--tint-peach) !important; }'));
+    t('40: danh thiếp = sky, danh sách job = sky', html.includes('.idc{ background:var(--tint-sky); }') && html.includes('#todayList, html[data-glass="1"] #upcomingList, html[data-glass="1"] #jobList .list{ background:var(--tint-sky) !important; }'));
+    t('40: Tài chính sage/peach/sun, biểu đồ sky, còn thiếu/lời/sổ = lilac', html.includes('.msum-c:nth-child(1){ background:var(--tint-sage) !important; }') && html.includes('.msum-c:nth-child(3){ background:var(--tint-sun) !important; }') && html.includes('#moneyChart{ background:var(--tint-sky) !important; }') && html.includes('#oweList, html[data-glass="1"] #jobProfit, html[data-glass="1"] #txList .list{ background:var(--tint-lilac) !important; }'));
+    t('40: Phòng ban giữ màu riêng dạng kính (color-mix 55%)', html.includes('color-mix(in srgb, var(--kc, var(--k-cream)) 55%, transparent)'));
+    t('40: tabbar blur 22px saturate 170% + viền kính', /html\[data-glass="1"\] \.tabbar\{[^}]*blur\(22px\) saturate\(170%\)/.test(html) && html.includes('border:1px solid var(--glass-border);'));
+    t('40: fallback nền đặc khi không hỗ trợ blur', html.includes('@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px)))'));
+    t('40: bản tối chữ trắng kem trên kính nhuộm', html.includes('color:#FFF9F2 !important;'));
+    t('40: không blur từng dòng .row trong danh sách dài', !/\.row\{[^}]*backdrop-filter/.test(html));
+    t('40: APP_VERSION vẫn 2.3 (không nâng số)', html.includes("var APP_VERSION = '2.3'"));
   }
 
   console.log('\n===== KẾT QUẢ: ' + pass + ' đạt / ' + (pass + fail) + ' =====');

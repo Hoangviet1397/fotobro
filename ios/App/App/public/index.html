@@ -657,9 +657,6 @@
       html[data-glass="1"] .seg button.on{ background:rgba(255,255,255,.9); }
       @media (prefers-color-scheme: dark){ html[data-glass="1"] .seg button.on{ background:rgba(255,255,255,.2); } }
       html[data-glass="1"] .tabbar, html[data-glass="1"] .nav.solid, html[data-glass="1"] .composer{ -webkit-backdrop-filter:blur(28px) saturate(190%); backdrop-filter:blur(28px) saturate(190%); }
-      /* Thanh tab phải đủ đặc để chữ nội dung phía dưới không lộ qua (kính mờ --bar-strong chỉ .78) */
-      html[data-glass="1"] .tabbar{ background:rgba(255,255,255,.92); }
-      @media (prefers-color-scheme: dark){ html[data-glass="1"] .tabbar{ background:rgba(0,0,0,.92); } }
       html[data-glass="1"] .hero, html[data-glass="1"] .moments .shot{ box-shadow:0 12px 30px rgba(60,30,80,.18); }
       /* ---------- Màn khoá Face ID ---------- */
       html.app-locked main, html.app-locked .tabbar, html.app-locked .nav, html.app-locked .welcome, html.app-locked .authgate, html.app-locked .sheet,
@@ -826,6 +823,104 @@
       @media (prefers-color-scheme: dark){ .tabbar button.on{ color:#fff; } }
       /* nút chính to, bo tròn hẳn */
       .btn.fill{ border-radius:999px; }
+      /* ===== Liquid Glass C — Kính Nhuộm (Việt chọn 21/11/2026) =====
+         Mở rộng lớp kính sẵn có (html[data-glass="1"]): kính nhuộm đỏ FotoBro #FA2D48
+         + 5 pastel v2.8 (sage/peach/sun/sky/lilac), mỗi khu vực một màu kính riêng,
+         tab bar nhuộm đỏ nhạt, blur 22px. Mock định nghĩa 6 tint; ở app thật gộp
+         studio+sky thành 1 màu xanh (gần như giống nhau) để giữ đúng 5 pastel đã chốt.
+         Chỉ đổi CSS, không đổi cấu trúc/tính năng. Tắt kính (cfg.glass=false) thì về
+         lại giao diện v2.8 đặc như cũ. */
+      html[data-glass="1"]{
+        --glass:rgba(255,255,255,.50); --glass-edge:rgba(255,255,255,.65);
+        --glass-shadow:inset 0 1px 0 rgba(255,255,255,.55), 0 8px 24px rgba(140,100,50,.09);
+        --glass-solid:#FBF5EC; --tab-bg:rgba(250,45,72,.14);
+        --tint-sage:rgba(186,219,178,.55); --tint-peach:rgba(255,203,168,.55); --tint-sun:rgba(255,231,150,.55);
+        --tint-sky:rgba(178,216,243,.50); --tint-lilac:rgba(216,196,240,.52);
+      }
+      @media (prefers-color-scheme: dark){ html[data-glass="1"]{
+        --glass:rgba(255,255,255,.09); --glass-edge:rgba(255,255,255,.18);
+        --glass-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 8px 24px rgba(0,0,0,.35);
+        --glass-solid:#26201B; --tab-bg:rgba(250,45,72,.30);
+        --tint-sage:rgba(52,94,52,.55); --tint-peach:rgba(146,84,40,.55); --tint-sun:rgba(146,116,30,.55);
+        --tint-sky:rgba(52,96,138,.55); --tint-lilac:rgba(96,66,140,.55);
+      } }
+      /* Nền sau kính: gradient kem ấm + 4 vệt màu mờ (thay 1 vệt đỏ nhạt cũ) */
+      html[data-glass="1"] body::before{
+        background:
+          radial-gradient(28% 22% at 12% 8%, rgba(255,217,168,.55), transparent 70%),
+          radial-gradient(30% 24% at 88% 18%, rgba(255,196,206,.5), transparent 70%),
+          radial-gradient(32% 26% at 20% 78%, rgba(205,232,200,.55), transparent 70%),
+          radial-gradient(30% 24% at 85% 82%, rgba(188,220,245,.5), transparent 70%),
+          linear-gradient(165deg, #FBF6EF 0%, #FAF0E6 55%, #F7EFE3 100%);
+      }
+      @media (prefers-color-scheme: dark){ html[data-glass="1"] body::before{
+        opacity:1;
+        background:
+          radial-gradient(28% 22% at 12% 8%, rgba(110,74,30,.6), transparent 70%),
+          radial-gradient(30% 24% at 88% 18%, rgba(110,36,56,.55), transparent 70%),
+          radial-gradient(32% 26% at 20% 78%, rgba(46,82,48,.55), transparent 70%),
+          radial-gradient(30% 24% at 85% 82%, rgba(39,74,99,.55), transparent 70%),
+          linear-gradient(165deg, #1D1712 0%, #171310 55%, #1C1418 100%);
+      } }
+      /* Kính C: blur 22px saturate 160% (mock) — chỉ ở list/tile/card nổi bật, KHÔNG ở từng dòng trong danh sách dài */
+      html[data-glass="1"] .list, html[data-glass="1"] .tile, html[data-glass="1"] .msum-c, html[data-glass="1"] .dtile{
+        -webkit-backdrop-filter:blur(22px) saturate(160%) !important; backdrop-filter:blur(22px) saturate(160%) !important;
+        box-shadow:var(--glass-shadow); }
+      /* Danh sách trong sheet giữ không blur như cũ (nền sheet đã đặc, blur chỉ tốn GPU) */
+      html[data-glass="1"] .sheet .list, html[data-glass="1"] .sheet .tile{
+        -webkit-backdrop-filter:none !important; backdrop-filter:none !important; }
+      /* Fallback khi trình duyệt không hỗ trợ blur: nền đặc, chữ vẫn đọc được */
+      @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+        html[data-glass="1"] .list, html[data-glass="1"] .tile{ background:var(--glass-solid); }
+        html[data-glass="1"] .tabbar{ background:var(--glass-solid) !important; }
+      }
+      /* --- Nhuộm màu từng khu vực (5 pastel) --- */
+      /* Hôm nay: ô Thu tháng này = sage, ô Khách còn thiếu = peach (mock dùng peach thay coral đặc cũ) */
+      html[data-glass="1"] .tile[data-tile="thu"]{ background:var(--tint-sage) !important; }
+      html[data-glass="1"] .tile[data-tile="owe"]{ background:var(--tint-peach) !important; }
+      /* Thẻ danh thiếp studio = sky (gộp với tint studio của mock, gần như giống hệt) */
+      html[data-glass="1"] .idc{ background:var(--tint-sky); }
+      html[data-glass="1"] .idc-empty{ background:var(--tint-sun) !important; }
+      /* Hôm nay & sắp tới / Buổi chụp: danh sách job = sky */
+      html[data-glass="1"] #todayList, html[data-glass="1"] #upcomingList, html[data-glass="1"] #jobList .list{ background:var(--tint-sky) !important; }
+      html[data-glass="1"] #todayList{ -webkit-backdrop-filter:blur(22px) saturate(160%) !important; backdrop-filter:blur(22px) saturate(160%) !important; }
+      /* Tài chính: 3 khối Thu/Chi/Lời = sage/peach/sun; biểu đồ = sky; còn thiếu + lời theo job + sổ thu chi = lilac */
+      html[data-glass="1"] .msum-c:nth-child(1){ background:var(--tint-sage) !important; }
+      html[data-glass="1"] .msum-c:nth-child(2){ background:var(--tint-peach) !important; }
+      html[data-glass="1"] .msum-c:nth-child(3){ background:var(--tint-sun) !important; }
+      html[data-glass="1"] #moneyChart{ background:var(--tint-sky) !important; }
+      html[data-glass="1"] #oweList, html[data-glass="1"] #jobProfit, html[data-glass="1"] #txList .list{ background:var(--tint-lilac) !important; }
+      /* Phòng ban: mỗi thẻ giữ màu pastel riêng (--kc) nhưng ở dạng kính 55% + blur */
+      html[data-glass="1"] .dtile{ background:color-mix(in srgb, var(--kc, var(--k-cream)) 55%, transparent) !important;
+        border:.5px solid var(--glass-edge); }
+      html[data-glass="1"] .dtile.on{ box-shadow:0 0 0 3px var(--k-ink), var(--glass-shadow); }
+      @media (prefers-color-scheme: dark){ html[data-glass="1"] .dtile.on{ box-shadow:0 0 0 3px #fff, var(--glass-shadow); } }
+      /* --- Tab bar: giữ hình dáng nổi v2.8 (14px/34px/64px), đổi chất liệu sang kính nhuộm đỏ --- */
+      html[data-glass="1"] .tabbar{
+        background:var(--tab-bg) !important;
+        -webkit-backdrop-filter:blur(22px) saturate(170%) !important; backdrop-filter:blur(22px) saturate(170%) !important;
+        border:1px solid var(--glass-border);
+        box-shadow:0 12px 32px rgba(0,0,0,.22), var(--glass-shadow) !important;
+      }
+      html[data-glass="1"] .tabbar button.on{ background:rgba(250,45,72,.16); }
+      @media (prefers-color-scheme: dark){ html[data-glass="1"] .tabbar button.on{ background:rgba(255,255,255,.14); } }
+      /* Nav trên: kính thay cho nền đặc (v2.0-fix giữ đặc đã lỗi thời khi cả app đã là kính) */
+      html[data-glass="1"] .nav.solid{ background:var(--glass);
+        -webkit-backdrop-filter:blur(22px) saturate(160%); backdrop-filter:blur(22px) saturate(160%); }
+      /* Bản tối: chữ mực trên kính nhuộm tối không đọc được -> chữ trắng kem (theo mock C-dark) */
+      @media (prefers-color-scheme: dark){
+        html[data-glass="1"] .tile, html[data-glass="1"] .tile .tl, html[data-glass="1"] .tile .tv{ color:#FFF9F2 !important; }
+        html[data-glass="1"] .tile .tu, html[data-glass="1"] .tile .tx{ color:rgba(255,249,242,.72) !important; }
+        html[data-glass="1"] .msum-c, html[data-glass="1"] .msum-c span, html[data-glass="1"] .msum-c b{ color:#FFF9F2 !important; }
+        html[data-glass="1"] .msum-c .green{ color:#3ED598 !important; }
+        html[data-glass="1"] .msum-c .red{ color:#FF8296 !important; }
+        html[data-glass="1"] .dtile, html[data-glass="1"] .dtile .dt-n, html[data-glass="1"] .dtile .dt-name{ color:#FFF9F2 !important; }
+        html[data-glass="1"] .dtile .dt-sub{ color:rgba(255,249,242,.72) !important; }
+        html[data-glass="1"] .dtile .dt-n.red{ color:#FF8296 !important; }
+        html[data-glass="1"] .dtile .ic{ background:rgba(255,255,255,.18) !important; color:#FFF9F2 !important; }
+        html[data-glass="1"] .dtile .ic svg, html[data-glass="1"] .dtile .dt-n svg{ color:#FFF9F2 !important; }
+        html[data-glass="1"] .idc-empty, html[data-glass="1"] .idc-empty .chev{ color:#FFF9F2 !important; }
+      }
     </style>
       <script src="fotobro-config.js"></script>
   </head>
