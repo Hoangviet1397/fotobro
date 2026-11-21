@@ -921,10 +921,728 @@
         html[data-glass="1"] .dtile .ic svg, html[data-glass="1"] .dtile .dt-n svg{ color:#FFF9F2 !important; }
         html[data-glass="1"] .idc-empty, html[data-glass="1"] .idc-empty .chev{ color:#FFF9F2 !important; }
       }
+/* decor-core.css — w08 · CSS khung hệ theme trang trí FotoBro
+   CHÈN: dán vào khối STYLE chính của www/index.html, ngay trước thẻ đóng STYLE
+   (dòng ~925). Hoặc giữ làm file riêng và <link> từ www/ — coordinator quyết;
+   dán vào <style> là phương án chính (app vốn là 1 file HTML duy nhất).
+   Nguồn: mock fotobro-hoa-tiet-hoa-co-3-bien-the.html (dòng 300–430) +
+   shared/decor-css.css — chép nguyên văn, chỉ đổi selector sang #decorLayer.
+   Theme worker (w01–w07) KHÔNG định nghĩa lại các class/keyframes ở đây:
+   mọi rule riêng của theme phải có tiền tố html[data-decor="<id>"] (§4). */
+
+/* ---------- Khung decor: lớp dưới cùng, không chặn thao tác ---------- */
+#decorLayer{
+  position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden;
+}
+#decorLayer .decor-bg{
+  position:absolute; inset:0; z-index:0;
+  background-size:cover; background-position:center 28%; background-repeat:no-repeat;
+}
+/* Overlay kem mờ như mock .theme-bg::after — để chữ/nút luôn đọc được
+   trên ảnh nền màu nước (mock: rgba(253,247,238,.60/.44/.62)). */
+#decorLayer .decor-bg::after{
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(180deg, rgba(253,247,238,.60), rgba(253,247,238,.44) 42%, rgba(253,247,238,.62));
+}
+#decorLayer .decor-motifs{ position:absolute; inset:0; z-index:1; }
+#decorLayer .decor-slot{ position:absolute; opacity:.85; }
+#decorLayer .decor-slot svg{ display:block; width:100%; height:100%; }
+/* Vị trí 3 slot cố định theo viewport (CONTRACT §3). Mock rải 11 motif theo
+   từng màn; app thật dùng 3 slot cố định để nhất quán mọi màn, không sửa
+   từng hàm render màn. Vị trí là lựa chọn của w08 — theme worker được
+   override từng theme bằng selector html[data-decor="<id>"] .decor-slot[...]. */
+#decorLayer .decor-slot[data-motif="hero"]{
+  top:calc(60px + env(safe-area-inset-top)); right:8px; width:150px; height:98px;
+}
+#decorLayer .decor-slot[data-motif="sprig"]{
+  top:44%; right:6px; width:90px; height:90px;
+}
+#decorLayer .decor-slot[data-motif="empty"]{
+  bottom:calc(var(--tabh, 76px) + 16px + env(safe-area-inset-bottom)); left:10px;
+  width:140px; height:92px;
+}
+/* Lớp trôi: như mock .petals (absolute, overflow hidden, pointer-events none),
+   đáy chừa đúng chiều cao tab bar (var(--tabh): 50px gốc, 76px bản Liquid Glass
+   ở dòng 794) + safe-area để phần tử rơi không chui xuống dưới tab bar. */
+#decorLayer .decor-drift{
+  position:absolute; left:0; right:0; top:0;
+  bottom:calc(var(--tabh, 76px) + 24px + env(safe-area-inset-bottom));
+  z-index:2; overflow:hidden; pointer-events:none;
+}
+
+/* ---------- Stacking: nội dung app nằm TRÊN decor layer ----------
+   Kiểm chứng trên www/index.html (xem NOTES.md § Stacking):
+   .wrap/.view KHÔNG có position/z-index → theo thứ tự vẽ CSS, nội dung
+   in-flow (lớp 5) nằm DƯỚI phần tử fixed z-index:0 (lớp 6) → decor sẽ
+   đè lên chữ nếu không sửa. Một rule duy nhất, KHÔNG đổi layout:
+   main.wrap thành stacking context z-index:1 (theo đúng mẫu của mock:
+   .screen > *:not(.corner-motif){ position:relative; z-index:2 }).
+   .nav (z-40), .tabbar (z-41), .composer (z-39), .sheet (inline z ≥ 61),
+   .hud (200), .welcome/.authgate (300), #lockScreen (500) đã cao hơn
+   decorLayer nên KHÔNG cần chạm. Lưu ý: .composer nằm TRONG main nên
+   z-39 của nó thành cục bộ trong stacking context của main — vẫn trên
+   decorLayer và vẫn dưới .tabbar (z-41, root-level, đứng sau main). */
+main.wrap{ position:relative; z-index:1; }
+
+/* ---------- Chuyển động motif (mock dòng 300–305 + 413–430, nguyên văn) ---------- */
+@keyframes sway { from{ transform:rotate(-1.7deg) translateY(0); } to{ transform:rotate(1.7deg) translateY(-3px); } }
+#decorLayer .sway{ animation:sway 7s ease-in-out infinite alternate; transform-origin:50% 92%; }
+#decorLayer .sway-slow{ animation:sway 10s ease-in-out infinite alternate; transform-origin:50% 92%; }
+@keyframes bob-soft { from{ transform:translateY(0); } to{ transform:translateY(-3px); } }
+#decorLayer .faint-motif{ animation:bob-soft 6.5s ease-in-out infinite alternate; }
+#decorLayer .anim-sway{ transform-box:fill-box; transform-origin:50% 100%; animation:stem-sway 6s ease-in-out infinite alternate; }
+@keyframes stem-sway{ from{ transform:rotate(-2.6deg); } to{ transform:rotate(2.6deg); } }
+#decorLayer .anim-bloom{ transform-box:fill-box; transform-origin:50% 50%; animation:bloom-soft 5.5s ease-in-out infinite alternate; }
+@keyframes bloom-soft{ from{ transform:scale(1); } to{ transform:scale(1.035); } }
+#decorLayer .anim-tremble{ transform-box:fill-box; transform-origin:50% 100%; animation:tremble-soft 5s ease-in-out infinite alternate; }
+@keyframes tremble-soft{ from{ transform:rotate(-1.1deg); } to{ transform:rotate(1.1deg); } }
+#decorLayer .anim-tail{ transform-box:fill-box; transform-origin:100% 50%; animation:tail-wag 1.6s ease-in-out infinite alternate; }
+@keyframes tail-wag{ from{ transform:rotate(-9deg); } to{ transform:rotate(9deg); } }
+#decorLayer .anim-fishbob{ animation:fishbob-in 4.4s ease-in-out infinite alternate; }
+@keyframes fishbob-in{ from{ transform:translateY(-2px) rotate(-1.4deg); } to{ transform:translateY(3px) rotate(1.4deg); } }
+#decorLayer .anim-wave-y{ animation:wave-y-in 4.6s ease-in-out infinite alternate; }
+@keyframes wave-y-in{ from{ transform:translateY(2px); } to{ transform:translateY(-3px); } }
+#decorLayer .anim-mist-x{ animation:mist-x-in 11s ease-in-out infinite alternate; }
+@keyframes mist-x-in{ from{ transform:translateX(-7px); } to{ transform:translateX(7px); } }
+#decorLayer .anim-film-x{ animation:film-x-in 13s ease-in-out infinite alternate; }
+@keyframes film-x-in{ from{ transform:translateX(-4px); } to{ transform:translateX(4px); } }
+#decorLayer .anim-foam{ transform-box:fill-box; transform-origin:50% 50%; animation:foam-pulse 3.6s ease-in-out infinite alternate; }
+@keyframes foam-pulse{ from{ transform:translate(0,0) scale(1); } to{ transform:translate(3px,-2px) scale(1.18); } }
+
+/* ---------- Cơ chế trôi dùng chung (mock dòng 322–358, nguyên văn) ----------
+   Các class này dùng chung cho mọi theme (DRIFTS trong decor-core.js).
+   Theme worker KHÔNG định nghĩa lại — chỉ override vị trí/opacity riêng
+   bằng selector html[data-decor="<id>"]. */
+#decorLayer .petal-fall{
+  position:absolute; top:-34px; display:block; opacity:0;
+  animation-name:petal-fall; animation-timing-function:linear; animation-iteration-count:infinite;
+  will-change:transform, opacity;
+}
+#decorLayer .petal-sway{
+  display:block; width:100%; height:100%;
+  animation-name:petal-sway; animation-timing-function:ease-in-out;
+  animation-iteration-count:infinite; animation-direction:alternate;
+}
+#decorLayer .petal-sway svg{ display:block; }
+@keyframes petal-fall{
+  0%{ transform:translate3d(0, -4%, 0); opacity:0; }
+  10%{ opacity:.6; }
+  42%{ opacity:.55; }
+  74%{ opacity:.4; }
+  100%{ transform:translate3d(0, 790px, 0); opacity:0; }
+}
+@keyframes petal-sway{
+  from{ transform:translateX(-13px) rotate(-26deg); }
+  to{ transform:translateX(13px) rotate(22deg); }
+}
+#decorLayer .drift-fish{ position:absolute; left:0; animation-name:fish-swim; animation-timing-function:linear; animation-iteration-count:infinite; will-change:transform; }
+@keyframes fish-swim{ from{ transform:translateX(-84px); } to{ transform:translateX(440px); } }
+#decorLayer .drift-bob{ display:block; width:100%; height:100%; animation-name:fish-bob; animation-timing-function:ease-in-out; animation-iteration-count:infinite; animation-direction:alternate; }
+@keyframes fish-bob{ from{ transform:translateY(-7px) rotate(-3.4deg); } to{ transform:translateY(8px) rotate(3.4deg); } }
+#decorLayer .drift-bubble{ position:absolute; bottom:-16px; border-radius:50%; background:radial-gradient(circle at 32% 30%, rgba(255,255,255,.9), rgba(169,203,236,.38) 58%, rgba(169,203,236,.14)); animation-name:bubble-rise; animation-timing-function:linear; animation-iteration-count:infinite; opacity:0; }
+@keyframes bubble-rise{ 0%{ transform:translate(0,0); opacity:0; } 12%{ opacity:.85; } 82%{ opacity:.55; } 100%{ transform:translate(12px,-700px); opacity:0; } }
+#decorLayer .drift-mist{ position:absolute; left:-18%; width:136%; height:36px; border-radius:50%; background:radial-gradient(ellipse at center, rgba(255,255,255,.5), rgba(255,255,255,0) 68%); animation-name:mist-drift; animation-timing-function:ease-in-out; animation-iteration-count:infinite; animation-direction:alternate; }
+@keyframes mist-drift{ from{ transform:translateX(-24px); } to{ transform:translateX(24px); } }
+#decorLayer .drift-wave{ position:absolute; left:-4%; right:-4%; bottom:0; opacity:.75; animation-name:wave-bob; animation-timing-function:ease-in-out; animation-iteration-count:infinite; animation-direction:alternate; will-change:transform;
+  -webkit-mask-image:linear-gradient(to bottom, transparent 0, #000 58%); mask-image:linear-gradient(to bottom, transparent 0, #000 58%); }
+#decorLayer .drift-wave svg{ display:block; }
+@keyframes wave-bob{ from{ transform:translateY(3px); } to{ transform:translateY(-5px); } }
+#decorLayer .drift-foam{ position:absolute; border-radius:50%; background:rgba(255,255,255,.8); animation-name:foam-drift; animation-timing-function:ease-in-out; animation-iteration-count:infinite; animation-direction:alternate; }
+@keyframes foam-drift{ from{ transform:translate(0,0); } to{ transform:translate(20px,-6px); } }
+
+/* ---------- Bộ chọn theme (picker) trong Cài đặt + cài đặt mở đầu ----------
+   Dùng chung cho cả 2 picker (w08 Settings, w09 setup) — applyDecor()
+   cập nhật aria-pressed trên mọi [data-decor-opt] nên 2 chỗ luôn đồng bộ. */
+.decor-picker{ display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; padding:12px; }
+.decor-opt{
+  font:inherit; color:inherit; cursor:pointer;
+  border:.5px solid var(--sep); background:var(--surface); border-radius:14px;
+  padding:8px 4px 7px; display:flex; flex-direction:column; align-items:center; gap:5px;
+  min-height:0; min-width:0;
+  transition:transform .14s cubic-bezier(.34,1.45,.64,1), background .2s ease, border-color .2s ease;
+}
+.decor-opt .decor-thumb{ width:100%; height:46px; overflow:hidden; pointer-events:none; }
+.decor-opt .decor-thumb svg{ width:100%; height:100%; display:block; }
+.decor-opt .decor-thumb-empty{ border:1px dashed var(--sep); border-radius:10px; height:44px; }
+.decor-opt .decor-name{ font-size:11.5px; font-weight:600; color:var(--label); text-align:center; line-height:1.2; }
+.decor-opt[aria-pressed="true"]{ border:1.5px solid var(--accent); background:var(--accent-tint); }
+.decor-opt:active{ transform:scale(.95); }
+
+/* ---------- Hiệu ứng bấm (mock: button:active scale .96) ----------
+   KIỂM TRA trên app: CHƯA có rule chung button:active scale — app chỉ có
+   scale riêng từng loại: .btn .94 (dòng 748), .dtile/.tile .965 (747),
+   .nav-btn .92 (803), button.tile .98 (292), còn .btn thường chỉ opacity .65
+   (303), .pill opacity .6 (325), .row chỉ đổi nền (135). Rule chung dưới đây
+   lấp chỗ trống đó. Độ đặc hiệu thấp (0,1,1) nên mọi rule riêng có sẵn
+   (.btn, .dtile, .nav-btn…) vẫn thắng — không đổi hành vi nút nào đang có. */
+button{ -webkit-tap-highlight-color:transparent; }
+button:active{ transform:scale(.96); filter:brightness(.94) saturate(1.06); }
+
+/* ---------- prefers-reduced-motion: tắt toàn bộ decor ----------
+   Mọi animation của theme đều nằm trong #decorLayer (§4) nên một rule chung
+   ở đây tắt được hết, kể cả animation theme worker thêm sau. */
+@media (prefers-reduced-motion: reduce){
+  #decorLayer .decor-drift{ display:none !important; }
+  #decorLayer *, #decorLayer *::before, #decorLayer *::after{
+    animation:none !important; transition:none !important;
+  }
+  .decor-opt{ transition:none !important; }
+}
+/* theme-c1.css — theme Sen (c1). Mọi rule có tiền tố html[data-decor="c1"].
+   Nguồn: mock v7 (dòng 300–410 trong shared/decor-css.css + dòng 413–430 của file
+   mock gốc cho các class .anim-*), chỉ đổi tên keyframes thành decor-* để khỏi trùng
+   keyframes sẵn có trong app (app đã có fall/flutter/drift/bobble/bloom...).
+   Không định nghĩa lại helper, không chạm data-theme/applyTheme/state.cfg.theme.
+   Tắt animation khi prefers-reduced-motion do w08 viết chung (rule #decorLayer/
+   #decorDrift); mọi animation của theme này đều nằm trong #decorLayer. */
+
+/* --- Đung đưa cho sen (lotus) trong cả 3 motif: class .anim-sway có sẵn trong
+   chuỗi motif; keyframes gốc mock là stem-sway (mock dòng 413–414). --- */
+html[data-decor="c1"] #decorLayer .anim-sway{
+  transform-box:fill-box; transform-origin:50% 100%;
+  animation:decor-stem-sway 6s ease-in-out infinite alternate;
+}
+@keyframes decor-stem-sway{ from{ transform:rotate(-2.6deg); } to{ transform:rotate(2.6deg); } }
+
+/* --- Gợn sóng dưới chân sen (ripple): class .anim-wave-y có sẵn trong chuỗi
+   motif; keyframes gốc mock là wave-y-in (mock dòng 423–424). --- */
+html[data-decor="c1"] #decorLayer .anim-wave-y{
+  animation:decor-wave-y-in 4.6s ease-in-out infinite alternate;
+}
+@keyframes decor-wave-y-in{ from{ transform:translateY(2px); } to{ transform:translateY(-3px); } }
+
+/* --- Hoa cánh bướm + cánh hoa rơi (drift, 10 phần tử): copy từ decor-css.css,
+   chỉ đổi tên keyframes petal-fall/petal-sway -> decor-petal-fall/decor-petal-sway.
+   Vị trí/duration/delay từng span nằm inline trong chuỗi drift (theme-c1.js). --- */
+html[data-decor="c1"] #decorDrift .petal-fall{
+  position:absolute; top:-34px; display:block; opacity:0;
+  animation-name:decor-petal-fall; animation-timing-function:linear;
+  animation-iteration-count:infinite; will-change:transform, opacity;
+}
+html[data-decor="c1"] #decorDrift .petal-sway{
+  display:block; width:100%; height:100%;
+  animation-name:decor-petal-sway; animation-timing-function:ease-in-out;
+  animation-iteration-count:infinite; animation-direction:alternate;
+}
+html[data-decor="c1"] #decorDrift .petal-sway svg{ display:block; }
+
+@keyframes decor-petal-sway{
+  from{ transform:translateX(-13px) rotate(-26deg); }
+  to{ transform:translateX(13px) rotate(22deg); }
+}
+/* FotoBro decor theme c2 — Hoa dại (cụm anh túc, nụ, cỏ).
+   Mọi rule có tiền tố html[data-decor="c2"] (hợp đồng §4); keyframes đổi tên
+   decor-* để không trùng keyframes sẵn có trong app (app đã có fall/drift/bloom).
+   Nguồn: mock v7 (decor-css.css dòng 300–410 + 413–416) + hợp đồng §6 (bản tối).
+   Mọi animation nằm trong #decorLayer để rule prefers-reduced-motion chung của w08 tắt được. */
+
+
+/* ---------- Hoa rơi (drift): 6 hoa cánh bướm + 4 cánh hoa, 10 phần tử ---------- */
+html[data-decor="c2"] #decorDrift .petal-fall{
+  position:absolute; top:-34px; display:block; opacity:0;
+  animation-name:decor-petal-fall; animation-timing-function:linear; animation-iteration-count:infinite;
+  will-change:transform, opacity;
+}
+html[data-decor="c2"] #decorDrift .petal-sway{
+  display:block; width:100%; height:100%;
+  animation-name:decor-petal-sway; animation-timing-function:ease-in-out;
+  animation-iteration-count:infinite; animation-direction:alternate;
+}
+html[data-decor="c2"] #decorDrift .petal-sway svg{ display:block; }
+@keyframes decor-petal-fall{
+  0%{ transform:translate3d(0, -4%, 0); opacity:0; }
+  10%{ opacity:.6; }
+  42%{ opacity:.55; }
+  74%{ opacity:.4; }
+  100%{ transform:translate3d(0, 105vh, 0); opacity:0; }
+}
+
+
+/* ---------- Animation cho chính họa tiết SVG (mock dòng 413–416) ----------
+   .anim-sway: cụm anh túc đung đưa (poppy() đặt sẵn animation-duration inline
+   5.4–7.2s từng bông, giữ nguyên — inline thắng shorthand ở dưới).
+   .anim-bloom: nụ hoa nở nhẹ (bud()). */
+html[data-decor="c2"] #decorLayer .anim-sway{
+  transform-box:fill-box; transform-origin:50% 100%;
+  animation:decor-stem-sway 6s ease-in-out infinite alternate;
+}
+
+html[data-decor="c2"] #decorLayer .anim-bloom{
+  transform-box:fill-box; transform-origin:50% 50%;
+  animation:decor-bloom-soft 5.5s ease-in-out infinite alternate;
+}
+@keyframes decor-bloom-soft{ from{ transform:scale(1); } to{ transform:scale(1.035); } }
+/* FotoBro — theme trang trí C3 "Đào + trúc" (theme-c3.css).
+   Nguồn: mock v7 (shared/decor-css.css = mock dòng 300–410 + mock dòng 413–418).
+   Mọi rule có tiền tố html[data-decor="c3"]; keyframes đổi tên thành decor-* để khỏi
+   trùng keyframes đã có trong app/mock (app thật hiện chưa có keyframe decor nào).
+   Class .anim-sway/.anim-tremble giữ nguyên tên vì chuỗi SVG motif dùng tên đó;
+   rule được giới hạn trong #decorLayer khi c3 đang bật nên không ảnh hưởng theme khác.
+   prefers-reduced-motion: rule tắt chung do w08 viết (#decorLayer/#decorDrift) —
+   mọi animation ở đây đều nằm trong #decorLayer nên được tắt theo.
+   Bản tối (§6 hợp đồng): w09 viết chung, không có trong file này. */
+
+/* ---------- Keyframes (đặt tên decor-*) ---------- */
+
+
+
+@keyframes decor-tremble-soft{ from{ transform:rotate(-1.1deg); } to{ transform:rotate(1.1deg); } }
+
+/* ---------- Cánh rơi (drift): 6 hoa cánh bướm + 4 cánh hoa, rơi 24–31s ---------- */
+html[data-decor="c3"] #decorLayer .petal-fall{
+  position:absolute; top:-34px; display:block; opacity:0;
+  animation-name:decor-petal-fall; animation-timing-function:linear; animation-iteration-count:infinite;
+  will-change:transform, opacity;
+}
+html[data-decor="c3"] #decorLayer .petal-sway{
+  display:block; width:100%; height:100%;
+  animation-name:decor-petal-sway; animation-timing-function:ease-in-out;
+  animation-iteration-count:infinite; animation-direction:alternate;
+}
+html[data-decor="c3"] #decorLayer .petal-sway svg{ display:block; }
+
+/* ---------- Đung đưa cho trúc / hoa đào trong motif ---------- */
+/* blossom() dùng class anim-sway (thời lượng riêng 5.2–7s ghi inline trong chuỗi SVG);
+   loosePetal() dùng class anim-tremble. */
+html[data-decor="c3"] #decorLayer .anim-sway{
+  transform-box:fill-box; transform-origin:50% 100%;
+  animation:decor-stem-sway 6s ease-in-out infinite alternate;
+}
+html[data-decor="c3"] #decorLayer .anim-tremble{
+  transform-box:fill-box; transform-origin:50% 100%;
+  animation:decor-tremble-soft 5s ease-in-out infinite alternate;
+}
+
+/* ---------- Slot motif + vùng drift ---------- */
+html[data-decor="c3"] #decorLayer .decor-slot svg{ display:block; width:100%; height:100%; }
+/* FotoBro decor theme — M1 Cá bơi.
+   Mọi rule có tiền tố html[data-decor="m1"] (§4 hợp đồng); keyframes đổi tên
+   thành decor-* để khỏi trùng keyframes trong app/mock.
+   Nguồn: mock v7 — shared/decor-css.css (drift: fish-swim / fish-bob /
+   bubble-rise) + mock dòng 419–422 (anim-tail/tail-wag, anim-fishbob/fishbob-in).
+   Mọi animation nằm trong #decorLayer nên rule prefers-reduced-motion chung
+   của w08 tắt được. Bản tối: KHÔNG override — giữ nguyên như mock (§6, w09). */
+
+/* Slot motif: svg lấp đầy slot (slot 150×98 / 90×90 / 140×92 do w08 định). */
+html[data-decor="m1"] #decorLayer .decor-slot svg { display: block; }
+
+/* --- Drift: 2 cá bơi ngang + 3 bong bóng nổi (tổng 5 phần tử, §8) --- */
+html[data-decor="m1"] #decorDrift .drift-fish {
+  position: absolute; left: 0;
+  animation-name: decor-fish-swim;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+@keyframes decor-fish-swim { from { transform: translateX(-84px); } to { transform: translateX(440px); } }
+
+html[data-decor="m1"] #decorDrift .drift-bob {
+  display: block; width: 100%; height: 100%;
+  animation-name: decor-fish-bob;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes decor-fish-bob { from { transform: translateY(-7px) rotate(-3.4deg); } to { transform: translateY(8px) rotate(3.4deg); } }
+
+html[data-decor="m1"] #decorDrift .drift-bubble {
+  position: absolute; bottom: -16px; border-radius: 50%;
+  background: radial-gradient(circle at 32% 30%, rgba(255,255,255,.9), rgba(169,203,236,.38) 58%, rgba(169,203,236,.14));
+  animation-name: decor-bubble-rise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  opacity: 0;
+}
+@keyframes decor-bubble-rise {
+  0% { transform: translate(0,0); opacity: 0; }
+  12% { opacity: .85; }
+  82% { opacity: .55; }
+  100% { transform: translate(12px,-700px); opacity: 0; }
+}
+
+/* --- Animation cho chính họa tiết SVG trong slot (class do fish() sinh ra) --- */
+/* Vẫy đuôi: gốc xoay ở đuôi (100% 50%), đuôi là path .anim-tail trong fish(). */
+html[data-decor="m1"] #decorLayer .anim-tail {
+  transform-box: fill-box; transform-origin: 100% 50%;
+  animation: decor-tail-wag 1.6s ease-in-out infinite alternate;
+}
+@keyframes decor-tail-wag { from { transform: rotate(-9deg); } to { transform: rotate(9deg); } }
+
+/* Bồng bềnh cả con cá: translateY + xoay nhẹ (fish() đặt duration riêng
+   3.8–5.4s qua inline style; đây là keyframes + timing mặc định). */
+html[data-decor="m1"] #decorLayer .anim-fishbob {
+  animation: decor-fishbob 4.4s ease-in-out infinite alternate;
+}
+@keyframes decor-fishbob { from { transform: translateY(-2px) rotate(-1.4deg); } to { transform: translateY(3px) rotate(1.4deg); } }
+/* FotoBro decor theme m2 — Núi rừng (worker w06).
+   Mọi rule có tiền tố html[data-decor="m2"] (hợp đồng §4); keyframes đổi tên
+   thành decor-* để không trùng keyframes của app/mock (app đã có: fadeIn,
+   shake, pop, bob, bloom, fall, flutter, drift, driftRev, bobble, tabPop, rise).
+   Nguồn: mock v7 decor-css.css (dòng 300–410) + phần "Animation cho chính họa tiết
+   SVG" của mock — copy nguyên giá trị, chỉ đổi tên keyframes.
+   Mọi animation nằm trong #decorLayer để rule prefers-reduced-motion chung của
+   w08 tắt được. KHÔNG có override bản tối (m2 giữ nguyên như mock, hợp đồng §6). */
+
+/* SVG trong slot co đúng khung slot (kích thước slot do khung w08 đặt:
+   hero 150×98, sprig 90×90, empty 140×92). */
+html[data-decor="m2"] #decorLayer .decor-slot svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Sương trong motif: dải wash trôi ngang (mock .anim-mist-x / mist-x-in 11s).
+   Delay lệch pha -4s / -7s nằm inline trong chuỗi motif, giữ nguyên. */
+html[data-decor="m2"] #decorLayer .anim-mist-x {
+  animation: decor-mist-x-in 11s ease-in-out infinite alternate;
+}
+@keyframes decor-mist-x-in {
+  from { transform: translateX(-7px); }
+  to { transform: translateX(7px); }
+}
+
+/* Thông rung: từng tầng lá pineTier() mang class .anim-tremble
+   (mock tremble-soft 5s; delay âm theo bề rộng tầng nằm inline trong motif). */
+html[data-decor="m2"] #decorLayer .anim-tremble {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: decor-tremble-soft 5s ease-in-out infinite alternate;
+}
+
+
+/* Drift: 2 dải sương trôi (mock .drift-mist / mist-drift).
+   top 30%/57% + duration 27s/34s + delay -12s nằm inline trong chuỗi drift. */
+html[data-decor="m2"] #decorDrift .drift-mist {
+  position: absolute;
+  left: -18%;
+  width: 136%;
+  height: 36px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, .5), rgba(255, 255, 255, 0) 68%);
+  animation-name: decor-mist-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes decor-mist-drift {
+  from { transform: translateX(-24px); }
+  to { transform: translateX(24px); }
+}
+
+/* Drift: 4 lá rơi (mock .petal-fall / .petal-sway — m2 dùng chung class rơi
+   với theme hoa, chỉ khác SVG bên trong là lá LEAF_DRIFT).
+   left/width/height/duration/delay nằm inline trong chuỗi drift (fallSpan). */
+html[data-decor="m2"] #decorDrift .petal-fall {
+  position: absolute;
+  top: -34px;
+  display: block;
+  opacity: 0;
+  animation-name: decor-petal-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+html[data-decor="m2"] #decorDrift .petal-sway {
+  display: block;
+  width: 100%;
+  height: 100%;
+  animation-name: decor-petal-sway;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+html[data-decor="m2"] #decorDrift .petal-sway svg {
+  display: block;
+}
+/* FotoBro — theme m3 Biển sóng (module worker w07, §4 CONTRACT.md).
+   Mọi rule có tiền tố html[data-decor="m3"]. Keyframes đổi tên thành decor-*
+   (gốc: wave-y-in / foam-pulse ở mock dòng 423–430; wave-bob / foam-drift ở
+   shared/decor-css.css) để khỏi trùng keyframes đã có trong app/mock.
+   Animation nằm trong #decorLayer nên rule prefers-reduced-motion chung của w08
+   tắt được. Bản tối: KHÔNG override — giữ nguyên như mock (§6, M1–M3). */
+
+/* --- Nhấp nhô trong motif: dải sóng waveBand (class .anim-wave-y do helper
+   waveBand() sinh) + bọt sóng foam (class .anim-foam do helper foam() sinh).
+   Duration inline trong SVG (waveBand: 3.9–5.1s) đè lên 4.6s mặc định — đúng như mock. --- */
+html[data-decor="m3"] #decorLayer .anim-wave-y {
+  animation: decor-wave-y-in 4.6s ease-in-out infinite alternate;
+}
+
+
+html[data-decor="m3"] #decorLayer .anim-foam {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: decor-foam-pulse 3.6s ease-in-out infinite alternate;
+}
+@keyframes decor-foam-pulse {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(3px, -2px) scale(1.18); }
+}
+
+/* --- Drift chân màn: 2 dải sóng + 3 bọt sóng trôi (DRIFTS.m3, 5 phần tử).
+   Dùng animation-name + longhand (không shorthand) để duration inline trên span
+   (sóng 5.6s/4.3s, bọt 9s/11s/10s) vẫn có hiệu lực — đúng như mock. --- */
+html[data-decor="m3"] #decorDrift .drift-wave {
+  position: absolute;
+  left: -4%;
+  right: -4%;
+  bottom: 0;
+  opacity: .75;
+  animation-name: decor-wave-bob;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  will-change: transform;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 58%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 58%);
+}
+html[data-decor="m3"] #decorDrift .drift-wave svg {
+  display: block;
+}
+@keyframes decor-wave-bob {
+  from { transform: translateY(3px); }
+  to { transform: translateY(-5px); }
+}
+
+html[data-decor="m3"] #decorDrift .drift-foam {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .8);
+  animation-name: decor-foam-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes decor-foam-drift {
+  from { transform: translate(0, 0); }
+  to { transform: translate(20px, -6px); }
+}
+/* ============================================================================
+   FotoBro — theme m4 "Máy ảnh film"  (worker w04)
+   Mọi rule có tiền tố html[data-decor="m4"] (trừ @keyframes — đã đổi tên
+   thành decor-* để không trùng keyframes trong app/mock). Animation của
+   theme nằm trong #decorLayer nên rule prefers-reduced-motion chung của w08
+   tắt được. Nguồn keyframes/class: shared/decor-css.css + mock dòng 300–430.
+   ========================================================================== */
+
+/* ---------- Đung đưa cho bông trong motif (class .anim-sway, mock) ---------- */
+html[data-decor="m4"] #decorLayer .anim-sway{
+  transform-box:fill-box; transform-origin:50% 100%;
+  animation:decor-stem-sway 6s ease-in-out infinite alternate;
+}
+
+
+/* ---------- Trôi ngang nhẹ cho cuộn film trong motif (.anim-film-x, mock) ---------- */
+html[data-decor="m4"] #decorLayer .anim-film-x{
+  animation:decor-film-x 13s ease-in-out infinite alternate;
+}
+@keyframes decor-film-x{ from{ transform:translateX(-4px); } to{ transform:translateX(4px); } }
+
+/* ---------- Phần tử rơi: bướm + cuộn film (.petal-fall/.petal-sway, mock) ----------
+   Vị trí/duration/delay nằm inline trong chuỗi drift (theme-m4.js); ở đây chỉ
+   định nghĩa chuyển động. Rơi chậm 24–32s, đu đưa 3.3–7.2s. */
+html[data-decor="m4"] #decorDrift .petal-fall{
+  position:absolute; top:-34px; display:block; opacity:0;
+  animation-name:decor-petal-fall; animation-timing-function:linear;
+  animation-iteration-count:infinite; will-change:transform, opacity;
+}
+html[data-decor="m4"] #decorDrift .petal-sway{
+  display:block; width:100%; height:100%;
+  animation-name:decor-petal-sway; animation-timing-function:ease-in-out;
+  animation-iteration-count:infinite; animation-direction:alternate;
+}
+html[data-decor="m4"] #decorDrift .petal-sway svg{ display:block; }
+
+/* ---------- Bản tối NỀN cho decor (theo mock v7: .phone.dark .bgimg/.theme-bg::after/.petals/.corner-motif) ----------
+   w09 (dark-overrides.css, nạp SAU khối này) đè riêng cho c1/c2/c3/m4 bằng brightness(.92) + tông nâu sữa. */
+:root[data-theme="dark"] #decorBg{ filter:brightness(.62) saturate(.85); }
+:root[data-theme="dark"] #decorBg::after{ background:linear-gradient(180deg, rgba(46,38,28,.52), rgba(46,38,28,.44) 42%, rgba(46,38,28,.56)); }
+:root[data-theme="dark"] #decorDrift{ opacity:.72; }
+:root[data-theme="dark"] #decorLayer .decor-slot{ opacity:.5; }
+/* ============================================================================
+   w09 — OVERRIDE BẢN TỐI CHO C1 / C2 / C3 / M4 (theo mock v7)
+   File: dark-overrides.css — nạp SAU CSS decor nền của w08.
+   Nguồn: mock export, block `.phone.dark[data-theme="m4/c1/c2/c3"]`
+   (shared/decor-css.css dòng ~392–410):
+     viewport nền nâu sữa #6B5A44 → #5C4C3A → #4E4234,
+     .bgimg brightness .62 → .92, overlay nhạt hơn.
+   ----------------------------------------------------------------------------
+   ÁNH XẠ MOCK → APP THẬT (xem NOTES.md §2):
+   - `.phone.dark`            → `:root[data-theme="dark"]`
+     (app thật: data-theme="dark" do applyTheme() đặt theo sysDark();
+     TUYỆT ĐỐI KHÔNG đụng rule :root[data-theme="dark"] chung — mọi rule dưới
+     đây đều có thêm [data-decor="..."] nên chỉ tác dụng khi theme trang trí
+     tương ứng đang bật)
+   - `.phone.dark .viewport`  → `:root[data-theme="dark"][data-decor="…"] body`
+     (app thật không có .viewport; nền trang là body{background:var(--bg)},
+     dòng ~75 www/index.html; --bg ở bản tối chung vẫn là #000000, không sửa)
+   - `.phone.dark .bgimg`     → `:root[data-theme="dark"][data-decor="…"] #decorBg`
+     (CONTRACT §3: #decorBg là div ảnh nền trong #decorLayer)
+   - `.phone.dark .theme-bg::after`
+                               → `:root[data-theme="dark"][data-decor="…"] #decorBg::after`
+     (overlay kem mờ trên ảnh nền, do w08 định nghĩa ở CSS decor nền)
+   - KHÔNG override cho m1 / m2 / m3 / default (giữ nguyên bản tối như mock).
+   ----------------------------------------------------------------------------
+   ĐỘ ĐẶC HIỆU: mỗi selector có 3 attribute ([data-theme] + [data-decor] +
+   :root) + #decorBg/body nên thắng rule nền của w08 dạng
+   `:root[data-theme="dark"] #decorBg` (chỉ 2 attribute) mà KHÔNG cần
+   !important — miễn file này nạp sau CSS của w08.
+   ============================================================================ */
+
+/* --- Nền canvas sau body (tránh viền đen khi overscroll) --- */
+:root[data-theme="dark"][data-decor="c1"],
+:root[data-theme="dark"][data-decor="c2"],
+:root[data-theme="dark"][data-decor="c3"],
+:root[data-theme="dark"][data-decor="m4"] {
+  background-color: #4E4234;
+}
+
+/* --- Nền trang: nâu sữa sáng thay cho tông thâm đen #000000 ---
+   Giữ nguyên 4 quầng màu nhạt của mock (lilac 26% / đỏ 20% / trời 20% /
+   xám lá 18%) + gradient nâu sữa 165deg #6B5A44 → #5C4C3A (55%) → #4E4234.
+   LỆCH DUY NHẤT SO VỚI MOCK: mock dùng color-mix(in srgb, var(--lilac) …)
+   với var của mock; app thật KHÔNG có --lilac/--sky/--sage (chỉ có --red,
+   mà --red của app là đỏ accent #D70015/#FF375F, khác đỏ mock #FA2D48) nên
+   viết thẳng mã hex gốc của mock: lilac #CFBBF5, đỏ #FA2D48, trời #A9CBEC,
+   lá #A9D08F (mock dòng 14–19). Màu hiển thị giống hệt mock. */
+:root[data-theme="dark"][data-decor="c1"] body,
+:root[data-theme="dark"][data-decor="c2"] body,
+:root[data-theme="dark"][data-decor="c3"] body,
+:root[data-theme="dark"][data-decor="m4"] body {
+  background:
+    radial-gradient(300px 220px at 105% -30px, color-mix(in srgb, #CFBBF5 26%, transparent), transparent 70%),
+    radial-gradient(320px 260px at -60px 30%, color-mix(in srgb, #FA2D48 20%, transparent), transparent 70%),
+    radial-gradient(340px 300px at 110% 62%, color-mix(in srgb, #A9CBEC 20%, transparent), transparent 72%),
+    radial-gradient(300px 260px at -40px 88%, color-mix(in srgb, #A9D08F 18%, transparent), transparent 70%),
+    linear-gradient(165deg, #6B5A44 0%, #5C4C3A 55%, #4E4234 100%);
+}
+
+/* --- Ảnh nền: bớt tối — brightness .62 (nền tối chung của w08) → .92 --- */
+:root[data-theme="dark"][data-decor="c1"] #decorBg,
+:root[data-theme="dark"][data-decor="c2"] #decorBg,
+:root[data-theme="dark"][data-decor="c3"] #decorBg,
+:root[data-theme="dark"][data-decor="m4"] #decorBg {
+  filter: brightness(.92) saturate(.95);
+}
+
+/* --- Overlay trên ảnh nền: nhạt hơn ---
+   Mặc định bản tối (w08, theo mock): rgba(46,38,28,.52/.44/.56).
+   Override cho 4 theme này: rgba(107,90,68,.28/.20/.30) — cùng tông nâu sữa,
+   chữ sáng #F5EFE3 vẫn đọc tốt (ghi chú trong mock). */
+:root[data-theme="dark"][data-decor="c1"] #decorBg::after,
+:root[data-theme="dark"][data-decor="c2"] #decorBg::after,
+:root[data-theme="dark"][data-decor="c3"] #decorBg::after,
+:root[data-theme="dark"][data-decor="m4"] #decorBg::after {
+  background: linear-gradient(180deg, rgba(107,90,68,.28), rgba(107,90,68,.20) 42%, rgba(107,90,68,.30));
+}
     </style>
       <script src="fotobro-config.js"></script>
   </head>
   <body>
+<!-- decor-frame.html — w08 · Khung decor FotoBro
+     CHÈN: làm phần tử con ĐẦU TIÊN của <body> trong www/index.html,
+     ngay sau dòng <body> (dòng 927), TRƯỚC <header class="nav" id="nav">.
+     Nguồn defs: shared/gradients.html + shared/filters.html (nguyên văn),
+     TRỪ gradient g-film (đã bỏ theo quyết của Việt, CONTRACT §3/§5)
+     và g-sepia / g-sepia2 dùng mã màu GỐC v5 (CONTRACT §5):
+       g-sepia:  #E8D3A8 → #C9A87C → #C9A87C @.25
+       g-sepia2: #B49B78 → #8A7A66 → #8A7A66 @.28
+     (shared/gradients.html đang giữ mã v6/v7 đã sáng lên — KHÔNG dùng mã đó.) -->
+<div id="decorLayer" aria-hidden="true">
+  <div class="decor-bg" id="decorBg"></div>
+  <div class="decor-motifs">
+    <div class="decor-slot" data-motif="hero"></div>
+    <div class="decor-slot" data-motif="sprig"></div>
+    <div class="decor-slot" data-motif="empty"></div>
+  </div>
+  <div class="decor-drift" id="decorDrift"></div>
+  <svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true" focusable="false">
+    <defs>
+      <radialGradient id="g-peach" cx="42%" cy="36%" r="78%">
+        <stop offset="0" stop-color="#FCE0CE"/>
+        <stop offset=".55" stop-color="#F8C7AE"/>
+        <stop offset="1" stop-color="#F8C7AE" stop-opacity=".22"/>
+      </radialGradient>
+      <radialGradient id="g-red" cx="42%" cy="36%" r="78%">
+        <stop offset="0" stop-color="#FF7A8E"/>
+        <stop offset=".55" stop-color="#FA2D48"/>
+        <stop offset="1" stop-color="#FA2D48" stop-opacity=".28"/>
+      </radialGradient>
+      <radialGradient id="g-sun" cx="42%" cy="36%" r="78%">
+        <stop offset="0" stop-color="#F9E08A"/>
+        <stop offset=".55" stop-color="#F6CF4A"/>
+        <stop offset="1" stop-color="#F6CF4A" stop-opacity=".25"/>
+      </radialGradient>
+      <radialGradient id="g-sage" cx="42%" cy="36%" r="78%">
+        <stop offset="0" stop-color="#C9E4B4"/>
+        <stop offset=".55" stop-color="#A9D08F"/>
+        <stop offset="1" stop-color="#A9D08F" stop-opacity=".25"/>
+      </radialGradient>
+      <radialGradient id="g-sky" cx="42%" cy="36%" r="78%">
+        <stop offset="0" stop-color="#C9DFF5"/>
+        <stop offset=".55" stop-color="#A9CBEC"/>
+        <stop offset="1" stop-color="#A9CBEC" stop-opacity=".25"/>
+      </radialGradient>
+      <radialGradient id="g-lilac" cx="42%" cy="36%" r="78%">
+        <stop offset="0" stop-color="#E2D6FA"/>
+        <stop offset=".55" stop-color="#CFBBF5"/>
+        <stop offset="1" stop-color="#CFBBF5" stop-opacity=".25"/>
+      </radialGradient>
+      <radialGradient id="g-cream" cx="42%" cy="36%" r="78%">
+        <stop offset="0" stop-color="#FFFDF6"/>
+        <stop offset=".6" stop-color="#FFF6E8"/>
+        <stop offset="1" stop-color="#F8C7AE" stop-opacity=".3"/>
+      </radialGradient>
+      <radialGradient id="g-deep" cx="42%" cy="36%" r="78%">
+        <stop offset="0" stop-color="#7FB2DE"/>
+        <stop offset=".55" stop-color="#3E7FB8"/>
+        <stop offset="1" stop-color="#3E7FB8" stop-opacity=".25"/>
+      </radialGradient>
+      <radialGradient id="g-sea" cx="42%" cy="36%" r="78%">
+        <stop offset="0" stop-color="#5E97C4"/>
+        <stop offset=".55" stop-color="#2E6FA8"/>
+        <stop offset="1" stop-color="#2E6FA8" stop-opacity=".25"/>
+      </radialGradient>
+      <radialGradient id="g-teal" cx="42%" cy="36%" r="78%">
+        <stop offset="0" stop-color="#A8DED6"/>
+        <stop offset=".55" stop-color="#5FB3AC"/>
+        <stop offset="1" stop-color="#5FB3AC" stop-opacity=".25"/>
+      </radialGradient>
+      <radialGradient id="g-pine" cx="42%" cy="36%" r="78%">
+        <stop offset="0" stop-color="#9CCB8A"/>
+        <stop offset=".55" stop-color="#5E8A52"/>
+        <stop offset="1" stop-color="#5E8A52" stop-opacity=".25"/>
+      </radialGradient>
+      <!-- g-sepia / g-sepia2: mã màu GỐC v5 (CONTRACT §5) — KHÔNG phải mã v6/v7
+           trong shared/gradients.html (#F7E9C6/#E3C99A và #DCC9A8/#B59F83). -->
+      <radialGradient id="g-sepia" cx="42%" cy="36%" r="78%">
+        <stop offset="0" stop-color="#E8D3A8"/>
+        <stop offset=".55" stop-color="#C9A87C"/>
+        <stop offset="1" stop-color="#C9A87C" stop-opacity=".25"/>
+      </radialGradient>
+      <radialGradient id="g-sepia2" cx="42%" cy="36%" r="78%">
+        <stop offset="0" stop-color="#B49B78"/>
+        <stop offset=".55" stop-color="#8A7A66"/>
+        <stop offset="1" stop-color="#8A7A66" stop-opacity=".28"/>
+      </radialGradient>
+      <!-- KHÔNG có g-film: gradient hồng đào v7 đã bỏ theo quyết của Việt (§5). -->
+      <radialGradient id="g-driftpetal" cx="50%" cy="100%" r="95%">
+        <stop offset="0" stop-color="#E87A90" stop-opacity=".68"/>
+        <stop offset=".45" stop-color="#F8A8B8" stop-opacity=".48"/>
+        <stop offset="1" stop-color="#FBDCE3" stop-opacity=".06"/>
+      </radialGradient>
+      <filter id="wc-rough" x="-12%" y="-12%" width="124%" height="124%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.055" numOctaves="2" seed="4" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="3.4"/>
+      </filter>
+      <filter id="wc-bleed" x="-35%" y="-35%" width="170%" height="170%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="9" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="7"/>
+        <feGaussianBlur stdDeviation="1.3"/>
+      </filter>
+    </defs>
+  </svg>
+</div>
     <header class="nav" id="nav">
       <div class="nav-in">
         <div></div>
@@ -1177,7 +1895,7 @@
       pricesFilm:{ Portrait:0, Couple:0, Wedding:0, Lookbook:0, Event:0 },
       extraHour:0, extraLoc:0, retouch:0, album:0,
       depositPct:40, deliverDays:14,
-      equipment:[], fixed:[], checkExtra:{}, theme:'warm', petals:false, gCals:[], gFeat:{cal:true, bank:false, leads:false, contacts:false, drive:false, calw:true, send:false}, glass:true, notifAsked:false, locale:'vi', currency:'VND', locAuto:true, curAuto:true, logo:'', phone:'', fb:'', ms:'', threads:'', brand:'', brandAuto:'', setupDone:false, contractTerms:'', dailyNotif:true, email:'', avatar:'', since:'', fbAcc:null, proofDays:3, selectRemindDays:7, cancelLockDays:3, mailTpls:{}, apple:null, authAsked:false, appleLastError:null, googleEverLinked:false
+      equipment:[], fixed:[], checkExtra:{}, theme:'warm', decor:'default', petals:false, gCals:[], gFeat:{cal:true, bank:false, leads:false, contacts:false, drive:false, calw:true, send:false}, glass:true, notifAsked:false, locale:'vi', currency:'VND', locAuto:true, curAuto:true, logo:'', phone:'', fb:'', ms:'', threads:'', brand:'', brandAuto:'', setupDone:false, contractTerms:'', dailyNotif:true, email:'', avatar:'', since:'', fbAcc:null, proofDays:3, selectRemindDays:7, cancelLockDays:3, mailTpls:{}, apple:null, authAsked:false, appleLastError:null, googleEverLinked:false
     };
     function mergeCfg(c){
       var o = JSON.parse(JSON.stringify(DEFAULT_CFG));
@@ -1198,6 +1916,7 @@
       var gf = o.gFeat && typeof o.gFeat === 'object' ? o.gFeat : {};
       o.gFeat = { cal:gf.cal !== false, bank:gf.bank === true, leads:gf.leads === true, contacts:gf.contacts === true, drive:gf.drive === true, calw:gf.calw !== false, send:gf.send === true }; o.glass = o.glass !== false; o.notifAsked = o.notifAsked === true;
       o.theme = ['warm', 'minimal', 'dark'].indexOf(o.theme) >= 0 ? o.theme : 'warm'; o.petals = o.petals === true;
+      o.decor = ['default','c1','c2','c3','m1','m2','m3','m4'].indexOf(o.decor) >= 0 ? o.decor : 'default';
       o.locale = o.locale === 'en' ? 'en' : 'vi';
       o.currency = o.currency === 'USD' ? 'USD' : 'VND';
       /* v2.4: ngôn ngữ + tiền tệ theo máy cho tới khi người dùng tự chọn trong Cài đặt. */
@@ -2054,6 +2773,621 @@
     }
     try{ var _mq = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)'); if (_mq){ var _onMq = function(){ applyTheme(); }; if (_mq.addEventListener) _mq.addEventListener('change', _onMq); else if (_mq.addListener) _mq.addListener(_onMq); } }catch(e){}
     function applyTheme(){ var th = 'warm'; document.documentElement.setAttribute('data-theme', th); applyBrand(); if (state.cfg.glass === false) document.documentElement.removeAttribute('data-glass'); else document.documentElement.setAttribute('data-glass', '1'); /* v2.3: chữ status bar theo theme — webview phủ full màn (overlaysWebView:true) nên không còn nền trắng che nữa; theme tối cần chữ trắng, theme sáng cần chữ đen. Trên web không có bridge thì bỏ qua im lặng. */ if (typeof window.__fotobroStatusBarStyle === 'function'){ try { window.__fotobroStatusBarStyle(sysDark()); } catch (e) {} } }
+/* decor-core.js — w08 · Lõi hệ theme trang trí FotoBro
+   CHÈN: dán toàn bộ nội dung file này vào <script> chính của www/index.html,
+   NGAY SAU định nghĩa hàm applyTheme() (dòng 2056), rồi dán tiếp 7 fragment
+   theme-<id>.js (w01–w07) theo thứ tự c1, c2, c3, m1, m2, m3, m4.
+   KHÔNG sửa applyTheme() hiện có, KHÔNG chạm state.cfg.theme / data-theme.
+   Gọi applyDecor() khi khởi động: xem cuối file + NOTES.md § Khởi động
+   (gọi ở khối <script> cuối trang, sau maybeSetup() — KHÔNG gọi ở dòng 1338).
+
+   NGUỒN: shared/helpers.js (mock dòng 895–1177) + shared/motifs-drifts.js
+   (phần drift kit) + shared/film-v5-original.txt (filmStrip v5).
+   BA ĐIỂM KHÁC SO VỚI BẢN GỐC — ĐỌC KỸ TRƯỚC KHI GHÉP:
+   (1) Hàm RNG hạt giống của mock tên rnd() — TRÙNG TÊN với rnd(a, b) có sẵn
+       của app (dòng 4931, dùng cho celebrate/burst). Đổi tên thành decorRnd(),
+       _seed → _decorSeed, _gid → _decorGid. Mọi chỗ gọi bên trong đã đổi theo.
+       Nếu giữ tên rnd() sẽ GHI ĐÈ hàm của app và làm hỏng hiệu ứng celebrate.
+   (2) helpers.js dùng hằng OLIVE nhưng KHÔNG định nghĩa nó — lấy từ mock
+       dòng 894: var OLIVE = '#8A9A68'. Đã thêm ở đầu file.
+   (3) filmStrip() ở đây là BẢN v5 (film-v5-original.txt): thân cuộn dùng
+       g-sepia2, ô hình dùng g-sepia, lỗ sprocket #FFF6E8 — KHÔNG có mảng
+       FILM_COLORS 5 màu pastel và KHÔNG dùng g-film (bản v7 trong
+       shared/helpers.js đã bị thay thế; theme worker KHÔNG được mang v7 về). */
+
+/* ================= Helpers vẽ màu nước (shared/helpers.js, nguyên văn) ================= */
+var OLIVE = '#8A9A68'; /* mock dòng 894 — helpers.js dùng OLIVE nhưng không định nghĩa */
+
+function svgWrap(vb, inner){
+  return '<svg viewBox="' + vb + '" width="100%" height="100%" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + inner + '</svg>';
+}
+
+/* RNG hạt giống cố định: nét run ổn định giữa các lần tải trang.
+   Đổi tên rnd → decorRnd vì app đã có rnd(a, b) ở dòng 4931 (xem đầu file). */
+var _decorSeed = 11;
+function decorRnd(){ _decorSeed = (_decorSeed * 16807) % 2147483647; return ((_decorSeed % 997) / 997); }
+function f1(n){ return Math.round(n * 10) / 10; }
+
+/* Khối hữu cơ méo tự nhiên: đường cong khép kín qua 7 điểm đã lệch cỡ ngẫu nhiên */
+function blob(cx, cy, rx, ry){
+  var n = 7, pts = [], i, a, jr, p, q, mx, my, d = '';
+  for (i = 0; i < n; i++){
+    a = (i / n) * Math.PI * 2 - Math.PI / 2;
+    jr = 0.84 + decorRnd() * 0.34;
+    pts.push([cx + Math.cos(a) * rx * jr, cy + Math.sin(a) * ry * jr]);
+  }
+  for (i = 0; i < n; i++){
+    p = pts[i]; q = pts[(i + 1) % n];
+    mx = f1((p[0] + q[0]) / 2); my = f1((p[1] + q[1]) / 2);
+    if (i === 0) d = 'M' + mx + ' ' + my;
+    d += ' Q' + f1(p[0]) + ' ' + f1(p[1]) + ' ' + mx + ' ' + my;
+  }
+  return d + ' Z';
+}
+
+/* Vệt loang màu nước phía dưới bông: mép nhòe, màu không đều */
+function wash(cx, cy, rx, ry, fill, op){
+  return '<path d="' + blob(cx, cy, rx, ry) + '" fill="' + fill + '" opacity="' + op + '" filter="url(#wc-bleed)"/>';
+}
+
+/* Viền tròn mềm quanh bông hoa: đường blob khép kín, nét hồng #E87A90 nhòe bằng wc-bleed
+   nên mép tan kiểu màu nước — không phải nét vector cứng */
+function ring(cx, cy, rx, ry){
+  return '<path d="' + blob(cx, cy, rx, ry) + '" fill="none" stroke="#E87A90" stroke-width="1.6" stroke-opacity=".62" filter="url(#wc-bleed)"/>';
+}
+
+/* Gradient cánh hoa: hồng đậm ở gốc cánh (tâm bông), tan dần ra mép ngoài */
+var _decorGid = 0;
+function pgrad(cx, cy, r){
+  _decorGid++;
+  var id = 'pg' + _decorGid;
+  return { id: id, def: '<radialGradient id="' + id + '" gradientUnits="userSpaceOnUse" cx="' + f1(cx) + '" cy="' + f1(cy) + '" r="' + f1(r) + '">' +
+    '<stop offset="0" stop-color="#E87A90" stop-opacity=".85"/>' +
+    '<stop offset=".38" stop-color="#F49AA9" stop-opacity=".55"/>' +
+    '<stop offset=".72" stop-color="#F7B3C1" stop-opacity=".4"/>' +
+    '<stop offset="1" stop-color="#FBDCE3" stop-opacity=".05"/></radialGradient>' };
+}
+
+/* Nhị: đĩa nhỏ vàng-xanh nhạt + 6 chấm nâu rất nhỏ quanh đĩa */
+function stamen(cx, cy, k){
+  var out = '<circle cx="' + f1(cx) + '" cy="' + f1(cy) + '" r="' + f1(2.9 * k) + '" fill="#DCE3A6" fill-opacity=".85"/>';
+  var angs = [12, 68, 128, 186, 244, 302], i, a;
+  for (i = 0; i < angs.length; i++){
+    a = (angs[i] + decorRnd() * 16 - 8) * Math.PI / 180;
+    out += '<circle cx="' + f1(cx + Math.cos(a) * 4.5 * k) + '" cy="' + f1(cy + Math.sin(a) * 4.5 * k) + '" r="' + f1((0.85 + decorRnd() * 0.3) * k) + '" fill="#A98A5F" fill-opacity=".6"/>';
+  }
+  return out;
+}
+
+/* Hoa anh túc / hoa dại (kiểu ref-poppy): cánh sau vẽ trước, cánh trước đè lên */
+function poppy(cx, cy, r){
+  var g = pgrad(cx, cy, r * 1.3);
+  var out = '<defs>' + g.def + '</defs>' + wash(cx, cy + r * 0.18, r * 1.3, r * 1.05, '#F6B0BE', 0.32);
+  var back = [18, 108, 198, 288], front = [63, 153, 243, 333], i, a, sc;
+  for (i = 0; i < back.length; i++){
+    a = back[i] + (decorRnd() * 14 - 7); sc = 0.92 + decorRnd() * 0.18;
+    out += '<g transform="translate(' + cx + ' ' + cy + ') rotate(' + f1(a) + ') scale(' + (Math.round(sc * 100) / 100) + ')">' +
+      '<path d="' + blob(0, -r * 0.5, r * 0.6, r * 0.62) + '" fill="url(#' + g.id + ')" fill-opacity=".45"/></g>';
+  }
+  for (i = 0; i < front.length; i++){
+    a = front[i] + (decorRnd() * 14 - 7); sc = 0.85 + decorRnd() * 0.18;
+    out += '<g transform="translate(' + cx + ' ' + cy + ') rotate(' + f1(a) + ') scale(' + (Math.round(sc * 100) / 100) + ')">' +
+      '<path d="' + blob(0, -r * 0.48, r * 0.56, r * 0.58) + '" fill="url(#' + g.id + ')" fill-opacity=".62"/></g>';
+  }
+  out += ring(cx, cy, r * 1.06, r * 1.0);
+  out += stamen(cx, cy, Math.max(r / 11, 0.65));
+  return '<g class="anim-sway" style="animation-duration:' + (5.4 + decorRnd() * 1.8).toFixed(1) + 's">' + out + '</g>';
+}
+
+/* Cánh sen nhọn xòe: gốc ở (0,0), chóp nhọn ở (0,-h), viền tròn mềm màu nước */
+function lotusPetal(w, h){
+  return 'M0 0 C' + f1(-w) + ' ' + f1(-h * 0.32) + ' ' + f1(-w * 0.7) + ' ' + f1(-h * 0.75) + ' 0 ' + f1(-h) +
+    ' C' + f1(w * 0.7) + ' ' + f1(-h * 0.75) + ' ' + f1(w) + ' ' + f1(-h * 0.32) + ' 0 0 Z';
+}
+
+/* Sen vẽ như hoa ở ref-poppy-single nhưng cánh nhọn kiểu sen, nhị vàng nhỏ */
+function lotus(cx, cy, s){
+  var g = pgrad(cx, cy, 38 * s);
+  var out = '<defs>' + g.def + '</defs>' + wash(cx, cy - 5 * s, 38 * s, 20 * s, '#F6B0BE', 0.38);
+  var back = [-57, -28, 0, 28, 57], front = [-37, 0, 37], i, a;
+  for (i = 0; i < back.length; i++){
+    a = back[i] + (decorRnd() * 8 - 4);
+    out += '<g transform="translate(' + cx + ' ' + cy + ') rotate(' + f1(a) + ')"><path d="' + lotusPetal(10 * s, 29 * s) + '" fill="url(#' + g.id + ')" fill-opacity=".45"/></g>';
+  }
+  for (i = 0; i < front.length; i++){
+    a = front[i] + (decorRnd() * 8 - 4);
+    out += '<g transform="translate(' + cx + ' ' + cy + ') rotate(' + f1(a) + ')"><path d="' + lotusPetal(11 * s, 25 * s) + '" fill="url(#' + g.id + ')" fill-opacity=".62"/></g>';
+  }
+  out += ring(cx, cy - 9 * s, 27 * s, 26 * s);
+  out += '<path d="' + blob(cx, cy - 2 * s, 6 * s, 5 * s) + '" fill="url(#g-sun)" fill-opacity=".85"/>';
+  out += '<circle cx="' + f1(cx - 2.4 * s) + '" cy="' + f1(cy - 3 * s) + '" r="' + f1(0.9 * s) + '" fill="#D9B25C" fill-opacity=".45"/>' +
+         '<circle cx="' + f1(cx + 2.2 * s) + '" cy="' + f1(cy - 2.4 * s) + '" r="' + f1(0.8 * s) + '" fill="#D9B25C" fill-opacity=".4"/>' +
+         '<circle cx="' + f1(cx) + '" cy="' + f1(cy - 0.6 * s) + '" r="' + f1(0.8 * s) + '" fill="#D9B25C" fill-opacity=".35"/>';
+  return '<g class="anim-sway" style="animation-duration:' + (5.8 + decorRnd() * 1.6).toFixed(1) + 's">' + out + '</g>';
+}
+
+/* Cánh anh đào (ref-sakura-petals): tròn, chóp có khía nhỏ, gốc ở (0,0) hướng lên */
+function sakuraPetal(w, h){
+  return 'M0 0 C' + f1(-w * 0.34) + ' ' + f1(-h * 0.3) + ' ' + f1(-w) + ' ' + f1(-h * 0.52) + ' ' + f1(-w * 0.95) + ' ' + f1(-h * 0.78) +
+    ' C' + f1(-w * 0.9) + ' ' + f1(-h * 1.02) + ' ' + f1(-w * 0.32) + ' ' + f1(-h * 1.05) + ' ' + f1(-w * 0.13) + ' ' + f1(-h * 0.9) +
+    ' C' + f1(-w * 0.06) + ' ' + f1(-h * 0.83) + ' ' + f1(w * 0.06) + ' ' + f1(-h * 0.83) + ' ' + f1(w * 0.13) + ' ' + f1(-h * 0.9) +
+    ' C' + f1(w * 0.32) + ' ' + f1(-h * 1.05) + ' ' + f1(w * 0.9) + ' ' + f1(-h * 1.02) + ' ' + f1(w * 0.95) + ' ' + f1(-h * 0.78) +
+    ' C' + f1(w) + ' ' + f1(-h * 0.52) + ' ' + f1(w * 0.34) + ' ' + f1(-h * 0.3) + ' 0 0 Z';
+}
+
+/* Một cánh đào đang rơi lẻ: hồng rất nhạt, đốm đậm ở gốc cánh */
+function loosePetal(x, y, w, h, rot){
+  return '<g class="anim-tremble"><g transform="translate(' + x + ' ' + y + ') rotate(' + rot + ')">' +
+    '<path d="' + sakuraPetal(w, h) + '" fill="url(#g-driftpetal)" fill-opacity=".85"/>' +
+    '<circle cx="0" cy="' + f1(-h * 0.1) + '" r="' + f1(Math.max(w * 0.15, 0.8)) + '" fill="#C98F6B" fill-opacity=".3"/></g></g>';
+}
+
+/* Bông đào: 5 cánh anh đào xòe quanh tâm, đốm đậm ở gốc từng cánh */
+function blossom(cx, cy, s){
+  var g = pgrad(cx, cy, 21 * s);
+  var out = '<defs>' + g.def + '</defs>' + wash(cx, cy, 19 * s, 17 * s, '#F6B0BE', 0.3);
+  var angs = [0, 72, 144, 216, 288], i, a;
+  for (i = 0; i < angs.length; i++){
+    a = angs[i] + (decorRnd() * 10 - 5);
+    out += '<g transform="translate(' + cx + ' ' + cy + ') rotate(' + f1(a) + ')">' +
+      '<path d="' + sakuraPetal(8.6 * s, 16.5 * s) + '" fill="url(#' + g.id + ')" fill-opacity=".55"/>' +
+      '<circle cx="0" cy="' + f1(-2.6 * s) + '" r="' + f1(1.5 * s) + '" fill="#C98F6B" fill-opacity=".3"/></g>';
+  }
+  out += ring(cx, cy, 20 * s, 19 * s);
+  out += stamen(cx, cy, 0.62 * s);
+  return '<g class="anim-sway" style="animation-duration:' + (5.2 + decorRnd() * 1.8).toFixed(1) + 's">' + out + '</g>';
+}
+
+/* Hoa cánh bướm v7 — CHỈ GIỮ ĐỂ THAM CHIẾU (CONTRACT §5).
+   KHÔNG dùng cho motif/drift nữa: mọi chỗ có hoa cánh bướm dùng butterfly2()
+   của w04 (cánh rời rạc, chỉ màu hồng). butterfly() v7 dính thành một cục
+   tròn + có vệt wash tròn to ở giữa — đúng cái Việt chê. */
+function butterfly(cx, cy, s){
+  var g = pgrad(cx, cy, 17 * s);
+  var out = '<defs>' + g.def + '</defs>' + wash(cx, cy, 15 * s, 13 * s, '#F6B0BE', 0.3);
+  var wings = [[-52, 8.6, 6.4, '.58'], [52, 8.6, 6.4, '.58'], [-128, 6.2, 4.8, '.46'], [128, 6.2, 4.8, '.46']], i, w;
+  for (i = 0; i < wings.length; i++){
+    w = wings[i];
+    out += '<g transform="translate(' + f1(cx) + ' ' + f1(cy) + ') rotate(' + w[0] + ')">' +
+      '<path d="' + blob(0, -w[1] * s, w[2] * s, w[1] * s) + '" fill="url(#' + g.id + ')" fill-opacity="' + w[3] + '" filter="url(#wc-bleed)"/></g>';
+  }
+  out += ring(cx, cy, 15.5 * s, 13.5 * s);
+  out += '<circle cx="' + f1(cx) + '" cy="' + f1(cy) + '" r="' + f1(1.7 * s) + '" fill="#C98F6B" fill-opacity=".3"/>';
+  return out;
+}
+
+/* Thân cong mảnh 1.2–1.6px, màu nâu ô-liu */
+function stem(x1, y1, x2, y2, w){
+  var mx = f1((x1 + x2) / 2 + (decorRnd() * 6 - 3)), my = f1((y1 + y2) / 2);
+  return '<path d="M' + x1 + ' ' + y1 + ' Q' + mx + ' ' + my + ' ' + x2 + ' ' + y2 + '" stroke="' + OLIVE + '" stroke-width="' + (w || 1.4) + '" fill="none"/>';
+}
+
+/* Lá: vệt sage nhạt */
+function leaf(cx, cy, rx, ry, rot, op){
+  return '<g transform="rotate(' + rot + ' ' + cx + ' ' + cy + ')"><path d="' + blob(cx, cy, rx, ry) + '" fill="url(#g-sage)" fill-opacity="' + (op || 0.5) + '"/></g>';
+}
+
+/* Cỏ mảnh ô-liu */
+function grass(x, y, h){
+  return '<path d="M' + x + ' ' + y + ' C' + (x - 2.5) + ' ' + f1(y - h * 0.4) + ' ' + (x + 3.5) + ' ' + f1(y - h * 0.7) + ' ' + (x - 1.5) + ' ' + (y - h) + '" stroke="' + OLIVE + '" stroke-width="1.1" stroke-opacity=".6" fill="none"/>' +
+         '<path d="M' + (x + 6) + ' ' + y + ' C' + (x + 8) + ' ' + f1(y - h * 0.35) + ' ' + (x + 4.5) + ' ' + f1(y - h * 0.6) + ' ' + (x + 9.5) + ' ' + f1(y - h * 0.85) + '" stroke="' + OLIVE + '" stroke-width="1" stroke-opacity=".55" fill="none"/>';
+}
+
+/* Gợn sóng mỏng mờ dưới chân sen */
+function ripple(y, op){
+  return '<g class="anim-wave-y" style="animation-duration:5.2s"><path d="M2 ' + y + ' C12 ' + (y - 4) + ' 20 ' + (y + 3) + ' 31 ' + (y - 1) + ' C42 ' + (y - 5) + ' 50 ' + (y + 3) + ' 61 ' + (y - 1) + ' C72 ' + (y - 4) + ' 80 ' + (y + 3) + ' 91 ' + (y - 1) + ' C102 ' + (y - 5) + ' 110 ' + (y + 3) + ' 121 ' + (y - 1) + ' C131 ' + (y - 4) + ' 140 ' + (y + 2) + ' 148 ' + (y - 1) + '" stroke="#A9CBEC" stroke-width="1.5" stroke-opacity="' + op + '" fill="none"/></g>';
+}
+
+/* Đài sen: vệt vàng nhạt, chấm hạt nâu nhỏ mờ */
+function pod(cx, cy, s){
+  var out = '<path d="' + blob(cx, cy, 9 * s, 11 * s) + '" fill="url(#g-sun)" fill-opacity=".5"/>';
+  var dots = [[-3.6, -3.6], [3.2, -4.4], [0, 0.8], [-4.4, 2.6], [4.4, 3.4]], i;
+  for (i = 0; i < dots.length; i++){
+    out += '<circle cx="' + f1(cx + dots[i][0] * s) + '" cy="' + f1(cy + dots[i][1] * s) + '" r="' + f1(1.15 * s) + '" fill="#B08D55" fill-opacity=".4"/>';
+  }
+  return out;
+}
+
+/* Trúc mảnh ~2px màu ô-liu, đốt mảnh, không thân xanh dày */
+function bamboo(x, top, bot){
+  var s = '<path d="M' + x + ' ' + bot + ' C' + (x - 2) + ' ' + f1(bot - (bot - top) * 0.35) + ' ' + (x + 2) + ' ' + f1(top + (bot - top) * 0.35) + ' ' + x + ' ' + top + '" stroke="' + OLIVE + '" stroke-width="2" stroke-opacity=".8" fill="none"/>';
+  s += '<path d="M' + (x - 0.8) + ' ' + (bot - 3) + ' C' + (x - 2.4) + ' ' + f1(bot - (bot - top) * 0.35) + ' ' + (x + 0.8) + ' ' + f1(top + (bot - top) * 0.35) + ' ' + (x - 0.8) + ' ' + (top + 3) + '" stroke="#A9D08F" stroke-width=".9" stroke-opacity=".55" fill="none"/>';
+  var ys = [top + (bot - top) * 0.34, top + (bot - top) * 0.67], i;
+  for (i = 0; i < ys.length; i++){
+    s += '<path d="M' + (x - 1.7) + ' ' + f1(ys[i] + 0.8) + ' C' + (x - 0.5) + ' ' + f1(ys[i] - 1.2) + ' ' + (x + 0.7) + ' ' + f1(ys[i] + 1.2) + ' ' + (x + 1.7) + ' ' + f1(ys[i] - 0.8) + '" stroke="' + OLIVE + '" stroke-width="1.5" stroke-opacity=".6" fill="none"/>';
+  }
+  return s;
+}
+
+/* Nụ hoa: vệt hồng nhạt */
+function bud(cx, cy, r, rot){
+  return '<g class="anim-bloom"><g transform="rotate(' + rot + ' ' + cx + ' ' + cy + ')"><path d="' + blob(cx, cy, r * 0.72, r) + '" fill="url(#g-peach)" fill-opacity=".6"/></g></g>';
+}
+
+/* Cá màu nước: thân blob loang, đuôi và vây là vệt màu chồng lên, mắt là chấm nhỏ */
+function fish(cx, cy, s, gradId, flip){
+  var dir = flip ? -1 : 1;
+  return '<g class="anim-fishbob" style="animation-duration:' + (3.8 + decorRnd() * 1.6).toFixed(1) + 's"><g transform="translate(' + f1(cx) + ' ' + f1(cy) + ') scale(' + f1(dir * s) + ' ' + f1(s) + ')">' +
+    '<path class="anim-tail" style="animation-duration:' + (1.3 + decorRnd() * 0.7).toFixed(1) + 's" d="M-12 0 C-18 -7 -22 -9.5 -26 -11 C-23 -4 -23 4 -26 11 C-22 9.5 -18 7 -12 0 Z" fill="url(#' + gradId + ')" fill-opacity=".48"/>' +
+    '<path d="' + blob(0, 0, 15, 7.6) + '" fill="url(#' + gradId + ')" fill-opacity=".62"/>' +
+    '<path d="' + blob(1, -6.4, 5.5, 3.1) + '" fill="url(#' + gradId + ')" fill-opacity=".42"/>' +
+    '<path d="' + blob(-1, 2.8, 10, 3.4) + '" fill="#FFFFFF" fill-opacity=".26"/>' +
+    '<circle cx="9.6" cy="-1.7" r="1.5" fill="#17344D" fill-opacity=".75"/></g></g>';
+}
+
+/* Bọt khí / bọt sóng: vòng sky trong mờ + đốm sáng trắng */
+function bubble(cx, cy, r){
+  return '<circle cx="' + f1(cx) + '" cy="' + f1(cy) + '" r="' + f1(r) + '" fill="url(#g-sky)" fill-opacity=".55"/>' +
+    '<circle cx="' + f1(cx - r * 0.32) + '" cy="' + f1(cy - r * 0.32) + '" r="' + f1(r * 0.3) + '" fill="#FFFFFF" fill-opacity=".6"/>';
+}
+function foam(cx, cy, r){
+  return '<g class="anim-foam"><circle cx="' + f1(cx) + '" cy="' + f1(cy) + '" r="' + f1(r) + '" fill="#FFFFFF" fill-opacity=".55"/></g>';
+}
+
+/* Dãy núi: đường đỉnh cong mềm qua các điểm đỉnh */
+function ridge(w, base, peaks, fill, op){
+  var pts = [[-4, base]].concat(peaks).concat([[w + 4, base]]);
+  var d = 'M' + pts[0][0] + ' ' + pts[0][1], i, p, q, mx, my;
+  for (i = 1; i < pts.length; i++){
+    p = pts[i - 1]; q = pts[i];
+    mx = f1((p[0] + q[0]) / 2); my = f1((p[1] + q[1]) / 2);
+    d += ' Q' + f1(p[0]) + ' ' + f1(p[1]) + ' ' + mx + ' ' + my;
+  }
+  var last = pts[pts.length - 1];
+  d += ' L' + last[0] + ' ' + last[1] + ' Z';
+  return '<path d="' + d + '" fill="' + fill + '" fill-opacity="' + op + '"/>';
+}
+
+/* Thông: thân mảnh nâu + 3 tầng lá là vệt xanh cong mềm chồng nhau */
+function pineTier(cx, y, w, op){
+  return '<path d="M' + f1(cx - w) + ' ' + f1(y + 9) + ' C' + f1(cx - w * 0.42) + ' ' + f1(y + 3.4) + ' ' + f1(cx - w * 0.3) + ' ' + f1(y - 1.5) + ' ' + f1(cx) + ' ' + f1(y - 3) +
+    ' C' + f1(cx + w * 0.3) + ' ' + f1(y - 1.5) + ' ' + f1(cx + w * 0.42) + ' ' + f1(y + 3.4) + ' ' + f1(cx + w) + ' ' + f1(y + 9) +
+    ' C' + f1(cx + w * 0.5) + ' ' + f1(y + 6.4) + ' ' + f1(cx - w * 0.5) + ' ' + f1(y + 6.4) + ' ' + f1(cx - w) + ' ' + f1(y + 9) + ' Z" class="anim-tremble" style="animation-delay:-' + (w * 0.13).toFixed(1) + 's" fill="url(#g-pine)" fill-opacity="' + op + '"/>';
+}
+function pine(x, base, s){
+  return '<path d="M' + x + ' ' + base + ' L' + x + ' ' + f1(base - 12 * s) + '" stroke="#5A4632" stroke-width="' + f1(1.8 * s) + '" stroke-opacity=".65" fill="none"/>' +
+    pineTier(x, base - 26 * s, 15 * s, 0.55) +
+    pineTier(x, base - 38 * s, 11.5 * s, 0.6) +
+    pineTier(x, base - 49 * s, 8 * s, 0.65);
+}
+
+/* Dải sóng: đỉnh sóng lượn đều bằng các đoạn cong nối tiếp, khép xuống chân */
+function waveBand(w, y, b, fill, op){
+  var d = 'M-6 ' + f1(y + 2), x = -6, up = true, nx, cy;
+  while (x < w + 6){
+    nx = x + 22;
+    cy = up ? y - 8 : y + 5;
+    d += ' C' + f1(x + 7) + ' ' + f1(cy) + ' ' + f1(nx - 7) + ' ' + f1(cy) + ' ' + f1(nx) + ' ' + f1(y + 2);
+    x = nx; up = !up;
+  }
+  d += ' L' + f1(w + 6) + ' ' + b + ' L-6 ' + b + ' Z';
+  return '<g class="anim-wave-y" style="animation-duration:' + (3.9 + (y % 4) * 0.4).toFixed(1) + 's"><path d="' + d + '" fill="' + fill + '" fill-opacity="' + op + '"/></g>';
+}
+
+/* Đoạn cuộn film — BẢN v5 (shared/film-v5-original.txt, CONTRACT §5):
+   thân cuộn url(#g-sepia2), ô hình url(#g-sepia), lỗ sprocket #FFF6E8.
+   THAY THẾ bản v7 trong shared/helpers.js (thân url(#g-film) + ô hình 5 màu
+   pastel FILM_COLORS) — bản v7 đã bỏ theo quyết của Việt. */
+function filmStrip(cx, top, w, len, rot){
+  var out = '<g transform="translate(' + f1(cx) + ' ' + f1(top) + ') rotate(' + rot + ')"><g class="anim-film-x">';
+  out += '<rect x="' + f1(-w / 2) + '" y="0" width="' + f1(w) + '" height="' + f1(len) + '" rx="3" fill="url(#g-sepia2)" fill-opacity=".55"/>';
+  var y;
+  for (y = 5; y < len - 3; y += 10.5){
+    out += '<rect x="' + f1(-w / 2 + 2.4) + '" y="' + f1(y) + '" width="3.4" height="5" rx="1.4" fill="#FFF6E8" fill-opacity=".8"/>' +
+           '<rect x="' + f1(w / 2 - 5.8) + '" y="' + f1(y) + '" width="3.4" height="5" rx="1.4" fill="#FFF6E8" fill-opacity=".8"/>';
+  }
+  for (y = 7; y + 15 < len; y += 21){
+    out += '<rect x="' + f1(-w / 2 + 8.5) + '" y="' + f1(y) + '" width="' + f1(w - 17) + '" height="15" rx="2" fill="url(#g-sepia)" fill-opacity=".5"/>';
+  }
+  return out + '</g></g>';
+}
+
+/* ================= Drift kit dùng chung (shared/motifs-drifts.js, nguyên văn) =================
+   Các theme fragment (w01–w07) dùng trực tiếp các hằng này trong trường drift
+   của mình — KHÔNG định nghĩa lại. KHÔNG copy MOTIFS / DRIFTS / THEME_BG
+   nguyên khối từ motifs-drifts.js vào đây: MOTIFS + drift từng theme do
+   fragment của theme đó đăng ký; THEME_BG data-URI đã bị thay bằng file
+   ảnh assets/themes/bg-<id>.webp (§9). */
+function fallSpan(left, w, h, dur, delay, sway, svg){
+  return '<span class="petal-fall" style="left:' + left + '%; width:' + w + 'px; height:' + h + 'px; animation-duration:' + dur + 's; animation-delay:' + delay + 's">' +
+    '<span class="petal-sway" style="animation-duration:' + sway + 's">' + svg + '</span></span>';
+}
+var PETAL_SVG = '<svg viewBox="-13 -27 26 30" width="100%" height="100%" aria-hidden="true"><path d="' + sakuraPetal(10.5, 24) + '" fill="url(#g-driftpetal)"/><circle cx="0" cy="-2.4" r="1.7" fill="#C98F6B" fill-opacity=".3"/></svg>';
+var FISH_DRIFT_1 = '<svg viewBox="-30 -15 60 30" width="100%" height="100%" aria-hidden="true">' + fish(0, 0, 1, 'g-deep', false) + '</svg>';
+var FISH_DRIFT_2 = '<svg viewBox="-30 -15 60 30" width="100%" height="100%" aria-hidden="true">' + fish(0, 0, 1, 'g-sky', false) + '</svg>';
+var LEAF_DRIFT = '<svg viewBox="-11 -11 22 22" width="100%" height="100%" aria-hidden="true"><path d="' + blob(0, 0, 8.5, 5) + '" fill="url(#g-pine)" fill-opacity=".6" transform="rotate(24)"/></svg>';
+var WAVE_BACK = '<svg viewBox="0 0 368 56" width="100%" height="100%" preserveAspectRatio="none" aria-hidden="true">' + waveBand(368, 15, 58, 'url(#g-sea)', 0.3) + '</svg>';
+var WAVE_FRONT = '<svg viewBox="0 0 368 40" width="100%" height="100%" preserveAspectRatio="none" aria-hidden="true">' + waveBand(368, 12, 42, 'url(#g-deep)', 0.36) + '</svg>';
+var FILM_DRIFT = '<svg viewBox="0 0 22 36" width="100%" height="100%" aria-hidden="true">' + filmStrip(11, 1, 19, 34, 0) + '</svg>';
+
+/* Hoa cánh bướm vẽ lại (w04, CONTRACT §5 — 5 cánh rời rạc, CHỈ màu hồng, tâm nhỏ, không wash tròn giữa).
+   Định nghĩa MỘT LẦN ở đây; theme-m4.js và drift của c1/c2/c3 dùng lại qua BUTTERFLY_DRIFT. */
+function butterfly2(cx, cy, s, withRing){
+  var out = '';
+  var angs = [-90, -18, 54, 126, 198];
+  var scs = [1, 0.95, 1.03, 0.96, 1.01];
+  var i, a;
+  for (i = 0; i < angs.length; i++){
+    a = angs[i];
+    out += '<g transform="translate(' + f1(cx) + ' ' + f1(cy) + ') rotate(' + a + ') scale(' + scs[i] + ')">' +
+      '<path d="' + sakuraPetal(4.6 * s, 15 * s) + '" transform="translate(0 ' + f1(-2.2 * s) + ')" fill="#F49AA9" fill-opacity=".92" stroke="#E87A90" stroke-opacity=".4" stroke-width="' + f1(0.7 * s) + '"/></g>';
+  }
+  out += '<circle cx="' + f1(cx) + '" cy="' + f1(cy) + '" r="' + f1(2 * s) + '" fill="#E87A90" fill-opacity=".9"/>';
+  /* Viền tròn mềm CHỈ cho bông lớn làm họa tiết (motif), KHÔNG cho bông rơi. */
+  if (withRing){ out += ring(cx, cy, 18.5 * s, 17.5 * s); }
+  return out;
+}
+var BUTTERFLY_DRIFT = '<svg viewBox="-18 -18 36 36" width="100%" height="100%" aria-hidden="true">' + butterfly2(0, 0, 1, false) + '</svg>';
+
+/* ================= Registry + áp theme (CONTRACT §2) ================= */
+var DECOR_IDS = ['default', 'c1', 'c2', 'c3', 'm1', 'm2', 'm3', 'm4'];
+/* Nguồn duy nhất cho tên hiển thị + ảnh nền (§1/§9). Fragment của theme
+   đăng ký DECOR_THEMES[id].bg BẰNG ĐÚNG đường dẫn này. */
+var DECOR_META = {
+  'default': { label: 'Mặc định', bg: '' },
+  'c1': { label: 'Sen', bg: 'assets/themes/bg-lotus.webp' },
+  'c2': { label: 'Hoa dại', bg: 'assets/themes/bg-wildflower.webp' },
+  'c3': { label: 'Đào + trúc', bg: 'assets/themes/bg-peach.webp' },
+  'm1': { label: 'Cá bơi', bg: 'assets/themes/bg-fish.webp' },
+  'm2': { label: 'Núi rừng', bg: 'assets/themes/bg-forest.webp' },
+  'm3': { label: 'Biển sóng', bg: 'assets/themes/bg-sea.webp' },
+  'm4': { label: 'Máy ảnh film', bg: 'assets/themes/bg-film.webp' }
+};
+/* Registry: 7 theme (CHƯA gồm default — default = rỗng, không có entry).
+   Mỗi fragment theme-<id>.js đăng ký:
+   DECOR_THEMES['<id>'] = { label:'<Tên>', bg:'assets/themes/bg-<slug>.webp',
+     motifs:{ hero:'...', sprig:'...', empty:'...' }, drift:'...' }; */
+var DECOR_THEMES = {};
+
+/* Hàm đổi theme chung — w09 (setup picker) dùng lại hàm này (§7). */
+function setDecor(id){
+  if (DECOR_IDS.indexOf(id) < 0) return; // id lạ: giữ nguyên theme đang dùng, không reset về mặc định
+  if (!state.cfg) state.cfg = {};
+  state.cfg.decor = id;
+  saveLocal();
+  applyDecor();
+}
+
+/* Hàm áp theme — MỚI, KHÔNG sửa applyTheme() hiện có (§2).
+   (1) set data-decor; (2) render lại motif slots + drift;
+   (3) set ảnh nền #decorBg; (4) cập nhật aria-pressed trên mọi nút chọn
+   theme (cả 2 picker: Settings + setup). Dùng querySelectorAll thuần để
+   không phụ thuộc $$/$ của app. An toàn khi gọi trước khi fragment đăng ký
+   xong: theme chưa có entry thì slot/drift/nền về rỗng nhưng data-decor
+   và aria-pressed vẫn đúng. */
+function applyDecor(){
+  var id = (state.cfg && state.cfg.decor) || 'default';
+  if (DECOR_IDS.indexOf(id) < 0) id = 'default';
+  var t = (typeof DECOR_THEMES === 'object' && DECOR_THEMES) ? DECOR_THEMES[id] : null;
+  document.documentElement.setAttribute('data-decor', id);
+  var bg = document.getElementById('decorBg');
+  if (bg){
+    var src = (t && t.bg) || (DECOR_META[id] && DECOR_META[id].bg) || '';
+    bg.style.backgroundImage = src ? 'url("' + src + '")' : '';
+  }
+  var slots = document.querySelectorAll('#decorLayer .decor-slot'), i, key;
+  for (i = 0; i < slots.length; i++){
+    key = slots[i].getAttribute('data-motif');
+    slots[i].innerHTML = (t && t.motifs && t.motifs[key]) || '';
+  }
+  var dr = document.getElementById('decorDrift');
+  if (dr) dr.innerHTML = (t && t.drift) || '';
+  var opts = document.querySelectorAll('[data-decor-opt]'), j;
+  for (j = 0; j < opts.length; j++){
+    opts[j].setAttribute('aria-pressed', String(opts[j].getAttribute('data-decor-opt') === id));
+  }
+}
+
+/* ================= Bộ chọn theme (picker) — dùng chung 2 chỗ =================
+   decorPickerHTML() dựng 8 ô từ DECOR_IDS + DECOR_META; thumbnail của mỗi
+   theme = DECOR_THEMES[id].motifs.hero (chuỗi SVG đã đăng ký), ô Mặc định
+   là swatch trống (default không có entry trong registry).
+   bindDecorPicker(root) đổ HTML vào mount [data-decor-picker] rồi gắn 1
+   listener ủy quyền (delegation) trên chính mount đó; click → setDecor(id).
+   Mount được tạo lại mỗi lần settingsHTML()/setupBody() render nên listener
+   gắn trên mount mới mỗi lần — cờ __decorBound chống gắn trùng khi cùng
+   một mount được bind 2 lần. bindSettings() gọi lại sau mỗi refreshSettings()
+   (openSheet.setBody chạy lại o.bind) nên picker tự bind lại sau render. */
+function decorPickerHTML(){
+  var cur = (state.cfg && state.cfg.decor) || 'default';
+  if (DECOR_IDS.indexOf(cur) < 0) cur = 'default';
+  return '<div class="decor-picker" role="group" aria-label="Họa tiết nền">' + DECOR_IDS.map(function(id){
+    var meta = DECOR_META[id];
+    var t = DECOR_THEMES[id];
+    var thumb = (t && t.motifs && t.motifs.hero)
+      ? '<span class="decor-thumb">' + t.motifs.hero + '</span>'
+      : '<span class="decor-thumb decor-thumb-empty" aria-hidden="true"></span>';
+    return '<button type="button" class="decor-opt" data-decor-opt="' + id + '" aria-pressed="' + String(id === cur) + '">' + thumb + '<span class="decor-name">' + meta.label + '</span></button>';
+  }).join('') + '</div>';
+}
+function bindDecorPicker(root){
+  var host = (root || document).querySelector ? (root || document).querySelector('[data-decor-picker]') : null;
+  if (!host) return;
+  host.innerHTML = decorPickerHTML();
+  if (host.__decorBound) return;
+  host.__decorBound = true;
+  host.addEventListener('click', function(e){
+    var b = e.target && e.target.closest ? e.target.closest('[data-decor-opt]') : null;
+    if (!b || !host.contains(b)) return;
+    setDecor(b.getAttribute('data-decor-opt'));
+  });
+}
+
+
+/* theme-c1.js — FRAGMENT đăng ký theme Sen (c1). Không phải file hoàn chỉnh.
+   Cách tích hợp (w08/coordinator): dán nguyên đoạn này vào www/index.html, sau chỗ
+   DECOR_THEMES được khai báo (cùng chỗ với các fragment theme-c2..m4).
+   - motifs/drift là CHUỖI LITERAL đã đánh giá sẵn từ mock v7 (shared/motifs-drifts.js +
+     shared/helpers.js, seed RNG 11, thứ tự đánh giá như mock) — đã đối chiếu từng ký tự
+     với mock gốc, khớp 100%. Nhờ đó fragment không phụ thuộc helper lúc chạy.
+   - Chuỗi drift chứa placeholder __BUTTERFLY2_DRIFT__ (6 lần, thay cho cả cụm svg
+     BUTTERFLY_DRIFT): coordinator thay bằng chuỗi BUTTERFLY_DRIFT thật từ w04
+     (butterfly2(0,0,1,false)) khi tích hợp. Xem NOTES.md. */
+DECOR_THEMES['c1'] = { label:'Sen', bg:'assets/themes/bg-lotus.webp', motifs:{hero:"<svg viewBox=\"0 0 150 98\" width=\"100%\" height=\"100%\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><g filter=\"url(#wc-rough)\"><path d=\"M37.7 60.1 Q28 58.6 37.7 60.1 Q47.3 61.6 48 67.1 Q48.8 72.6 43.4 77 Q38 81.4 29.2 80.1 Q20.3 78.8 13.2 75.8 Q6 72.7 7.5 67.2 Q9 61.7 18.5 60.2 Z\" fill=\"url(#g-sage)\" fill-opacity=\".45\"/><path d=\"M124 90 Q121.2 74 123 58\" stroke=\"#8A9A68\" stroke-width=\"1.4\" fill=\"none\"/><path d=\"M125.6 40 Q123 38.2 125.6 40 Q128.3 41.9 129.2 45.4 Q130.1 49 128.3 52.4 Q126.5 55.8 123.2 55.3 Q119.9 54.8 117.3 52.1 Q114.6 49.4 115.3 44.8 Q116.1 40.3 119.6 39.2 Z\" fill=\"url(#g-sun)\" fill-opacity=\".5\"/><circle cx=\"119.9\" cy=\"43.9\" r=\"1\" fill=\"#B08D55\" fill-opacity=\".4\"/><circle cx=\"125.7\" cy=\"43.3\" r=\"1\" fill=\"#B08D55\" fill-opacity=\".4\"/><circle cx=\"123\" cy=\"47.7\" r=\"1\" fill=\"#B08D55\" fill-opacity=\".4\"/><circle cx=\"119.3\" cy=\"49.2\" r=\"1\" fill=\"#B08D55\" fill-opacity=\".4\"/><circle cx=\"126.7\" cy=\"49.9\" r=\"1\" fill=\"#B08D55\" fill-opacity=\".4\"/><g class=\"anim-sway\" style=\"animation-duration:5.8s\"><defs><radialGradient id=\"pg1\" gradientUnits=\"userSpaceOnUse\" cx=\"72\" cy=\"50\" r=\"32.3\"><stop offset=\"0\" stop-color=\"#E87A90\" stop-opacity=\".85\"/><stop offset=\".38\" stop-color=\"#F49AA9\" stop-opacity=\".55\"/><stop offset=\".72\" stop-color=\"#F7B3C1\" stop-opacity=\".4\"/><stop offset=\"1\" stop-color=\"#FBDCE3\" stop-opacity=\".05\"/></radialGradient></defs><path d=\"M85.4 32.1 Q72 29.7 85.4 32.1 Q98.8 34.5 99.7 41.9 Q100.7 49.2 93.6 55.4 Q86.5 61.6 71.2 62.4 Q56 63.3 48.7 56.3 Q41.4 49.4 44.3 42.4 Q47.2 35.3 59.6 32.5 Z\" fill=\"#F6B0BE\" opacity=\"0.38\" filter=\"url(#wc-bleed)\"/><g transform=\"translate(72 50) rotate(-57.2)\"><path d=\"M0 0 C-8.5 -7.9 -5.9 -18.5 0 -24.6 C5.9 -18.5 8.5 -7.9 0 0 Z\" fill=\"url(#pg1)\" fill-opacity=\".45\"/></g><g transform=\"translate(72 50) rotate(-28)\"><path d=\"M0 0 C-8.5 -7.9 -5.9 -18.5 0 -24.6 C5.9 -18.5 8.5 -7.9 0 0 Z\" fill=\"url(#pg1)\" fill-opacity=\".45\"/></g><g transform=\"translate(72 50) rotate(0.2)\"><path d=\"M0 0 C-8.5 -7.9 -5.9 -18.5 0 -24.6 C5.9 -18.5 8.5 -7.9 0 0 Z\" fill=\"url(#pg1)\" fill-opacity=\".45\"/></g><g transform=\"translate(72 50) rotate(24.4)\"><path d=\"M0 0 C-8.5 -7.9 -5.9 -18.5 0 -24.6 C5.9 -18.5 8.5 -7.9 0 0 Z\" fill=\"url(#pg1)\" fill-opacity=\".45\"/></g><g transform=\"translate(72 50) rotate(56.9)\"><path d=\"M0 0 C-8.5 -7.9 -5.9 -18.5 0 -24.6 C5.9 -18.5 8.5 -7.9 0 0 Z\" fill=\"url(#pg1)\" fill-opacity=\".45\"/></g><g transform=\"translate(72 50) rotate(-38.1)\"><path d=\"M0 0 C-9.3 -6.8 -6.5 -15.9 0 -21.2 C6.5 -15.9 9.4 -6.8 0 0 Z\" fill=\"url(#pg1)\" fill-opacity=\".62\"/></g><g transform=\"translate(72 50) rotate(-1.1)\"><path d=\"M0 0 C-9.3 -6.8 -6.5 -15.9 0 -21.2 C6.5 -15.9 9.4 -6.8 0 0 Z\" fill=\"url(#pg1)\" fill-opacity=\".62\"/></g><g transform=\"translate(72 50) rotate(33.6)\"><path d=\"M0 0 C-9.3 -6.8 -6.5 -15.9 0 -21.2 C6.5 -15.9 9.4 -6.8 0 0 Z\" fill=\"url(#pg1)\" fill-opacity=\".62\"/></g><path d=\"M80.8 26.2 Q72 23.6 80.8 26.2 Q89.6 28.9 93.5 38.4 Q97.5 47.9 90.1 56 Q82.8 64 71.7 64.5 Q60.6 65.1 55.1 56.2 Q49.6 47.3 50.4 36.8 Q51.2 26.3 61.6 25 Z\" fill=\"none\" stroke=\"#E87A90\" stroke-width=\"1.6\" stroke-opacity=\".62\" filter=\"url(#wc-bleed)\"/><path d=\"M74.1 44.7 Q72 43.9 74.1 44.7 Q76.3 45.5 76.6 47.4 Q76.9 49.2 75.5 50.5 Q74 51.8 71.9 52 Q69.8 52.1 68.2 50.7 Q66.5 49.3 67.2 47.5 Q68 45.6 70 44.8 Z\" fill=\"url(#g-sun)\" fill-opacity=\".85\"/><circle cx=\"70\" cy=\"47.5\" r=\"0.8\" fill=\"#D9B25C\" fill-opacity=\".45\"/><circle cx=\"73.9\" cy=\"48\" r=\"0.7\" fill=\"#D9B25C\" fill-opacity=\".4\"/><circle cx=\"72\" cy=\"49.5\" r=\"0.7\" fill=\"#D9B25C\" fill-opacity=\".35\"/></g><g class=\"anim-wave-y\" style=\"animation-duration:5.2s\"><path d=\"M2 91 C12 87 20 94 31 90 C42 86 50 94 61 90 C72 87 80 94 91 90 C102 86 110 94 121 90 C131 87 140 93 148 90\" stroke=\"#A9CBEC\" stroke-width=\"1.5\" stroke-opacity=\"0.5\" fill=\"none\"/></g></g></svg>", sprig:"<svg viewBox=\"0 0 90 90\" width=\"100%\" height=\"100%\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><g filter=\"url(#wc-rough)\"><path d=\"M45 88 Q46.3 67 45 46\" stroke=\"#8A9A68\" stroke-width=\"1.4\" fill=\"none\"/><path d=\"M25.7 67.4 Q20 66.4 25.7 67.4 Q31.3 68.4 32 72.1 Q32.6 75.8 28.8 78.2 Q25.1 80.6 19.5 81.2 Q13.8 81.9 10.4 78.9 Q7 75.8 7.7 72.1 Q8.4 68.3 14.2 67.4 Z\" fill=\"url(#g-sage)\" fill-opacity=\".45\"/><g class=\"anim-sway\" style=\"animation-duration:7.1s\"><defs><radialGradient id=\"pg2\" gradientUnits=\"userSpaceOnUse\" cx=\"45\" cy=\"38\" r=\"19.8\"><stop offset=\"0\" stop-color=\"#E87A90\" stop-opacity=\".85\"/><stop offset=\".38\" stop-color=\"#F49AA9\" stop-opacity=\".55\"/><stop offset=\".72\" stop-color=\"#F7B3C1\" stop-opacity=\".4\"/><stop offset=\"1\" stop-color=\"#FBDCE3\" stop-opacity=\".05\"/></radialGradient></defs><path d=\"M52.9 27.1 Q45 25.4 52.9 27.1 Q60.7 28.8 61.8 33.2 Q63 37.6 58.6 41.5 Q54.2 45.5 45.4 45 Q36.6 44.5 30.5 41.2 Q24.3 37.9 25.9 33 Q27.5 28.1 36.3 26.7 Z\" fill=\"#F6B0BE\" opacity=\"0.38\" filter=\"url(#wc-bleed)\"/><g transform=\"translate(45 38) rotate(-56.9)\"><path d=\"M0 0 C-5.2 -4.8 -3.6 -11.3 0 -15.1 C3.6 -11.3 5.2 -4.8 0 0 Z\" fill=\"url(#pg2)\" fill-opacity=\".45\"/></g><g transform=\"translate(45 38) rotate(-28)\"><path d=\"M0 0 C-5.2 -4.8 -3.6 -11.3 0 -15.1 C3.6 -11.3 5.2 -4.8 0 0 Z\" fill=\"url(#pg2)\" fill-opacity=\".45\"/></g><g transform=\"translate(45 38) rotate(2.1)\"><path d=\"M0 0 C-5.2 -4.8 -3.6 -11.3 0 -15.1 C3.6 -11.3 5.2 -4.8 0 0 Z\" fill=\"url(#pg2)\" fill-opacity=\".45\"/></g><g transform=\"translate(45 38) rotate(29.9)\"><path d=\"M0 0 C-5.2 -4.8 -3.6 -11.3 0 -15.1 C3.6 -11.3 5.2 -4.8 0 0 Z\" fill=\"url(#pg2)\" fill-opacity=\".45\"/></g><g transform=\"translate(45 38) rotate(58.6)\"><path d=\"M0 0 C-5.2 -4.8 -3.6 -11.3 0 -15.1 C3.6 -11.3 5.2 -4.8 0 0 Z\" fill=\"url(#pg2)\" fill-opacity=\".45\"/></g><g transform=\"translate(45 38) rotate(-33.6)\"><path d=\"M0 0 C-5.7 -4.2 -4 -9.7 0 -13 C4 -9.7 5.7 -4.2 0 0 Z\" fill=\"url(#pg2)\" fill-opacity=\".62\"/></g><g transform=\"translate(45 38) rotate(-0.9)\"><path d=\"M0 0 C-5.7 -4.2 -4 -9.7 0 -13 C4 -9.7 5.7 -4.2 0 0 Z\" fill=\"url(#pg2)\" fill-opacity=\".62\"/></g><g transform=\"translate(45 38) rotate(39.4)\"><path d=\"M0 0 C-5.7 -4.2 -4 -9.7 0 -13 C4 -9.7 5.7 -4.2 0 0 Z\" fill=\"url(#pg2)\" fill-opacity=\".62\"/></g><path d=\"M50.3 21.4 Q45 17.6 50.3 21.4 Q55.6 25.2 56.6 30.6 Q57.5 36.1 54.6 41.4 Q51.7 46.7 45.2 46.3 Q38.7 45.9 34.6 41.2 Q30.5 36.5 32 30.4 Q33.4 24.4 39.2 21 Z\" fill=\"none\" stroke=\"#E87A90\" stroke-width=\"1.6\" stroke-opacity=\".62\" filter=\"url(#wc-bleed)\"/><path d=\"M46.4 34.7 Q45 34.4 46.4 34.7 Q47.8 35.1 48.1 36.4 Q48.5 37.6 47.4 38.4 Q46.3 39.2 44.9 39.4 Q43.5 39.6 42.8 38.5 Q42.1 37.5 42.3 36.4 Q42.5 35.3 43.7 34.8 Z\" fill=\"url(#g-sun)\" fill-opacity=\".85\"/><circle cx=\"43.8\" cy=\"36.4\" r=\"0.5\" fill=\"#D9B25C\" fill-opacity=\".45\"/><circle cx=\"46.1\" cy=\"36.8\" r=\"0.4\" fill=\"#D9B25C\" fill-opacity=\".4\"/><circle cx=\"45\" cy=\"37.7\" r=\"0.4\" fill=\"#D9B25C\" fill-opacity=\".35\"/></g><path d=\"M55 85 C61 81 67 87 74 83 C80 80 85 85 89 83\" stroke=\"#A9CBEC\" stroke-width=\"1.4\" stroke-opacity=\".45\" fill=\"none\"/></g></svg>", empty:"<svg viewBox=\"0 0 140 92\" width=\"100%\" height=\"100%\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><g filter=\"url(#wc-rough)\"><path d=\"M30.7 57.1 Q24 54.8 30.7 57.1 Q37.5 59.4 38.6 63.8 Q39.7 68.2 35.3 71.5 Q30.9 74.8 23.7 75.2 Q16.6 75.5 11.1 72.1 Q5.6 68.6 7.4 63.6 Q9.1 58.7 16.6 56.7 Z\" fill=\"url(#g-sage)\" fill-opacity=\".45\"/><path d=\"M108 82 Q108.8 72 108 62\" stroke=\"#8A9A68\" stroke-width=\"1.3\" fill=\"none\"/><path d=\"M110.5 45.6 Q108 44.2 110.5 45.6 Q113 47.1 114.3 50.6 Q115.5 54.1 113.4 57.2 Q111.3 60.4 108.2 59.8 Q105.1 59.3 103 56.6 Q100.8 54 102.1 50.7 Q103.4 47.5 105.7 45.8 Z\" fill=\"url(#g-sun)\" fill-opacity=\".5\"/><circle cx=\"105.3\" cy=\"49.3\" r=\"0.9\" fill=\"#B08D55\" fill-opacity=\".4\"/><circle cx=\"110.4\" cy=\"48.7\" r=\"0.9\" fill=\"#B08D55\" fill-opacity=\".4\"/><circle cx=\"108\" cy=\"52.6\" r=\"0.9\" fill=\"#B08D55\" fill-opacity=\".4\"/><circle cx=\"104.7\" cy=\"54\" r=\"0.9\" fill=\"#B08D55\" fill-opacity=\".4\"/><circle cx=\"111.3\" cy=\"54.6\" r=\"0.9\" fill=\"#B08D55\" fill-opacity=\".4\"/><g class=\"anim-sway\" style=\"animation-duration:7.0s\"><defs><radialGradient id=\"pg3\" gradientUnits=\"userSpaceOnUse\" cx=\"62\" cy=\"40\" r=\"25.1\"><stop offset=\"0\" stop-color=\"#E87A90\" stop-opacity=\".85\"/><stop offset=\".38\" stop-color=\"#F49AA9\" stop-opacity=\".55\"/><stop offset=\".72\" stop-color=\"#F7B3C1\" stop-opacity=\".4\"/><stop offset=\"1\" stop-color=\"#FBDCE3\" stop-opacity=\".05\"/></radialGradient></defs><path d=\"M73.5 24.1 Q62 21.2 73.5 24.1 Q85 27 87 33.5 Q88.9 39.9 80.2 43.5 Q71.5 47.1 61.8 47.4 Q52 47.7 45.9 43.5 Q39.9 39.4 41.1 33.9 Q42.4 28.5 52.2 24.8 Z\" fill=\"#F6B0BE\" opacity=\"0.38\" filter=\"url(#wc-bleed)\"/><g transform=\"translate(62 40) rotate(-58)\"><path d=\"M0 0 C-6.6 -6.1 -4.6 -14.4 0 -19.1 C4.6 -14.4 6.6 -6.1 0 0 Z\" fill=\"url(#pg3)\" fill-opacity=\".45\"/></g><g transform=\"translate(62 40) rotate(-30.1)\"><path d=\"M0 0 C-6.6 -6.1 -4.6 -14.4 0 -19.1 C4.6 -14.4 6.6 -6.1 0 0 Z\" fill=\"url(#pg3)\" fill-opacity=\".45\"/></g><g transform=\"translate(62 40) rotate(2.7)\"><path d=\"M0 0 C-6.6 -6.1 -4.6 -14.4 0 -19.1 C4.6 -14.4 6.6 -6.1 0 0 Z\" fill=\"url(#pg3)\" fill-opacity=\".45\"/></g><g transform=\"translate(62 40) rotate(29)\"><path d=\"M0 0 C-6.6 -6.1 -4.6 -14.4 0 -19.1 C4.6 -14.4 6.6 -6.1 0 0 Z\" fill=\"url(#pg3)\" fill-opacity=\".45\"/></g><g transform=\"translate(62 40) rotate(57.8)\"><path d=\"M0 0 C-6.6 -6.1 -4.6 -14.4 0 -19.1 C4.6 -14.4 6.6 -6.1 0 0 Z\" fill=\"url(#pg3)\" fill-opacity=\".45\"/></g><g transform=\"translate(62 40) rotate(-40.2)\"><path d=\"M0 0 C-7.3 -5.3 -5.1 -12.4 0 -16.5 C5.1 -12.4 7.3 -5.3 0 0 Z\" fill=\"url(#pg3)\" fill-opacity=\".62\"/></g><g transform=\"translate(62 40) rotate(-0.3)\"><path d=\"M0 0 C-7.3 -5.3 -5.1 -12.4 0 -16.5 C5.1 -12.4 7.3 -5.3 0 0 Z\" fill=\"url(#pg3)\" fill-opacity=\".62\"/></g><g transform=\"translate(62 40) rotate(34.8)\"><path d=\"M0 0 C-7.3 -5.3 -5.1 -12.4 0 -16.5 C5.1 -12.4 7.3 -5.3 0 0 Z\" fill=\"url(#pg3)\" fill-opacity=\".62\"/></g><path d=\"M69 20.4 Q62 17.5 69 20.4 Q76.1 23.3 77.1 30.4 Q78.2 37.6 73.9 43.3 Q69.5 49.1 61.4 50.3 Q53.3 51.5 47.4 45 Q41.5 38.6 43.9 30.3 Q46.3 22 54.1 19.7 Z\" fill=\"none\" stroke=\"#E87A90\" stroke-width=\"1.6\" stroke-opacity=\".62\" filter=\"url(#wc-bleed)\"/><path d=\"M63.5 35.7 Q62 34.8 63.5 35.7 Q65.1 36.6 65.7 38.1 Q66.2 39.5 64.9 40.4 Q63.6 41.4 61.8 41.6 Q60.1 41.9 59.2 40.6 Q58.3 39.4 58.6 38.1 Q59 36.7 60.5 35.8 Z\" fill=\"url(#g-sun)\" fill-opacity=\".85\"/><circle cx=\"60.4\" cy=\"38\" r=\"0.6\" fill=\"#D9B25C\" fill-opacity=\".45\"/><circle cx=\"63.5\" cy=\"38.4\" r=\"0.5\" fill=\"#D9B25C\" fill-opacity=\".4\"/><circle cx=\"62\" cy=\"39.6\" r=\"0.5\" fill=\"#D9B25C\" fill-opacity=\".35\"/></g><g class=\"anim-wave-y\" style=\"animation-duration:5.2s\"><path d=\"M2 85 C12 81 20 88 31 84 C42 80 50 88 61 84 C72 81 80 88 91 84 C102 80 110 88 121 84 C131 81 140 87 148 84\" stroke=\"#A9CBEC\" stroke-width=\"1.5\" stroke-opacity=\"0.45\" fill=\"none\"/></g></g></svg>"}, drift:"<span class=\"petal-fall\" style=\"left:7%; width:20px; height:20px; animation-duration:27s; animation-delay:-5s\"><span class=\"petal-sway\" style=\"animation-duration:3.6s\">" + BUTTERFLY_DRIFT + "</span></span><span class=\"petal-fall\" style=\"left:19%; width:14px; height:16px; animation-duration:24s; animation-delay:-14s\"><span class=\"petal-sway\" style=\"animation-duration:3.2s\"><svg viewBox=\"-13 -27 26 30\" width=\"100%\" height=\"100%\" aria-hidden=\"true\"><path d=\"M0 0 C-3.6 -7.2 -10.5 -12.5 -10 -18.7 C-9.5 -24.5 -3.4 -25.2 -1.4 -21.6 C-0.6 -19.9 0.6 -19.9 1.4 -21.6 C3.4 -25.2 9.5 -24.5 10 -18.7 C10.5 -12.5 3.6 -7.2 0 0 Z\" fill=\"url(#g-driftpetal)\"/><circle cx=\"0\" cy=\"-2.4\" r=\"1.7\" fill=\"#C98F6B\" fill-opacity=\".3\"/></svg></span></span><span class=\"petal-fall\" style=\"left:31%; width:18px; height:18px; animation-duration:30s; animation-delay:-21s\"><span class=\"petal-sway\" style=\"animation-duration:4.2s\">" + BUTTERFLY_DRIFT + "</span></span><span class=\"petal-fall\" style=\"left:44%; width:13px; height:15px; animation-duration:26s; animation-delay:-9s\"><span class=\"petal-sway\" style=\"animation-duration:3.8s\"><svg viewBox=\"-13 -27 26 30\" width=\"100%\" height=\"100%\" aria-hidden=\"true\"><path d=\"M0 0 C-3.6 -7.2 -10.5 -12.5 -10 -18.7 C-9.5 -24.5 -3.4 -25.2 -1.4 -21.6 C-0.6 -19.9 0.6 -19.9 1.4 -21.6 C3.4 -25.2 9.5 -24.5 10 -18.7 C10.5 -12.5 3.6 -7.2 0 0 Z\" fill=\"url(#g-driftpetal)\"/><circle cx=\"0\" cy=\"-2.4\" r=\"1.7\" fill=\"#C98F6B\" fill-opacity=\".3\"/></svg></span></span><span class=\"petal-fall\" style=\"left:56%; width:21px; height:21px; animation-duration:25s; animation-delay:-17s\"><span class=\"petal-sway\" style=\"animation-duration:3.4s\">" + BUTTERFLY_DRIFT + "</span></span><span class=\"petal-fall\" style=\"left:68%; width:12px; height:14px; animation-duration:29s; animation-delay:-25s\"><span class=\"petal-sway\" style=\"animation-duration:4.5s\"><svg viewBox=\"-13 -27 26 30\" width=\"100%\" height=\"100%\" aria-hidden=\"true\"><path d=\"M0 0 C-3.6 -7.2 -10.5 -12.5 -10 -18.7 C-9.5 -24.5 -3.4 -25.2 -1.4 -21.6 C-0.6 -19.9 0.6 -19.9 1.4 -21.6 C3.4 -25.2 9.5 -24.5 10 -18.7 C10.5 -12.5 3.6 -7.2 0 0 Z\" fill=\"url(#g-driftpetal)\"/><circle cx=\"0\" cy=\"-2.4\" r=\"1.7\" fill=\"#C98F6B\" fill-opacity=\".3\"/></svg></span></span><span class=\"petal-fall\" style=\"left:79%; width:17px; height:17px; animation-duration:28s; animation-delay:-3s\"><span class=\"petal-sway\" style=\"animation-duration:3.9s\">" + BUTTERFLY_DRIFT + "</span></span><span class=\"petal-fall\" style=\"left:89%; width:15px; height:17px; animation-duration:24s; animation-delay:-19s\"><span class=\"petal-sway\" style=\"animation-duration:3.1s\"><svg viewBox=\"-13 -27 26 30\" width=\"100%\" height=\"100%\" aria-hidden=\"true\"><path d=\"M0 0 C-3.6 -7.2 -10.5 -12.5 -10 -18.7 C-9.5 -24.5 -3.4 -25.2 -1.4 -21.6 C-0.6 -19.9 0.6 -19.9 1.4 -21.6 C3.4 -25.2 9.5 -24.5 10 -18.7 C10.5 -12.5 3.6 -7.2 0 0 Z\" fill=\"url(#g-driftpetal)\"/><circle cx=\"0\" cy=\"-2.4\" r=\"1.7\" fill=\"#C98F6B\" fill-opacity=\".3\"/></svg></span></span><span class=\"petal-fall\" style=\"left:38%; width:16px; height:16px; animation-duration:31s; animation-delay:-27s\"><span class=\"petal-sway\" style=\"animation-duration:4s\">" + BUTTERFLY_DRIFT + "</span></span><span class=\"petal-fall\" style=\"left:63%; width:19px; height:19px; animation-duration:26s; animation-delay:-12s\"><span class=\"petal-sway\" style=\"animation-duration:3.7s\">" + BUTTERFLY_DRIFT + "</span></span>" };
+
+
+/* FotoBro decor theme c2 — Hoa dại. Fragment đăng ký (hợp đồng §4).
+   Motif + drift lấy nguyên văn từ shared/motifs-drifts.js (đánh giá bằng helpers.js
+   với seed cố định _seed=11, thứ tự đánh giá MOTIFS c1 trước c2 như trong mock).
+   Chuỗi drift: 6 hoa cánh bướm + 4 cánh hoa = 10 phần tử rơi.
+   PLACEHOLDER: __BUTTERFLY2_DRIFT__ đứng thay cho cụm svg BUTTERFLY_DRIFT (6 chỗ);
+   coordinator thay bằng chuỗi thật từ butterfly2() của w04 khi tích hợp (hợp đồng §5). */
+DECOR_THEMES['c2'] = { label:'Hoa dại', bg:'assets/themes/bg-wildflower.webp', motifs:{hero:"<svg viewBox=\"0 0 150 98\" width=\"100%\" height=\"100%\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><g filter=\"url(#wc-rough)\"><path d=\"M37 97 Q37.7 68.5 36 40\" stroke=\"#8A9A68\" stroke-width=\"1.4\" fill=\"none\"/><path d=\"M75 97 Q76.9 63.5 74 30\" stroke=\"#8A9A68\" stroke-width=\"1.4\" fill=\"none\"/><path d=\"M112 97 Q111.4 71 111 45\" stroke=\"#8A9A68\" stroke-width=\"1.3\" fill=\"none\"/><path d=\"M130 97 Q127.1 81.5 129 66\" stroke=\"#8A9A68\" stroke-width=\"1.2\" fill=\"none\"/><g transform=\"rotate(-18 52 68)\"><path d=\"M55.2 64.3 Q52 63.3 55.2 64.3 Q58.4 65.2 59.3 67.1 Q60.2 69 58.2 70.9 Q56.2 72.8 51.8 73 Q47.5 73.2 46 71.1 Q44.6 68.9 44.3 66.7 Q44.1 64.5 48.1 63.9 Z\" fill=\"url(#g-sage)\" fill-opacity=\"0.45\"/></g><g transform=\"rotate(14 94 74)\"><path d=\"M97.5 70.2 Q94 69.6 97.5 70.2 Q101 70.8 102.3 73 Q103.7 75.2 100.5 76.6 Q97.3 77.9 93.6 78.4 Q89.9 78.8 87.8 76.9 Q85.7 75.1 86 72.8 Q86.2 70.5 90.1 70 Z\" fill=\"url(#g-sage)\" fill-opacity=\"0.45\"/></g><g class=\"anim-sway\" style=\"animation-duration:5.7s\"><defs><radialGradient id=\"pg4\" gradientUnits=\"userSpaceOnUse\" cx=\"36\" cy=\"28\" r=\"13.7\"><stop offset=\"0\" stop-color=\"#E87A90\" stop-opacity=\".85\"/><stop offset=\".38\" stop-color=\"#F49AA9\" stop-opacity=\".55\"/><stop offset=\".72\" stop-color=\"#F7B3C1\" stop-opacity=\".4\"/><stop offset=\"1\" stop-color=\"#FBDCE3\" stop-opacity=\".05\"/></radialGradient></defs><path d=\"M41.7 21.3 Q36 20.1 41.7 21.3 Q47.4 22.5 49.4 27.6 Q51.3 32.7 46.5 36.1 Q41.7 39.5 35.7 40 Q29.7 40.5 27.1 36.2 Q24.5 32 24.2 27.1 Q23.9 22.1 30 21.1 Z\" fill=\"#F6B0BE\" opacity=\"0.32\" filter=\"url(#wc-bleed)\"/><g transform=\"translate(36 28) rotate(15.5) scale(1.08)\"><path d=\"M2.4 -10.1 Q0 -11 2.4 -10.1 Q4.8 -9.2 5.2 -6.6 Q5.6 -3.9 4.4 -1.2 Q3.2 1.5 0.4 0.7 Q-2.4 -0.1 -3.8 -2.1 Q-5.2 -4 -4.7 -6.4 Q-4.2 -8.7 -2.1 -9.8 Z\" fill=\"url(#pg4)\" fill-opacity=\".45\"/></g><g transform=\"translate(36 28) rotate(108.5) scale(1.02)\"><path d=\"M2.8 -10.8 Q0 -11.9 2.8 -10.8 Q5.5 -9.8 5.3 -6.9 Q5.2 -4 4.1 -1.5 Q2.9 1 0 1.1 Q-3 1.2 -4.1 -1.4 Q-5.3 -4 -5.5 -7 Q-5.7 -9.9 -2.8 -10.9 Z\" fill=\"url(#pg4)\" fill-opacity=\".45\"/></g><g transform=\"translate(36 28) rotate(191.7) scale(0.96)\"><path d=\"M2.5 -10.9 Q0 -12.4 2.5 -10.9 Q5 -9.3 6 -6.5 Q7.1 -3.6 4.9 -1.5 Q2.7 0.6 -0.2 1 Q-3.1 1.4 -4.8 -1.1 Q-6.6 -3.7 -5.6 -6.4 Q-4.7 -9.1 -2.3 -10.7 Z\" fill=\"url(#pg4)\" fill-opacity=\".45\"/></g><g transform=\"translate(36 28) rotate(281.4) scale(0.93)\"><path d=\"M2.7 -10.2 Q0 -10.9 2.7 -10.2 Q5.3 -9.6 5.7 -6.7 Q6.1 -3.8 4.3 -1.9 Q2.5 0 -0.2 0.5 Q-2.9 0.9 -4.8 -1.4 Q-6.7 -3.7 -6.1 -6.8 Q-5.6 -9.9 -2.8 -10.4 Z\" fill=\"url(#pg4)\" fill-opacity=\".45\"/></g><g transform=\"translate(36 28) rotate(61) scale(0.96)\"><path d=\"M2.2 -10.1 Q0 -11.6 2.2 -10.1 Q4.3 -8.6 5.2 -6.1 Q6 -3.6 4.3 -1.5 Q2.6 0.5 -0.2 0.9 Q-2.9 1.3 -3.9 -1.3 Q-4.8 -3.9 -4.7 -6.3 Q-4.5 -8.8 -2.3 -10.2 Z\" fill=\"url(#pg4)\" fill-opacity=\".62\"/></g><g transform=\"translate(36 28) rotate(149.1) scale(1.03)\"><path d=\"M2.6 -10 Q0 -10.6 2.6 -10 Q5.2 -9.3 5.7 -6.5 Q6.1 -3.6 4.4 -1.5 Q2.6 0.5 -0.1 0.7 Q-2.7 0.8 -3.9 -1.5 Q-5.1 -3.8 -5.1 -6.6 Q-5.1 -9.3 -2.6 -9.9 Z\" fill=\"url(#pg4)\" fill-opacity=\".62\"/></g><g transform=\"translate(36 28) rotate(236.9) scale(1.03)\"><path d=\"M2.2 -10.1 Q0 -11.5 2.2 -10.1 Q4.4 -8.6 4.7 -6.2 Q5.1 -3.8 3.7 -2 Q2.3 -0.1 0.1 -0.2 Q-2.2 -0.3 -3.9 -2 Q-5.5 -3.7 -5.4 -6.6 Q-5.3 -9.4 -2.7 -10.5 Z\" fill=\"url(#pg4)\" fill-opacity=\".62\"/></g><g transform=\"translate(36 28) rotate(331.4) scale(0.93)\"><path d=\"M2.7 -10.7 Q0 -11.9 2.7 -10.7 Q5.4 -9.5 5.7 -6.6 Q6 -3.6 4.2 -1.7 Q2.4 0.2 -0.1 0.4 Q-2.7 0.7 -4.3 -1.5 Q-5.8 -3.7 -5.1 -6.1 Q-4.3 -8.6 -2.1 -10.2 Z\" fill=\"url(#pg4)\" fill-opacity=\".62\"/></g><path d=\"M41.1 18.7 Q36 17.1 41.1 18.7 Q46.2 20.3 46.5 25.3 Q46.8 30.3 43.9 34 Q40.9 37.7 35.6 38.4 Q30.3 39.2 27.9 34.7 Q25.6 30.2 26.4 25.8 Q27.2 21.4 31.6 19.2 Z\" fill=\"none\" stroke=\"#E87A90\" stroke-width=\"1.6\" stroke-opacity=\".62\" filter=\"url(#wc-bleed)\"/><circle cx=\"36\" cy=\"28\" r=\"2.8\" fill=\"#DCE3A6\" fill-opacity=\".85\"/><circle cx=\"40.2\" cy=\"29\" r=\"0.9\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"38\" cy=\"31.8\" r=\"1.1\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"33.3\" cy=\"31.3\" r=\"1\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"31.8\" cy=\"27\" r=\"0.9\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"34.2\" cy=\"24.1\" r=\"1.1\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"38\" cy=\"24.2\" r=\"1\" fill=\"#A98A5F\" fill-opacity=\".6\"/></g><g class=\"anim-sway\" style=\"animation-duration:6.8s\"><defs><radialGradient id=\"pg5\" gradientUnits=\"userSpaceOnUse\" cx=\"74\" cy=\"19\" r=\"11.1\"><stop offset=\"0\" stop-color=\"#E87A90\" stop-opacity=\".85\"/><stop offset=\".38\" stop-color=\"#F49AA9\" stop-opacity=\".55\"/><stop offset=\".72\" stop-color=\"#F7B3C1\" stop-opacity=\".4\"/><stop offset=\"1\" stop-color=\"#FBDCE3\" stop-opacity=\".05\"/></radialGradient></defs><path d=\"M77.6 13.9 Q74 11.9 77.6 13.9 Q81.3 15.8 83.9 19.3 Q86.5 22.8 82.3 25.2 Q78.1 27.5 74 27.4 Q69.9 27.4 66.4 25 Q62.8 22.6 64.1 18.8 Q65.3 14.9 69.6 13.4 Z\" fill=\"#F6B0BE\" opacity=\"0.32\" filter=\"url(#wc-bleed)\"/><g transform=\"translate(74 19) rotate(11.5) scale(0.96)\"><path d=\"M1.9 -8.8 Q0 -10.3 1.9 -8.8 Q3.7 -7.3 4.5 -5.2 Q5.3 -3 3.6 -1.5 Q2 0 -0.3 0.6 Q-2.6 1.2 -4 -0.9 Q-5.4 -3 -4.7 -5.2 Q-4 -7.5 -2 -8.9 Z\" fill=\"url(#pg5)\" fill-opacity=\".45\"/></g><g transform=\"translate(74 19) rotate(113.6) scale(0.95)\"><path d=\"M2.3 -9.2 Q0 -10.3 2.3 -9.2 Q4.7 -8.1 5 -5.6 Q5.3 -3 3.7 -1.4 Q2.1 0.2 -0.2 0.6 Q-2.5 1.1 -4.1 -0.9 Q-5.7 -2.9 -5 -5.3 Q-4.3 -7.8 -2.1 -9 Z\" fill=\"url(#pg5)\" fill-opacity=\".45\"/></g><g transform=\"translate(74 19) rotate(195.9) scale(1.03)\"><path d=\"M2.1 -8.4 Q0 -8.9 2.1 -8.4 Q4.3 -7.8 4.5 -5.5 Q4.7 -3.1 3.4 -1.4 Q2.1 0.4 0.1 0.1 Q-1.9 -0.2 -3.2 -1.7 Q-4.5 -3.2 -4.3 -5.5 Q-4.2 -7.7 -2.1 -8.3 Z\" fill=\"url(#pg5)\" fill-opacity=\".45\"/></g><g transform=\"translate(74 19) rotate(293.6) scale(0.92)\"><path d=\"M1.7 -8.6 Q0 -10.3 1.7 -8.6 Q3.4 -7 4.2 -5 Q5.1 -3.1 3.5 -1.7 Q1.9 -0.3 -0.1 -0.2 Q-2 0 -3.9 -1.5 Q-5.8 -2.9 -5.2 -5.5 Q-4.6 -8 -2.3 -9.2 Z\" fill=\"url(#pg5)\" fill-opacity=\".45\"/></g><g transform=\"translate(74 19) rotate(58.5) scale(1.01)\"><path d=\"M1.9 -8.2 Q0 -9.2 1.9 -8.2 Q3.8 -7.2 3.8 -5.2 Q3.9 -3.2 3.2 -1 Q2.4 1.1 0.3 0.5 Q-1.9 0 -3.4 -1.5 Q-4.8 -2.9 -4.2 -4.9 Q-3.5 -7 -1.7 -8.1 Z\" fill=\"url(#pg5)\" fill-opacity=\".62\"/></g><g transform=\"translate(74 19) rotate(152.8) scale(0.91)\"><path d=\"M1.7 -8 Q0 -9 1.7 -8 Q3.5 -7 4.3 -4.9 Q5.1 -2.9 3.5 -1.5 Q1.9 0 -0.1 0.1 Q-2.1 0.3 -3.1 -1.4 Q-4.2 -3.1 -3.9 -5 Q-3.6 -7 -1.8 -8 Z\" fill=\"url(#pg5)\" fill-opacity=\".62\"/></g><g transform=\"translate(74 19) rotate(248) scale(0.94)\"><path d=\"M2.1 -8 Q0 -8.5 2.1 -8 Q4.2 -7.5 4.4 -5.3 Q4.7 -3 3.6 -0.9 Q2.4 1.2 0.2 0.7 Q-2 0.2 -3.6 -1.3 Q-5.2 -2.9 -4.3 -4.9 Q-3.5 -6.9 -1.7 -7.7 Z\" fill=\"url(#pg5)\" fill-opacity=\".62\"/></g><g transform=\"translate(74 19) rotate(328.4) scale(0.87)\"><path d=\"M1.7 -7.7 Q0 -8.4 1.7 -7.7 Q3.4 -6.9 4 -5 Q4.6 -3 3.2 -1.5 Q1.9 0 0 0 Q-1.9 0 -3.4 -1.5 Q-4.9 -2.9 -4.6 -5.3 Q-4.3 -7.6 -2.1 -8 Z\" fill=\"url(#pg5)\" fill-opacity=\".62\"/></g><path d=\"M77.3 11.7 Q74 9.3 77.3 11.7 Q80.6 14 82.3 17.6 Q84 21.2 81.3 24.5 Q78.5 27.8 74.3 27.1 Q70.2 26.5 68 23.6 Q65.8 20.8 66.8 17.6 Q67.8 14.4 70.9 11.8 Z\" fill=\"none\" stroke=\"#E87A90\" stroke-width=\"1.6\" stroke-opacity=\".62\" filter=\"url(#wc-bleed)\"/><circle cx=\"74\" cy=\"19\" r=\"2.2\" fill=\"#DCE3A6\" fill-opacity=\".85\"/><circle cx=\"77.4\" cy=\"19.7\" r=\"0.8\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"75.1\" cy=\"22.3\" r=\"0.7\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"71.9\" cy=\"21.8\" r=\"0.8\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"70.5\" cy=\"18.6\" r=\"0.8\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"72.3\" cy=\"16\" r=\"0.8\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"76\" cy=\"16.2\" r=\"0.8\" fill=\"#A98A5F\" fill-opacity=\".6\"/></g><g class=\"anim-sway\" style=\"animation-duration:6.0s\"><defs><radialGradient id=\"pg6\" gradientUnits=\"userSpaceOnUse\" cx=\"111\" cy=\"34\" r=\"12.4\"><stop offset=\"0\" stop-color=\"#E87A90\" stop-opacity=\".85\"/><stop offset=\".38\" stop-color=\"#F49AA9\" stop-opacity=\".55\"/><stop offset=\".72\" stop-color=\"#F7B3C1\" stop-opacity=\".4\"/><stop offset=\"1\" stop-color=\"#FBDCE3\" stop-opacity=\".05\"/></radialGradient></defs><path d=\"M115.1 28.7 Q111 26.9 115.1 28.7 Q119.1 30.5 120.2 34 Q121.3 37.6 118.7 40.9 Q116.1 44.3 110.9 44.5 Q105.6 44.8 101.7 41.5 Q97.8 38.2 99.3 33.7 Q100.9 29.2 105.9 28.1 Z\" fill=\"#F6B0BE\" opacity=\"0.32\" filter=\"url(#wc-bleed)\"/><g transform=\"translate(111 34) rotate(13.1) scale(1.09)\"><path d=\"M2.5 -9.4 Q0 -9.8 2.5 -9.4 Q5.1 -8.9 5 -6.3 Q4.9 -3.6 3.6 -1.7 Q2.3 0.2 -0.1 0.5 Q-2.6 0.8 -4.1 -1.3 Q-5.6 -3.4 -4.7 -5.7 Q-3.8 -7.9 -1.9 -8.8 Z\" fill=\"url(#pg6)\" fill-opacity=\".45\"/></g><g transform=\"translate(111 34) rotate(105.1) scale(1.07)\"><path d=\"M2.4 -9.8 Q0 -10.7 2.4 -9.8 Q4.9 -8.8 5 -6.2 Q5.1 -3.6 3.8 -1.4 Q2.6 0.8 0.2 0.4 Q-2.2 0 -3.5 -1.8 Q-4.8 -3.6 -4.4 -5.9 Q-4.1 -8.1 -2 -9.4 Z\" fill=\"url(#pg6)\" fill-opacity=\".45\"/></g><g transform=\"translate(111 34) rotate(203.9) scale(0.95)\"><path d=\"M1.9 -9.5 Q0 -11 1.9 -9.5 Q3.9 -7.9 5.2 -5.6 Q6.5 -3.2 4.6 -1 Q2.8 1.2 0 1.2 Q-2.8 1.2 -4.2 -1.1 Q-5.6 -3.4 -5.2 -6 Q-4.7 -8.6 -2.4 -9.8 Z\" fill=\"url(#pg6)\" fill-opacity=\".45\"/></g><g transform=\"translate(111 34) rotate(291.8) scale(0.97)\"><path d=\"M2.1 -9.2 Q0 -10.2 2.1 -9.2 Q4.1 -8.2 4.6 -5.9 Q5 -3.6 3.9 -1.1 Q2.9 1.5 0.2 0.9 Q-2.4 0.4 -4.4 -1.4 Q-6.4 -3.2 -5.6 -6 Q-4.8 -8.7 -2.4 -9.4 Z\" fill=\"url(#pg6)\" fill-opacity=\".45\"/></g><g transform=\"translate(111 34) rotate(66.4) scale(0.9)\"><path d=\"M1.9 -8.6 Q0 -9.6 1.9 -8.6 Q3.8 -7.7 4.1 -5.6 Q4.5 -3.5 3.3 -1.7 Q2.2 0.2 0 0.1 Q-2.1 0 -3.5 -1.7 Q-5 -3.4 -4.5 -5.7 Q-4.1 -7.9 -2 -8.7 Z\" fill=\"url(#pg6)\" fill-opacity=\".62\"/></g><g transform=\"translate(111 34) rotate(149.8) scale(0.94)\"><path d=\"M2 -8.9 Q0 -9.9 2 -8.9 Q3.9 -7.8 4.7 -5.5 Q5.5 -3.2 3.9 -1.4 Q2.3 0.4 -0.2 0.9 Q-2.7 1.3 -4.2 -1 Q-5.6 -3.2 -4.6 -5.4 Q-3.7 -7.6 -1.8 -8.8 Z\" fill=\"url(#pg6)\" fill-opacity=\".62\"/></g><g transform=\"translate(111 34) rotate(239) scale(0.95)\"><path d=\"M2 -8.6 Q0 -9.5 2 -8.6 Q3.9 -7.8 4.5 -5.6 Q5 -3.4 3.7 -1.4 Q2.4 0.6 0.2 0.2 Q-2 -0.2 -3.2 -1.8 Q-4.4 -3.5 -4.2 -5.7 Q-4 -7.9 -2 -8.7 Z\" fill=\"url(#pg6)\" fill-opacity=\".62\"/></g><g transform=\"translate(111 34) rotate(334.2) scale(0.94)\"><path d=\"M2.2 -9 Q0 -9.7 2.2 -9 Q4.4 -8.2 4.8 -5.8 Q5.1 -3.4 3.6 -1.6 Q2.2 0.1 -0.1 0.3 Q-2.4 0.5 -3.8 -1.4 Q-5.3 -3.3 -4.7 -5.6 Q-4.1 -7.9 -2 -8.8 Z\" fill=\"url(#pg6)\" fill-opacity=\".62\"/></g><path d=\"M114.8 25.6 Q111 23 114.8 25.6 Q118.5 28.3 120.3 32.4 Q122.1 36.4 119.1 40.2 Q116.1 44 111.6 42.9 Q107 41.8 104.9 38.8 Q102.7 35.8 103.5 32.3 Q104.2 28.9 107.6 25.9 Z\" fill=\"none\" stroke=\"#E87A90\" stroke-width=\"1.6\" stroke-opacity=\".62\" filter=\"url(#wc-bleed)\"/><circle cx=\"111\" cy=\"34\" r=\"2.5\" fill=\"#DCE3A6\" fill-opacity=\".85\"/><circle cx=\"114.7\" cy=\"35.3\" r=\"0.8\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"112.3\" cy=\"37.6\" r=\"1\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"108.5\" cy=\"37\" r=\"0.9\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"107.1\" cy=\"34\" r=\"0.8\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"109.7\" cy=\"30.3\" r=\"0.8\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"113.3\" cy=\"30.8\" r=\"0.8\" fill=\"#A98A5F\" fill-opacity=\".6\"/></g><g class=\"anim-bloom\"><g transform=\"rotate(12 129 58)\"><path d=\"M130.5 53.5 Q129 52.4 130.5 53.5 Q132 54.7 132.2 56.9 Q132.4 59.1 131.4 60.5 Q130.3 61.9 128.8 62.5 Q127.2 63.1 126.5 61.1 Q125.8 59 125.8 56.7 Q125.8 54.4 127.4 53.4 Z\" fill=\"url(#g-peach)\" fill-opacity=\".6\"/></g></g><path d=\"M8 97 C5.5 90.2 11.5 85.1 6.5 80\" stroke=\"#8A9A68\" stroke-width=\"1.1\" stroke-opacity=\".6\" fill=\"none\"/><path d=\"M14 97 C16 91.1 12.5 86.8 17.5 82.6\" stroke=\"#8A9A68\" stroke-width=\"1\" stroke-opacity=\".55\" fill=\"none\"/><path d=\"M138 97 C135.5 91 141.5 86.5 136.5 82\" stroke=\"#8A9A68\" stroke-width=\"1.1\" stroke-opacity=\".6\" fill=\"none\"/><path d=\"M144 97 C146 91.8 142.5 88 147.5 84.3\" stroke=\"#8A9A68\" stroke-width=\"1\" stroke-opacity=\".55\" fill=\"none\"/></g></svg>", sprig:"<svg viewBox=\"0 0 90 90\" width=\"100%\" height=\"100%\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><g filter=\"url(#wc-rough)\"><path d=\"M38 89 Q39.5 62.5 37 36\" stroke=\"#8A9A68\" stroke-width=\"1.4\" fill=\"none\"/><path d=\"M65 89 Q62.5 72.5 64 56\" stroke=\"#8A9A68\" stroke-width=\"1.2\" fill=\"none\"/><g transform=\"rotate(-14 50 66)\"><path d=\"M52.9 62.6 Q50 61.9 52.9 62.6 Q55.7 63.4 57.4 65.3 Q59 67.2 56.1 68.5 Q53.3 69.9 49.7 70.2 Q46.2 70.6 43.5 68.9 Q40.9 67.2 42.7 65.3 Q44.5 63.5 47.3 62.7 Z\" fill=\"url(#g-sage)\" fill-opacity=\"0.45\"/></g><g class=\"anim-sway\" style=\"animation-duration:7.1s\"><defs><radialGradient id=\"pg7\" gradientUnits=\"userSpaceOnUse\" cx=\"37\" cy=\"25\" r=\"12.4\"><stop offset=\"0\" stop-color=\"#E87A90\" stop-opacity=\".85\"/><stop offset=\".38\" stop-color=\"#F49AA9\" stop-opacity=\".55\"/><stop offset=\".72\" stop-color=\"#F7B3C1\" stop-opacity=\".4\"/><stop offset=\"1\" stop-color=\"#FBDCE3\" stop-opacity=\".05\"/></radialGradient></defs><path d=\"M41.3 18.4 Q37 15.6 41.3 18.4 Q45.5 21.2 46.6 24.9 Q47.6 28.7 44.8 31.9 Q42 35.1 37.1 34.9 Q32.2 34.8 27.6 32 Q23 29.3 25.7 25.2 Q28.4 21.2 32.7 18.4 Z\" fill=\"#F6B0BE\" opacity=\"0.32\" filter=\"url(#wc-bleed)\"/><g transform=\"translate(37 25) rotate(12.3) scale(0.99)\"><path d=\"M2.4 -10.1 Q0 -11.6 2.4 -10.1 Q4.7 -8.6 5.3 -6 Q5.9 -3.4 4.4 -1 Q2.8 1.3 0 1.3 Q-2.9 1.4 -3.8 -1.1 Q-4.8 -3.6 -4.4 -5.8 Q-4 -8 -2 -9.8 Z\" fill=\"url(#pg7)\" fill-opacity=\".45\"/></g><g transform=\"translate(37 25) rotate(113.7) scale(1.01)\"><path d=\"M2.3 -9.4 Q0 -10.3 2.3 -9.4 Q4.7 -8.6 5 -6 Q5.4 -3.5 3.9 -1.6 Q2.3 0.3 0 0.4 Q-2.4 0.4 -4.3 -1.4 Q-6.3 -3.3 -5.6 -6 Q-4.9 -8.7 -2.4 -9.5 Z\" fill=\"url(#pg7)\" fill-opacity=\".45\"/></g><g transform=\"translate(37 25) rotate(196.2) scale(1.1)\"><path d=\"M1.9 -8.9 Q0 -9.8 1.9 -8.9 Q3.8 -7.9 4.7 -5.7 Q5.5 -3.5 3.9 -1.5 Q2.4 0.4 0 0.4 Q-2.4 0.4 -4.1 -1.5 Q-5.8 -3.4 -5.2 -6 Q-4.6 -8.5 -2.3 -9.2 Z\" fill=\"url(#pg7)\" fill-opacity=\".45\"/></g><g transform=\"translate(37 25) rotate(292.7) scale(1.08)\"><path d=\"M1.9 -9.3 Q0 -10.8 1.9 -9.3 Q3.7 -7.8 4.7 -5.6 Q5.6 -3.4 4.1 -1.3 Q2.6 0.9 0.3 0.3 Q-2.1 -0.2 -4.2 -1.8 Q-6.2 -3.3 -5.5 -6 Q-4.8 -8.7 -2.4 -9.8 Z\" fill=\"url(#pg7)\" fill-opacity=\".45\"/></g><g transform=\"translate(37 25) rotate(66.5) scale(0.9)\"><path d=\"M1.8 -9.1 Q0 -10.7 1.8 -9.1 Q3.6 -7.5 4.4 -5.4 Q5.2 -3.3 3.8 -1.3 Q2.4 0.7 0.1 0.5 Q-2.3 0.4 -4.1 -1.4 Q-5.9 -3.2 -5 -5.5 Q-4 -7.9 -2 -9.3 Z\" fill=\"url(#pg7)\" fill-opacity=\".62\"/></g><g transform=\"translate(37 25) rotate(152) scale(0.87)\"><path d=\"M1.8 -9.3 Q0 -11.1 1.8 -9.3 Q3.6 -7.5 4.6 -5.4 Q5.6 -3.2 4.1 -1 Q2.7 1.3 0.3 0.7 Q-2.1 0 -3.9 -1.6 Q-5.6 -3.2 -5.1 -5.7 Q-4.5 -8.3 -2.2 -9.7 Z\" fill=\"url(#pg7)\" fill-opacity=\".62\"/></g><g transform=\"translate(37 25) rotate(238) scale(0.94)\"><path d=\"M1.9 -9.3 Q0 -10.9 1.9 -9.3 Q3.8 -7.7 4.7 -5.5 Q5.7 -3.2 4.2 -1 Q2.7 1.3 0 1.2 Q-2.6 1.1 -4 -1.1 Q-5.3 -3.3 -5 -5.9 Q-4.8 -8.5 -2.4 -9.7 Z\" fill=\"url(#pg7)\" fill-opacity=\".62\"/></g><g transform=\"translate(37 25) rotate(332.5) scale(1.01)\"><path d=\"M1.8 -9 Q0 -10.6 1.8 -9 Q3.5 -7.5 4.2 -5.4 Q4.9 -3.4 3.5 -1.8 Q2 -0.3 -0.2 0.2 Q-2.4 0.7 -3.6 -1.4 Q-4.8 -3.4 -4.2 -5.5 Q-3.6 -7.5 -1.8 -9.1 Z\" fill=\"url(#pg7)\" fill-opacity=\".62\"/></g><path d=\"M41.6 16.4 Q37 14.6 41.6 16.4 Q46.2 18.1 47.2 22.8 Q48.3 27.4 45.2 31.3 Q42.1 35.1 37.2 34.7 Q32.2 34.4 29.8 30.7 Q27.4 27.1 27.8 22.7 Q28.2 18.4 32.6 16.5 Z\" fill=\"none\" stroke=\"#E87A90\" stroke-width=\"1.6\" stroke-opacity=\".62\" filter=\"url(#wc-bleed)\"/><circle cx=\"37\" cy=\"25\" r=\"2.5\" fill=\"#DCE3A6\" fill-opacity=\".85\"/><circle cx=\"40.9\" cy=\"25.3\" r=\"0.9\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"38.5\" cy=\"28.6\" r=\"0.9\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"34.5\" cy=\"28\" r=\"0.7\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"33.1\" cy=\"24.8\" r=\"0.9\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"35.6\" cy=\"21.4\" r=\"0.9\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"39.4\" cy=\"21.9\" r=\"0.9\" fill=\"#A98A5F\" fill-opacity=\".6\"/></g><g class=\"anim-sway\" style=\"animation-duration:6.2s\"><defs><radialGradient id=\"pg8\" gradientUnits=\"userSpaceOnUse\" cx=\"64\" cy=\"47\" r=\"8.5\"><stop offset=\"0\" stop-color=\"#E87A90\" stop-opacity=\".85\"/><stop offset=\".38\" stop-color=\"#F49AA9\" stop-opacity=\".55\"/><stop offset=\".72\" stop-color=\"#F7B3C1\" stop-opacity=\".4\"/><stop offset=\"1\" stop-color=\"#FBDCE3\" stop-opacity=\".05\"/></radialGradient></defs><path d=\"M67.3 42.4 Q64 40.9 67.3 42.4 Q70.7 43.9 70.9 46.7 Q71.1 49.5 69.6 52.2 Q68.1 55 64 55 Q60 54.9 58 52.3 Q56 49.6 56.7 46.8 Q57.5 44 60.7 42.4 Z\" fill=\"#F6B0BE\" opacity=\"0.32\" filter=\"url(#wc-bleed)\"/><g transform=\"translate(64 47) rotate(20.8) scale(0.93)\"><path d=\"M1.8 -6.5 Q0 -6.8 1.8 -6.5 Q3.5 -6.2 3.4 -4.3 Q3.4 -2.5 2.6 -0.8 Q1.9 0.9 0 0.9 Q-1.9 0.9 -2.8 -0.7 Q-3.6 -2.4 -3.2 -4 Q-2.8 -5.5 -1.4 -6.2 Z\" fill=\"url(#pg8)\" fill-opacity=\".45\"/></g><g transform=\"translate(64 47) rotate(103.8) scale(1.09)\"><path d=\"M1.8 -6.8 Q0 -7.5 1.8 -6.8 Q3.5 -6.2 4 -4.2 Q4.5 -2.2 3.2 -0.7 Q1.9 0.8 0 0.8 Q-1.9 0.8 -2.7 -0.8 Q-3.4 -2.4 -3 -3.9 Q-2.6 -5.4 -1.3 -6.4 Z\" fill=\"url(#pg8)\" fill-opacity=\".45\"/></g><g transform=\"translate(64 47) rotate(197.8) scale(1.05)\"><path d=\"M1.7 -6.7 Q0 -7.4 1.7 -6.7 Q3.4 -6.1 3.9 -4.1 Q4.5 -2.2 3.2 -0.6 Q2 1 0.2 0.7 Q-1.7 0.3 -2.9 -1 Q-4.2 -2.3 -3.8 -4.1 Q-3.3 -6 -1.7 -6.7 Z\" fill=\"url(#pg8)\" fill-opacity=\".45\"/></g><g transform=\"translate(64 47) rotate(294) scale(0.92)\"><path d=\"M1.6 -6.9 Q0 -7.8 1.6 -6.9 Q3.3 -6 3.3 -4.2 Q3.4 -2.5 2.4 -1.3 Q1.4 -0.2 -0.2 0.3 Q-1.9 0.9 -2.7 -0.8 Q-3.5 -2.4 -3.4 -4.2 Q-3.3 -6 -1.7 -6.9 Z\" fill=\"url(#pg8)\" fill-opacity=\".45\"/></g><g transform=\"translate(64 47) rotate(56.5) scale(1)\"><path d=\"M1.3 -6.2 Q0 -7.1 1.3 -6.2 Q2.7 -5.3 3.2 -3.8 Q3.7 -2.3 2.5 -1.2 Q1.4 -0.2 -0.2 0.3 Q-1.8 0.7 -2.5 -0.8 Q-3.2 -2.4 -3.2 -4 Q-3.2 -5.7 -1.6 -6.4 Z\" fill=\"url(#pg8)\" fill-opacity=\".62\"/></g><g transform=\"translate(64 47) rotate(150.6) scale(0.92)\"><path d=\"M1.3 -6.3 Q0 -7.4 1.3 -6.3 Q2.7 -5.3 3.2 -3.8 Q3.7 -2.2 2.7 -0.8 Q1.8 0.7 0.2 0.3 Q-1.4 0 -2.4 -1.2 Q-3.3 -2.3 -3.2 -4.1 Q-3.2 -5.8 -1.6 -6.6 Z\" fill=\"url(#pg8)\" fill-opacity=\".62\"/></g><g transform=\"translate(64 47) rotate(240.9) scale(0.91)\"><path d=\"M1.4 -6.5 Q0 -7.6 1.4 -6.5 Q2.9 -5.5 3.2 -3.9 Q3.5 -2.3 2.5 -1.2 Q1.4 -0.2 -0.1 0.1 Q-1.6 0.4 -2.8 -0.9 Q-4 -2.2 -3.3 -3.7 Q-2.5 -5.2 -1.3 -6.4 Z\" fill=\"url(#pg8)\" fill-opacity=\".62\"/></g><g transform=\"translate(64 47) rotate(330.1) scale(0.97)\"><path d=\"M1.5 -6.1 Q0 -6.6 1.5 -6.1 Q3 -5.6 3.2 -4 Q3.4 -2.3 2.5 -1.1 Q1.5 0.1 0 0.2 Q-1.6 0.3 -2.7 -1 Q-3.7 -2.2 -3.2 -3.8 Q-2.6 -5.3 -1.3 -5.9 Z\" fill=\"url(#pg8)\" fill-opacity=\".62\"/></g><path d=\"M66.3 42 Q64 40.4 66.3 42 Q68.5 43.6 70.1 46.1 Q71.6 48.6 69.6 51.2 Q67.5 53.8 64.4 53 Q61.4 52.2 59.4 50.3 Q57.4 48.4 57.7 45.5 Q58 42.5 61 41.5 Z\" fill=\"none\" stroke=\"#E87A90\" stroke-width=\"1.6\" stroke-opacity=\".62\" filter=\"url(#wc-bleed)\"/><circle cx=\"64\" cy=\"47\" r=\"1.9\" fill=\"#DCE3A6\" fill-opacity=\".85\"/><circle cx=\"66.8\" cy=\"47.8\" r=\"0.6\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"64.9\" cy=\"49.8\" r=\"0.6\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"62.1\" cy=\"49.2\" r=\"0.6\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"61.1\" cy=\"46.5\" r=\"0.7\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"63\" cy=\"44.2\" r=\"0.7\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"65.8\" cy=\"44.7\" r=\"0.6\" fill=\"#A98A5F\" fill-opacity=\".6\"/></g><path d=\"M10 89 C7.5 83.4 13.5 79.2 8.5 75\" stroke=\"#8A9A68\" stroke-width=\"1.1\" stroke-opacity=\".6\" fill=\"none\"/><path d=\"M16 89 C18 84.1 14.5 80.6 19.5 77.1\" stroke=\"#8A9A68\" stroke-width=\"1\" stroke-opacity=\".55\" fill=\"none\"/></g></svg>", empty:"<svg viewBox=\"0 0 140 92\" width=\"100%\" height=\"100%\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><g filter=\"url(#wc-rough)\"><path d=\"M52 86 Q51.8 65 51 44\" stroke=\"#8A9A68\" stroke-width=\"1.4\" fill=\"none\"/><path d=\"M88 86 Q88.3 71 87 56\" stroke=\"#8A9A68\" stroke-width=\"1.3\" fill=\"none\"/><g transform=\"rotate(-12 66 62)\"><path d=\"M69.6 57.5 Q66 56.3 69.6 57.5 Q73.2 58.8 73.9 60.9 Q74.6 63.1 72.1 64.7 Q69.7 66.3 65.4 67 Q61.1 67.7 58.1 65.6 Q55.2 63.4 57.3 61.2 Q59.4 59 62.7 57.7 Z\" fill=\"url(#g-sage)\" fill-opacity=\"0.45\"/></g><g class=\"anim-sway\" style=\"animation-duration:6.5s\"><defs><radialGradient id=\"pg9\" gradientUnits=\"userSpaceOnUse\" cx=\"51\" cy=\"33\" r=\"12.4\"><stop offset=\"0\" stop-color=\"#E87A90\" stop-opacity=\".85\"/><stop offset=\".38\" stop-color=\"#F49AA9\" stop-opacity=\".55\"/><stop offset=\".72\" stop-color=\"#F7B3C1\" stop-opacity=\".4\"/><stop offset=\"1\" stop-color=\"#FBDCE3\" stop-opacity=\".05\"/></radialGradient></defs><path d=\"M55.2 27.5 Q51 25.7 55.2 27.5 Q59.4 29.3 60.5 33 Q61.5 36.7 58.9 40 Q56.2 43.4 50.8 43.7 Q45.4 44.1 42.6 40.4 Q39.8 36.8 40.8 32.8 Q41.7 28.7 46.4 27.2 Z\" fill=\"#F6B0BE\" opacity=\"0.32\" filter=\"url(#wc-bleed)\"/><g transform=\"translate(51 33) rotate(20.9) scale(1.07)\"><path d=\"M2.2 -9.8 Q0 -11.2 2.2 -9.8 Q4.4 -8.3 4.5 -6 Q4.7 -3.6 3.7 -1.4 Q2.6 0.9 0.3 0.3 Q-2.1 -0.3 -4.1 -1.8 Q-6.2 -3.3 -5.2 -5.8 Q-4.3 -8.3 -2.1 -9.7 Z\" fill=\"url(#pg9)\" fill-opacity=\".45\"/></g><g transform=\"translate(51 33) rotate(110) scale(1.01)\"><path d=\"M2.1 -9.1 Q0 -10 2.1 -9.1 Q4.2 -8.2 5.2 -5.8 Q6.1 -3.3 4.4 -1.3 Q2.6 0.8 0 0.7 Q-2.5 0.7 -4 -1.4 Q-5.4 -3.5 -4.8 -5.9 Q-4.3 -8.3 -2.2 -9.1 Z\" fill=\"url(#pg9)\" fill-opacity=\".45\"/></g><g transform=\"translate(51 33) rotate(195.8) scale(0.94)\"><path d=\"M2.3 -9.3 Q0 -10 2.3 -9.3 Q4.5 -8.5 4.8 -6 Q5.1 -3.5 3.9 -1.2 Q2.8 1.2 0.1 0.9 Q-2.5 0.6 -4.3 -1.4 Q-6.1 -3.3 -5.3 -5.9 Q-4.6 -8.5 -2.3 -9.3 Z\" fill=\"url(#pg9)\" fill-opacity=\".45\"/></g><g transform=\"translate(51 33) rotate(282.8) scale(0.95)\"><path d=\"M2.4 -9.6 Q0 -10.6 2.4 -9.6 Q4.7 -8.6 4.9 -6.1 Q5.1 -3.6 3.9 -1.2 Q2.7 1.1 0 1.1 Q-2.8 1.2 -4.5 -1 Q-6.2 -3.3 -5.6 -6.1 Q-5 -8.8 -2.5 -9.7 Z\" fill=\"url(#pg9)\" fill-opacity=\".45\"/></g><g transform=\"translate(51 33) rotate(60) scale(0.92)\"><path d=\"M2.3 -9 Q0 -9.6 2.3 -9 Q4.6 -8.4 5.3 -5.8 Q6 -3.1 4.2 -1.4 Q2.3 0.4 0 0.4 Q-2.3 0.4 -3.7 -1.5 Q-5.1 -3.4 -4.7 -5.8 Q-4.3 -8.2 -2.2 -8.9 Z\" fill=\"url(#pg9)\" fill-opacity=\".62\"/></g><g transform=\"translate(51 33) rotate(154.6) scale(0.91)\"><path d=\"M2.4 -9.3 Q0 -10 2.4 -9.3 Q4.8 -8.5 4.8 -6 Q4.7 -3.4 3.7 -1.1 Q2.7 1.2 0.2 0.8 Q-2.3 0.5 -4.1 -1.3 Q-5.9 -3.2 -5.4 -5.9 Q-4.9 -8.6 -2.4 -9.3 Z\" fill=\"url(#pg9)\" fill-opacity=\".62\"/></g><g transform=\"translate(51 33) rotate(236.2) scale(1)\"><path d=\"M2.4 -9.2 Q0 -9.8 2.4 -9.2 Q4.8 -8.6 5.3 -5.9 Q5.8 -3.2 4.1 -1.4 Q2.3 0.4 0.1 0.3 Q-2.2 0.2 -4 -1.5 Q-5.7 -3.2 -4.9 -5.6 Q-4.1 -7.9 -2 -8.9 Z\" fill=\"url(#pg9)\" fill-opacity=\".62\"/></g><g transform=\"translate(51 33) rotate(331.4) scale(1.01)\"><path d=\"M2.2 -9 Q0 -9.8 2.2 -9 Q4.3 -8.2 5.2 -5.6 Q6 -3.1 4.3 -1.1 Q2.6 1 0.2 0.7 Q-2.3 0.3 -4.1 -1.4 Q-5.9 -3.2 -5.4 -5.8 Q-4.8 -8.5 -2.4 -9.1 Z\" fill=\"url(#pg9)\" fill-opacity=\".62\"/></g><path d=\"M55.1 25.3 Q51 23.7 55.1 25.3 Q59.3 26.8 60.2 31 Q61.2 35.2 58.6 39 Q56 42.8 51.4 42 Q46.8 41.2 44.5 38 Q42.3 34.9 43.2 31.4 Q44.2 27.9 47.6 25.8 Z\" fill=\"none\" stroke=\"#E87A90\" stroke-width=\"1.6\" stroke-opacity=\".62\" filter=\"url(#wc-bleed)\"/><circle cx=\"51\" cy=\"33\" r=\"2.5\" fill=\"#DCE3A6\" fill-opacity=\".85\"/><circle cx=\"54.8\" cy=\"34\" r=\"0.9\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"52.2\" cy=\"36.7\" r=\"0.9\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"48.5\" cy=\"36\" r=\"0.8\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"47.1\" cy=\"33.1\" r=\"0.8\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"48.8\" cy=\"29.8\" r=\"0.8\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"53\" cy=\"29.6\" r=\"0.8\" fill=\"#A98A5F\" fill-opacity=\".6\"/></g><g class=\"anim-sway\" style=\"animation-duration:5.8s\"><defs><radialGradient id=\"pg10\" gradientUnits=\"userSpaceOnUse\" cx=\"87\" cy=\"46\" r=\"9.8\"><stop offset=\"0\" stop-color=\"#E87A90\" stop-opacity=\".85\"/><stop offset=\".38\" stop-color=\"#F49AA9\" stop-opacity=\".55\"/><stop offset=\".72\" stop-color=\"#F7B3C1\" stop-opacity=\".4\"/><stop offset=\"1\" stop-color=\"#FBDCE3\" stop-opacity=\".05\"/></radialGradient></defs><path d=\"M90.2 41.6 Q87 40 90.2 41.6 Q93.4 43.2 94.4 46 Q95.3 48.9 93.6 52.2 Q91.8 55.5 87.2 55.1 Q82.6 54.7 79.8 51.9 Q76.9 49.2 78.2 45.9 Q79.5 42.5 83.3 41.3 Z\" fill=\"#F6B0BE\" opacity=\"0.32\" filter=\"url(#wc-bleed)\"/><g transform=\"translate(87 46) rotate(11.1) scale(0.99)\"><path d=\"M1.6 -7.6 Q0 -8.7 1.6 -7.6 Q3.2 -6.4 3.9 -4.5 Q4.6 -2.7 3.2 -1.3 Q1.8 0.1 -0.2 0.5 Q-2.2 1 -3 -0.9 Q-3.9 -2.8 -3.7 -4.8 Q-3.6 -6.7 -1.8 -7.7 Z\" fill=\"url(#pg10)\" fill-opacity=\".45\"/></g><g transform=\"translate(87 46) rotate(109.9) scale(1)\"><path d=\"M2.1 -7.7 Q0 -8.3 2.1 -7.7 Q4.1 -7.1 4.6 -4.9 Q5 -2.6 3.6 -0.8 Q2.2 0.9 0.1 0.8 Q-2 0.6 -3.4 -1 Q-4.8 -2.6 -4.1 -4.5 Q-3.3 -6.5 -1.6 -7.4 Z\" fill=\"url(#pg10)\" fill-opacity=\".45\"/></g><g transform=\"translate(87 46) rotate(194.1) scale(1.01)\"><path d=\"M2 -7.9 Q0 -8.7 2 -7.9 Q4 -7.1 3.9 -5 Q3.8 -2.9 2.8 -1.4 Q1.8 0.1 0.1 0 Q-1.7 -0.1 -2.9 -1.4 Q-4.1 -2.8 -4 -4.9 Q-3.8 -6.9 -1.9 -7.8 Z\" fill=\"url(#pg10)\" fill-opacity=\".45\"/></g><g transform=\"translate(87 46) rotate(284.4) scale(0.94)\"><path d=\"M1.7 -7.3 Q0 -8.2 1.7 -7.3 Q3.3 -6.5 3.9 -4.6 Q4.5 -2.7 3.3 -0.9 Q2.1 0.9 0 0.8 Q-2.1 0.8 -3.2 -1 Q-4.2 -2.8 -3.8 -4.7 Q-3.4 -6.6 -1.7 -7.4 Z\" fill=\"url(#pg10)\" fill-opacity=\".45\"/></g><g transform=\"translate(87 46) rotate(59.1) scale(0.94)\"><path d=\"M1.7 -7 Q0 -7.6 1.7 -7 Q3.4 -6.4 3.8 -4.5 Q4.3 -2.6 3.1 -1.1 Q1.9 0.4 0 0.5 Q-2 0.6 -3.1 -1 Q-4.3 -2.6 -3.7 -4.4 Q-3.1 -6.1 -1.5 -6.9 Z\" fill=\"url(#pg10)\" fill-opacity=\".62\"/></g><g transform=\"translate(87 46) rotate(158.5) scale(1)\"><path d=\"M1.4 -7 Q0 -8.1 1.4 -7 Q2.9 -6 3.3 -4.3 Q3.8 -2.7 3 -0.9 Q2.1 0.9 0.2 0.6 Q-1.8 0.3 -2.9 -1.2 Q-4.1 -2.6 -3.5 -4.3 Q-2.9 -6 -1.4 -7 Z\" fill=\"url(#pg10)\" fill-opacity=\".62\"/></g><g transform=\"translate(87 46) rotate(247.6) scale(0.89)\"><path d=\"M1.6 -7.3 Q0 -8.4 1.6 -7.3 Q3.1 -6.2 3.4 -4.4 Q3.7 -2.7 2.9 -0.9 Q2.1 1 0.3 0.4 Q-1.6 -0.3 -2.5 -1.5 Q-3.5 -2.8 -3.3 -4.5 Q-3.1 -6.2 -1.6 -7.3 Z\" fill=\"url(#pg10)\" fill-opacity=\".62\"/></g><g transform=\"translate(87 46) rotate(335) scale(0.92)\"><path d=\"M1.6 -7 Q0 -7.7 1.6 -7 Q3.2 -6.2 3.3 -4.5 Q3.5 -2.8 2.7 -1.1 Q2 0.6 0 0.6 Q-2 0.6 -3 -1 Q-4.1 -2.6 -3.9 -4.6 Q-3.6 -6.6 -1.8 -7.2 Z\" fill=\"url(#pg10)\" fill-opacity=\".62\"/></g><path d=\"M90.1 40.5 Q87 39.5 90.1 40.5 Q93.1 41.4 94.1 44.6 Q95 47.7 92.9 50.7 Q90.9 53.6 87.4 52.9 Q83.9 52.1 82 49.8 Q80.2 47.5 80.9 44.7 Q81.6 42 84.3 40.7 Z\" fill=\"none\" stroke=\"#E87A90\" stroke-width=\"1.6\" stroke-opacity=\".62\" filter=\"url(#wc-bleed)\"/><circle cx=\"87\" cy=\"46\" r=\"2\" fill=\"#DCE3A6\" fill-opacity=\".85\"/><circle cx=\"90\" cy=\"46.4\" r=\"0.6\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"88\" cy=\"48.9\" r=\"0.7\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"85.1\" cy=\"48.4\" r=\"0.6\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"83.9\" cy=\"45.8\" r=\"0.8\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"85.8\" cy=\"43.2\" r=\"0.7\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"88.9\" cy=\"43.6\" r=\"0.6\" fill=\"#A98A5F\" fill-opacity=\".6\"/></g><g class=\"anim-bloom\"><g transform=\"rotate(10 112 66)\"><path d=\"M113.1 62.8 Q112 62.2 113.1 62.8 Q114.3 63.5 114.5 65.2 Q114.7 66.9 114.1 68.7 Q113.6 70.5 112.1 70.3 Q110.6 70.1 109.8 68.5 Q109 67 109.2 65 Q109.4 63.1 110.7 62.6 Z\" fill=\"url(#g-peach)\" fill-opacity=\".6\"/></g></g><path d=\"M112 86 Q110.5 79 112 72\" stroke=\"#8A9A68\" stroke-width=\"1.1\" fill=\"none\"/><path d=\"M18 87 C15.5 81 21.5 76.5 16.5 72\" stroke=\"#8A9A68\" stroke-width=\"1.1\" stroke-opacity=\".6\" fill=\"none\"/><path d=\"M24 87 C26 81.8 22.5 78 27.5 74.3\" stroke=\"#8A9A68\" stroke-width=\"1\" stroke-opacity=\".55\" fill=\"none\"/><path d=\"M118 87 C115.5 81.8 121.5 77.9 116.5 74\" stroke=\"#8A9A68\" stroke-width=\"1.1\" stroke-opacity=\".6\" fill=\"none\"/><path d=\"M124 87 C126 82.5 122.5 79.2 127.5 76\" stroke=\"#8A9A68\" stroke-width=\"1\" stroke-opacity=\".55\" fill=\"none\"/></g></svg>"}, drift:"<span class=\"petal-fall\" style=\"left:7%; width:20px; height:20px; animation-duration:27s; animation-delay:-5s\"><span class=\"petal-sway\" style=\"animation-duration:3.6s\">" + BUTTERFLY_DRIFT + "</span></span><span class=\"petal-fall\" style=\"left:19%; width:14px; height:16px; animation-duration:24s; animation-delay:-14s\"><span class=\"petal-sway\" style=\"animation-duration:3.2s\"><svg viewBox=\"-13 -27 26 30\" width=\"100%\" height=\"100%\" aria-hidden=\"true\"><path d=\"M0 0 C-3.6 -7.2 -10.5 -12.5 -10 -18.7 C-9.5 -24.5 -3.4 -25.2 -1.4 -21.6 C-0.6 -19.9 0.6 -19.9 1.4 -21.6 C3.4 -25.2 9.5 -24.5 10 -18.7 C10.5 -12.5 3.6 -7.2 0 0 Z\" fill=\"url(#g-driftpetal)\"/><circle cx=\"0\" cy=\"-2.4\" r=\"1.7\" fill=\"#C98F6B\" fill-opacity=\".3\"/></svg></span></span><span class=\"petal-fall\" style=\"left:31%; width:18px; height:18px; animation-duration:30s; animation-delay:-21s\"><span class=\"petal-sway\" style=\"animation-duration:4.2s\">" + BUTTERFLY_DRIFT + "</span></span><span class=\"petal-fall\" style=\"left:44%; width:13px; height:15px; animation-duration:26s; animation-delay:-9s\"><span class=\"petal-sway\" style=\"animation-duration:3.8s\"><svg viewBox=\"-13 -27 26 30\" width=\"100%\" height=\"100%\" aria-hidden=\"true\"><path d=\"M0 0 C-3.6 -7.2 -10.5 -12.5 -10 -18.7 C-9.5 -24.5 -3.4 -25.2 -1.4 -21.6 C-0.6 -19.9 0.6 -19.9 1.4 -21.6 C3.4 -25.2 9.5 -24.5 10 -18.7 C10.5 -12.5 3.6 -7.2 0 0 Z\" fill=\"url(#g-driftpetal)\"/><circle cx=\"0\" cy=\"-2.4\" r=\"1.7\" fill=\"#C98F6B\" fill-opacity=\".3\"/></svg></span></span><span class=\"petal-fall\" style=\"left:56%; width:21px; height:21px; animation-duration:25s; animation-delay:-17s\"><span class=\"petal-sway\" style=\"animation-duration:3.4s\">" + BUTTERFLY_DRIFT + "</span></span><span class=\"petal-fall\" style=\"left:68%; width:12px; height:14px; animation-duration:29s; animation-delay:-25s\"><span class=\"petal-sway\" style=\"animation-duration:4.5s\"><svg viewBox=\"-13 -27 26 30\" width=\"100%\" height=\"100%\" aria-hidden=\"true\"><path d=\"M0 0 C-3.6 -7.2 -10.5 -12.5 -10 -18.7 C-9.5 -24.5 -3.4 -25.2 -1.4 -21.6 C-0.6 -19.9 0.6 -19.9 1.4 -21.6 C3.4 -25.2 9.5 -24.5 10 -18.7 C10.5 -12.5 3.6 -7.2 0 0 Z\" fill=\"url(#g-driftpetal)\"/><circle cx=\"0\" cy=\"-2.4\" r=\"1.7\" fill=\"#C98F6B\" fill-opacity=\".3\"/></svg></span></span><span class=\"petal-fall\" style=\"left:79%; width:17px; height:17px; animation-duration:28s; animation-delay:-3s\"><span class=\"petal-sway\" style=\"animation-duration:3.9s\">" + BUTTERFLY_DRIFT + "</span></span><span class=\"petal-fall\" style=\"left:89%; width:15px; height:17px; animation-duration:24s; animation-delay:-19s\"><span class=\"petal-sway\" style=\"animation-duration:3.1s\"><svg viewBox=\"-13 -27 26 30\" width=\"100%\" height=\"100%\" aria-hidden=\"true\"><path d=\"M0 0 C-3.6 -7.2 -10.5 -12.5 -10 -18.7 C-9.5 -24.5 -3.4 -25.2 -1.4 -21.6 C-0.6 -19.9 0.6 -19.9 1.4 -21.6 C3.4 -25.2 9.5 -24.5 10 -18.7 C10.5 -12.5 3.6 -7.2 0 0 Z\" fill=\"url(#g-driftpetal)\"/><circle cx=\"0\" cy=\"-2.4\" r=\"1.7\" fill=\"#C98F6B\" fill-opacity=\".3\"/></svg></span></span><span class=\"petal-fall\" style=\"left:38%; width:16px; height:16px; animation-duration:31s; animation-delay:-27s\"><span class=\"petal-sway\" style=\"animation-duration:4s\">" + BUTTERFLY_DRIFT + "</span></span><span class=\"petal-fall\" style=\"left:63%; width:19px; height:19px; animation-duration:26s; animation-delay:-12s\"><span class=\"petal-sway\" style=\"animation-duration:3.7s\">" + BUTTERFLY_DRIFT + "</span></span>" };
+
+
+/* FotoBro — theme trang trí C3 "Đào + trúc" (fragment đăng ký, không phải file hoàn chỉnh).
+   Nguồn chuỗi: shared/motifs-drifts.js (MOTIFS.c3 + FLOWER_DRIFT), đánh giá nguyên văn bằng
+   shared/helpers.js với hạt giống RNG cố định (_seed=11) theo đúng thứ tự mock (c1 -> c2 -> c3),
+   nên mọi nét blob/gradient trùng khớp mock v7. Không tham chiếu helper nào lúc chạy.
+   PLACEHOLDER: chuỗi drift chứa __BUTTERFLY2_DRIFT__ (6 chỗ, thay cho cả cụm svg BUTTERFLY_DRIFT
+   v7) — coordinator thay bằng chuỗi BUTTERFLY_DRIFT thật từ w04 (butterfly2, hoa cánh bướm vẽ lại,
+   chỉ màu hồng, cánh rời rạc) khi tích hợp. PETAL_SVG (4 cánh hoa thường) giữ nguyên.
+   Chèn: sau khối DECOR_THEMES + helpers của w08, trước applyDecor(). */
+DECOR_THEMES["c3"] = { label: "Đào + trúc", bg: "assets/themes/bg-peach.webp", motifs: { hero: "<svg viewBox=\"0 0 150 98\" width=\"100%\" height=\"100%\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><g filter=\"url(#wc-rough)\"><path d=\"M16 96 C14 63.8 18 36.2 16 4\" stroke=\"#8A9A68\" stroke-width=\"2\" stroke-opacity=\".8\" fill=\"none\"/><path d=\"M15.2 93 C13.6 63.8 16.8 36.2 15.2 7\" stroke=\"#A9D08F\" stroke-width=\".9\" stroke-opacity=\".55\" fill=\"none\"/><path d=\"M14.3 36.1 C15.5 34.1 16.7 36.5 17.7 34.5\" stroke=\"#8A9A68\" stroke-width=\"1.5\" stroke-opacity=\".6\" fill=\"none\"/><path d=\"M14.3 66.4 C15.5 64.4 16.7 66.8 17.7 64.8\" stroke=\"#8A9A68\" stroke-width=\"1.5\" stroke-opacity=\".6\" fill=\"none\"/><g transform=\"rotate(-18 30 16)\"><path d=\"M34.9 13.1 Q30 12.5 34.9 13.1 Q39.9 13.7 40.6 15.2 Q41.3 16.8 38.4 18.1 Q35.5 19.4 30.6 19 Q25.8 18.6 21.9 17.7 Q18 16.8 19.6 15.4 Q21.2 13.9 25.6 13.2 Z\" fill=\"url(#g-sage)\" fill-opacity=\"0.45\"/></g><g transform=\"rotate(-14 30 46)\"><path d=\"M34 43.5 Q30 42.9 34 43.5 Q38.1 44 38.8 45.3 Q39.5 46.7 36.8 47.7 Q34.2 48.7 29.8 48.8 Q25.5 48.9 22.4 47.8 Q19.4 46.7 20.8 45.4 Q22.2 44.1 26.1 43.5 Z\" fill=\"url(#g-sage)\" fill-opacity=\"0.4\"/></g><g transform=\"rotate(-16 29 74)\"><path d=\"M32.9 71.6 Q29 71.1 32.9 71.6 Q36.7 72.2 37.2 73.4 Q37.8 74.6 35.4 75.6 Q33.1 76.5 28.7 76.7 Q24.4 76.9 21.2 75.8 Q18 74.8 19.5 73.4 Q21 72.1 25 71.6 Z\" fill=\"url(#g-sage)\" fill-opacity=\"0.4\"/></g><g class=\"anim-sway\" style=\"animation-duration:6.5s\"><defs><radialGradient id=\"pg11\" gradientUnits=\"userSpaceOnUse\" cx=\"110\" cy=\"27\" r=\"20\"><stop offset=\"0\" stop-color=\"#E87A90\" stop-opacity=\".85\"/><stop offset=\".38\" stop-color=\"#F49AA9\" stop-opacity=\".55\"/><stop offset=\".72\" stop-color=\"#F7B3C1\" stop-opacity=\".4\"/><stop offset=\"1\" stop-color=\"#FBDCE3\" stop-opacity=\".05\"/></radialGradient></defs><path d=\"M117.8 14.1 Q110 12.4 117.8 14.1 Q125.6 15.8 126.1 23.1 Q126.5 30.4 122.6 36.7 Q118.6 43 110 43.1 Q101.3 43.1 96.2 37 Q91.1 30.9 94.5 24.6 Q97.8 18.3 103.9 15.3 Z\" fill=\"#F6B0BE\" opacity=\"0.3\" filter=\"url(#wc-bleed)\"/><g transform=\"translate(110 27) rotate(0)\"><path d=\"M0 0 C-2.8 -4.7 -8.2 -8.2 -7.8 -12.2 C-7.4 -16 -2.6 -16.5 -1.1 -14.1 C-0.5 -13 0.5 -13 1.1 -14.1 C2.6 -16.5 7.4 -16 7.8 -12.2 C8.2 -8.2 2.8 -4.7 0 0 Z\" fill=\"url(#pg11)\" fill-opacity=\".55\"/><circle cx=\"0\" cy=\"-2.5\" r=\"1.4\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g><g transform=\"translate(110 27) rotate(69.6)\"><path d=\"M0 0 C-2.8 -4.7 -8.2 -8.2 -7.8 -12.2 C-7.4 -16 -2.6 -16.5 -1.1 -14.1 C-0.5 -13 0.5 -13 1.1 -14.1 C2.6 -16.5 7.4 -16 7.8 -12.2 C8.2 -8.2 2.8 -4.7 0 0 Z\" fill=\"url(#pg11)\" fill-opacity=\".55\"/><circle cx=\"0\" cy=\"-2.5\" r=\"1.4\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g><g transform=\"translate(110 27) rotate(147)\"><path d=\"M0 0 C-2.8 -4.7 -8.2 -8.2 -7.8 -12.2 C-7.4 -16 -2.6 -16.5 -1.1 -14.1 C-0.5 -13 0.5 -13 1.1 -14.1 C2.6 -16.5 7.4 -16 7.8 -12.2 C8.2 -8.2 2.8 -4.7 0 0 Z\" fill=\"url(#pg11)\" fill-opacity=\".55\"/><circle cx=\"0\" cy=\"-2.5\" r=\"1.4\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g><g transform=\"translate(110 27) rotate(220.2)\"><path d=\"M0 0 C-2.8 -4.7 -8.2 -8.2 -7.8 -12.2 C-7.4 -16 -2.6 -16.5 -1.1 -14.1 C-0.5 -13 0.5 -13 1.1 -14.1 C2.6 -16.5 7.4 -16 7.8 -12.2 C8.2 -8.2 2.8 -4.7 0 0 Z\" fill=\"url(#pg11)\" fill-opacity=\".55\"/><circle cx=\"0\" cy=\"-2.5\" r=\"1.4\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g><g transform=\"translate(110 27) rotate(290.9)\"><path d=\"M0 0 C-2.8 -4.7 -8.2 -8.2 -7.8 -12.2 C-7.4 -16 -2.6 -16.5 -1.1 -14.1 C-0.5 -13 0.5 -13 1.1 -14.1 C2.6 -16.5 7.4 -16 7.8 -12.2 C8.2 -8.2 2.8 -4.7 0 0 Z\" fill=\"url(#pg11)\" fill-opacity=\".55\"/><circle cx=\"0\" cy=\"-2.5\" r=\"1.4\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g><path d=\"M117.8 11.5 Q110 7.9 117.8 11.5 Q125.7 15.1 126.2 22.9 Q126.7 30.6 122.4 36.8 Q118.1 43 110.4 42.1 Q102.8 41.3 97.4 36.1 Q92 30.9 92.5 22.5 Q92.9 14.1 101.5 11 Z\" fill=\"none\" stroke=\"#E87A90\" stroke-width=\"1.6\" stroke-opacity=\".62\" filter=\"url(#wc-bleed)\"/><circle cx=\"110\" cy=\"27\" r=\"1.7\" fill=\"#DCE3A6\" fill-opacity=\".85\"/><circle cx=\"112.6\" cy=\"27.3\" r=\"0.6\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"111.1\" cy=\"29.4\" r=\"0.6\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"108.5\" cy=\"29.2\" r=\"0.7\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"107.4\" cy=\"26.8\" r=\"0.5\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"108.6\" cy=\"24.7\" r=\"0.6\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"111.5\" cy=\"24.8\" r=\"0.6\" fill=\"#A98A5F\" fill-opacity=\".6\"/></g><g class=\"anim-tremble\"><g transform=\"translate(76 56) rotate(32)\"><path d=\"M0 0 C-2.6 -4.2 -7.5 -7.3 -7.1 -10.9 C-6.7 -14.3 -2.4 -14.7 -1 -12.6 C-0.4 -11.6 0.5 -11.6 1 -12.6 C2.4 -14.7 6.8 -14.3 7.1 -10.9 C7.5 -7.3 2.6 -4.2 0 0 Z\" fill=\"url(#g-driftpetal)\" fill-opacity=\".85\"/><circle cx=\"0\" cy=\"-1.4\" r=\"1.1\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g></g><g class=\"anim-tremble\"><g transform=\"translate(128 70) rotate(-24)\"><path d=\"M0 0 C-2.2 -3.6 -6.5 -6.2 -6.2 -9.4 C-5.9 -12.2 -2.1 -12.6 -0.8 -10.8 C-0.4 -10 0.4 -10 0.8 -10.8 C2.1 -12.6 5.9 -12.2 6.2 -9.4 C6.5 -6.2 2.2 -3.6 0 0 Z\" fill=\"url(#g-driftpetal)\" fill-opacity=\".85\"/><circle cx=\"0\" cy=\"-1.2\" r=\"1\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g></g><g class=\"anim-tremble\"><g transform=\"translate(52 34) rotate(68)\"><path d=\"M0 0 C-1.9 -3.1 -5.5 -5.5 -5.2 -8.2 C-4.9 -10.7 -1.8 -11 -0.7 -9.5 C-0.3 -8.7 0.3 -8.7 0.7 -9.5 C1.8 -11 5 -10.7 5.2 -8.2 C5.5 -5.5 1.9 -3.1 0 0 Z\" fill=\"url(#g-driftpetal)\" fill-opacity=\".85\"/><circle cx=\"0\" cy=\"-1\" r=\"0.8\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g></g></g></svg>", sprig: "<svg viewBox=\"0 0 90 90\" width=\"100%\" height=\"100%\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><g filter=\"url(#wc-rough)\"><path d=\"M12 88 C10 59 14 34.1 12 5\" stroke=\"#8A9A68\" stroke-width=\"2\" stroke-opacity=\".8\" fill=\"none\"/><path d=\"M11.2 85 C9.6 59 12.8 34.1 11.2 8\" stroke=\"#A9D08F\" stroke-width=\".9\" stroke-opacity=\".55\" fill=\"none\"/><path d=\"M10.3 34 C11.5 32 12.7 34.4 13.7 32.4\" stroke=\"#8A9A68\" stroke-width=\"1.5\" stroke-opacity=\".6\" fill=\"none\"/><path d=\"M10.3 61.4 C11.5 59.4 12.7 61.8 13.7 59.8\" stroke=\"#8A9A68\" stroke-width=\"1.5\" stroke-opacity=\".6\" fill=\"none\"/><g transform=\"rotate(-16 24 20)\"><path d=\"M27.6 17.8 Q24 17.3 27.6 17.8 Q31.2 18.3 32 19.4 Q32.7 20.6 30.9 21.9 Q29.1 23.2 24.5 22.9 Q19.9 22.5 16.7 21.6 Q13.5 20.7 15.3 19.5 Q17.2 18.4 20.6 17.8 Z\" fill=\"url(#g-sage)\" fill-opacity=\"0.45\"/></g><g transform=\"rotate(-13 23 58)\"><path d=\"M26.8 55.6 Q23 55 26.8 55.6 Q30.5 56.2 32.1 57.5 Q33.8 58.8 30.3 59.6 Q26.7 60.4 22.7 60.5 Q18.7 60.7 15.7 59.7 Q12.6 58.7 14.1 57.5 Q15.6 56.2 19.3 55.6 Z\" fill=\"url(#g-sage)\" fill-opacity=\"0.4\"/></g><g class=\"anim-sway\" style=\"animation-duration:5.7s\"><defs><radialGradient id=\"pg12\" gradientUnits=\"userSpaceOnUse\" cx=\"60\" cy=\"24\" r=\"16.8\"><stop offset=\"0\" stop-color=\"#E87A90\" stop-opacity=\".85\"/><stop offset=\".38\" stop-color=\"#F49AA9\" stop-opacity=\".55\"/><stop offset=\".72\" stop-color=\"#F7B3C1\" stop-opacity=\".4\"/><stop offset=\"1\" stop-color=\"#FBDCE3\" stop-opacity=\".05\"/></radialGradient></defs><path d=\"M65.9 13.2 Q60 10.9 65.9 13.2 Q71.9 15.5 74.4 21.5 Q76.9 27.5 72.1 32.5 Q67.3 37.6 60.7 36.3 Q54.1 34.9 50 30.9 Q45.9 26.9 47.5 21.6 Q49.1 16.2 54.6 13.6 Z\" fill=\"#F6B0BE\" opacity=\"0.3\" filter=\"url(#wc-bleed)\"/><g transform=\"translate(60 24) rotate(2.4)\"><path d=\"M0 0 C-2.3 -4 -6.9 -6.9 -6.5 -10.3 C-6.2 -13.5 -2.2 -13.9 -0.9 -11.9 C-0.4 -11 0.4 -11 0.9 -11.9 C2.2 -13.9 6.2 -13.5 6.5 -10.3 C6.9 -6.9 2.3 -4 0 0 Z\" fill=\"url(#pg12)\" fill-opacity=\".55\"/><circle cx=\"0\" cy=\"-2.1\" r=\"1.2\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g><g transform=\"translate(60 24) rotate(73.2)\"><path d=\"M0 0 C-2.3 -4 -6.9 -6.9 -6.5 -10.3 C-6.2 -13.5 -2.2 -13.9 -0.9 -11.9 C-0.4 -11 0.4 -11 0.9 -11.9 C2.2 -13.9 6.2 -13.5 6.5 -10.3 C6.9 -6.9 2.3 -4 0 0 Z\" fill=\"url(#pg12)\" fill-opacity=\".55\"/><circle cx=\"0\" cy=\"-2.1\" r=\"1.2\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g><g transform=\"translate(60 24) rotate(139.7)\"><path d=\"M0 0 C-2.3 -4 -6.9 -6.9 -6.5 -10.3 C-6.2 -13.5 -2.2 -13.9 -0.9 -11.9 C-0.4 -11 0.4 -11 0.9 -11.9 C2.2 -13.9 6.2 -13.5 6.5 -10.3 C6.9 -6.9 2.3 -4 0 0 Z\" fill=\"url(#pg12)\" fill-opacity=\".55\"/><circle cx=\"0\" cy=\"-2.1\" r=\"1.2\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g><g transform=\"translate(60 24) rotate(220.3)\"><path d=\"M0 0 C-2.3 -4 -6.9 -6.9 -6.5 -10.3 C-6.2 -13.5 -2.2 -13.9 -0.9 -11.9 C-0.4 -11 0.4 -11 0.9 -11.9 C2.2 -13.9 6.2 -13.5 6.5 -10.3 C6.9 -6.9 2.3 -4 0 0 Z\" fill=\"url(#pg12)\" fill-opacity=\".55\"/><circle cx=\"0\" cy=\"-2.1\" r=\"1.2\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g><g transform=\"translate(60 24) rotate(287.9)\"><path d=\"M0 0 C-2.3 -4 -6.9 -6.9 -6.5 -10.3 C-6.2 -13.5 -2.2 -13.9 -0.9 -11.9 C-0.4 -11 0.4 -11 0.9 -11.9 C2.2 -13.9 6.2 -13.5 6.5 -10.3 C6.9 -6.9 2.3 -4 0 0 Z\" fill=\"url(#pg12)\" fill-opacity=\".55\"/><circle cx=\"0\" cy=\"-2.1\" r=\"1.2\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g><path d=\"M66.5 12.5 Q60 10.7 66.5 12.5 Q73 14.2 75.5 21 Q78 27.9 72.5 32.9 Q67 37.9 59.9 38.1 Q52.7 38.3 47.2 33.1 Q41.7 28 44.3 21 Q46.9 14.1 53.4 12.4 Z\" fill=\"none\" stroke=\"#E87A90\" stroke-width=\"1.6\" stroke-opacity=\".62\" filter=\"url(#wc-bleed)\"/><circle cx=\"60\" cy=\"24\" r=\"1.4\" fill=\"#DCE3A6\" fill-opacity=\".85\"/><circle cx=\"62.1\" cy=\"24.7\" r=\"0.5\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"60.9\" cy=\"26\" r=\"0.4\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"58.4\" cy=\"25.6\" r=\"0.5\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"57.8\" cy=\"23.7\" r=\"0.5\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"59\" cy=\"22\" r=\"0.5\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"61.4\" cy=\"22.3\" r=\"0.5\" fill=\"#A98A5F\" fill-opacity=\".6\"/></g><g class=\"anim-tremble\"><g transform=\"translate(42 56) rotate(26)\"><path d=\"M0 0 C-2.2 -3.6 -6.5 -6.2 -6.2 -9.4 C-5.9 -12.2 -2.1 -12.6 -0.8 -10.8 C-0.4 -10 0.4 -10 0.8 -10.8 C2.1 -12.6 5.9 -12.2 6.2 -9.4 C6.5 -6.2 2.2 -3.6 0 0 Z\" fill=\"url(#g-driftpetal)\" fill-opacity=\".85\"/><circle cx=\"0\" cy=\"-1.2\" r=\"1\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g></g><g class=\"anim-tremble\"><g transform=\"translate(72 76) rotate(-30)\"><path d=\"M0 0 C-1.9 -3 -5.5 -5.2 -5.2 -7.8 C-4.9 -10.2 -1.8 -10.5 -0.7 -9 C-0.3 -8.3 0.3 -8.3 0.7 -9 C1.8 -10.5 5 -10.2 5.2 -7.8 C5.5 -5.2 1.9 -3 0 0 Z\" fill=\"url(#g-driftpetal)\" fill-opacity=\".85\"/><circle cx=\"0\" cy=\"-1\" r=\"0.8\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g></g></g></svg>", empty: "<svg viewBox=\"0 0 140 92\" width=\"100%\" height=\"100%\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><g filter=\"url(#wc-rough)\"><path d=\"M24 88 C22 60 26 36 24 8\" stroke=\"#8A9A68\" stroke-width=\"2\" stroke-opacity=\".8\" fill=\"none\"/><path d=\"M23.2 85 C21.6 60 24.8 36 23.2 11\" stroke=\"#A9D08F\" stroke-width=\".9\" stroke-opacity=\".55\" fill=\"none\"/><path d=\"M22.3 36 C23.5 34 24.7 36.4 25.7 34.4\" stroke=\"#8A9A68\" stroke-width=\"1.5\" stroke-opacity=\".6\" fill=\"none\"/><path d=\"M22.3 62.4 C23.5 60.4 24.7 62.8 25.7 60.8\" stroke=\"#8A9A68\" stroke-width=\"1.5\" stroke-opacity=\".6\" fill=\"none\"/><g transform=\"rotate(-16 36 26)\"><path d=\"M39.9 23.4 Q36 22.6 39.9 23.4 Q43.8 24.2 45.8 25.5 Q47.8 26.8 44 27.7 Q40.2 28.6 36.1 28.5 Q32.1 28.4 29.2 27.5 Q26.4 26.6 27.7 25.5 Q28.9 24.3 32.5 23.5 Z\" fill=\"url(#g-sage)\" fill-opacity=\"0.45\"/></g><g transform=\"rotate(-13 35 62)\"><path d=\"M38.5 59.5 Q35 58.6 38.5 59.5 Q42.1 60.3 43.1 61.5 Q44.2 62.6 41.5 63.6 Q38.9 64.5 35.1 64.4 Q31.4 64.3 28.5 63.5 Q25.7 62.6 26.7 61.4 Q27.8 60.2 31.4 59.4 Z\" fill=\"url(#g-sage)\" fill-opacity=\"0.4\"/></g><g class=\"anim-sway\" style=\"animation-duration:5.3s\"><defs><radialGradient id=\"pg13\" gradientUnits=\"userSpaceOnUse\" cx=\"102\" cy=\"25\" r=\"17.8\"><stop offset=\"0\" stop-color=\"#E87A90\" stop-opacity=\".85\"/><stop offset=\".38\" stop-color=\"#F49AA9\" stop-opacity=\".55\"/><stop offset=\".72\" stop-color=\"#F7B3C1\" stop-opacity=\".4\"/><stop offset=\"1\" stop-color=\"#FBDCE3\" stop-opacity=\".05\"/></radialGradient></defs><path d=\"M107.8 14.4 Q102 12.1 107.8 14.4 Q113.7 16.7 116.9 22.7 Q120.1 28.7 114.5 33.3 Q108.9 37.9 102.4 37.1 Q95.9 36.3 89.9 32.5 Q83.8 28.7 86.5 22.3 Q89.3 15.9 95.6 14 Z\" fill=\"#F6B0BE\" opacity=\"0.3\" filter=\"url(#wc-bleed)\"/><g transform=\"translate(102 25) rotate(-1.3)\"><path d=\"M0 0 C-2.5 -4.2 -7.3 -7.3 -6.9 -10.9 C-6.6 -14.3 -2.3 -14.7 -1 -12.6 C-0.4 -11.6 0.4 -11.6 1 -12.6 C2.3 -14.7 6.6 -14.3 6.9 -10.9 C7.3 -7.3 2.5 -4.2 0 0 Z\" fill=\"url(#pg13)\" fill-opacity=\".55\"/><circle cx=\"0\" cy=\"-2.2\" r=\"1.3\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g><g transform=\"translate(102 25) rotate(70.8)\"><path d=\"M0 0 C-2.5 -4.2 -7.3 -7.3 -6.9 -10.9 C-6.6 -14.3 -2.3 -14.7 -1 -12.6 C-0.4 -11.6 0.4 -11.6 1 -12.6 C2.3 -14.7 6.6 -14.3 6.9 -10.9 C7.3 -7.3 2.5 -4.2 0 0 Z\" fill=\"url(#pg13)\" fill-opacity=\".55\"/><circle cx=\"0\" cy=\"-2.2\" r=\"1.3\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g><g transform=\"translate(102 25) rotate(143.2)\"><path d=\"M0 0 C-2.5 -4.2 -7.3 -7.3 -6.9 -10.9 C-6.6 -14.3 -2.3 -14.7 -1 -12.6 C-0.4 -11.6 0.4 -11.6 1 -12.6 C2.3 -14.7 6.6 -14.3 6.9 -10.9 C7.3 -7.3 2.5 -4.2 0 0 Z\" fill=\"url(#pg13)\" fill-opacity=\".55\"/><circle cx=\"0\" cy=\"-2.2\" r=\"1.3\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g><g transform=\"translate(102 25) rotate(216.6)\"><path d=\"M0 0 C-2.5 -4.2 -7.3 -7.3 -6.9 -10.9 C-6.6 -14.3 -2.3 -14.7 -1 -12.6 C-0.4 -11.6 0.4 -11.6 1 -12.6 C2.3 -14.7 6.6 -14.3 6.9 -10.9 C7.3 -7.3 2.5 -4.2 0 0 Z\" fill=\"url(#pg13)\" fill-opacity=\".55\"/><circle cx=\"0\" cy=\"-2.2\" r=\"1.3\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g><g transform=\"translate(102 25) rotate(289)\"><path d=\"M0 0 C-2.5 -4.2 -7.3 -7.3 -6.9 -10.9 C-6.6 -14.3 -2.3 -14.7 -1 -12.6 C-0.4 -11.6 0.4 -11.6 1 -12.6 C2.3 -14.7 6.6 -14.3 6.9 -10.9 C7.3 -7.3 2.5 -4.2 0 0 Z\" fill=\"url(#pg13)\" fill-opacity=\".55\"/><circle cx=\"0\" cy=\"-2.2\" r=\"1.3\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g><path d=\"M109 11.4 Q102 8.5 109 11.4 Q116.1 14.3 116.8 21.4 Q117.6 28.4 113.7 34.4 Q109.8 40.5 102 40.4 Q94.2 40.4 90 34.5 Q85.7 28.5 87.3 21.8 Q88.9 15.1 95.5 11.8 Z\" fill=\"none\" stroke=\"#E87A90\" stroke-width=\"1.6\" stroke-opacity=\".62\" filter=\"url(#wc-bleed)\"/><circle cx=\"102\" cy=\"25\" r=\"1.5\" fill=\"#DCE3A6\" fill-opacity=\".85\"/><circle cx=\"104.3\" cy=\"25.7\" r=\"0.6\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"102.6\" cy=\"27.3\" r=\"0.5\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"100.6\" cy=\"26.9\" r=\"0.6\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"99.6\" cy=\"25.1\" r=\"0.6\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"100.9\" cy=\"22.9\" r=\"0.5\" fill=\"#A98A5F\" fill-opacity=\".6\"/><circle cx=\"103.4\" cy=\"23.1\" r=\"0.6\" fill=\"#A98A5F\" fill-opacity=\".6\"/></g><g class=\"anim-tremble\"><g transform=\"translate(70 50) rotate(30)\"><path d=\"M0 0 C-2.4 -3.9 -7 -6.8 -6.6 -10.1 C-6.3 -13.3 -2.2 -13.6 -0.9 -11.7 C-0.4 -10.8 0.4 -10.8 0.9 -11.7 C2.2 -13.6 6.3 -13.3 6.7 -10.1 C7 -6.8 2.4 -3.9 0 0 Z\" fill=\"url(#g-driftpetal)\" fill-opacity=\".85\"/><circle cx=\"0\" cy=\"-1.3\" r=\"1.1\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g></g><g class=\"anim-tremble\"><g transform=\"translate(118 66) rotate(-20)\"><path d=\"M0 0 C-2 -3.3 -6 -5.7 -5.7 -8.6 C-5.4 -11.2 -1.9 -11.5 -0.8 -9.9 C-0.4 -9.1 0.4 -9.1 0.8 -9.9 C1.9 -11.5 5.4 -11.2 5.7 -8.6 C6 -5.7 2 -3.3 0 0 Z\" fill=\"url(#g-driftpetal)\" fill-opacity=\".85\"/><circle cx=\"0\" cy=\"-1.1\" r=\"0.9\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g></g><g class=\"anim-tremble\"><g transform=\"translate(48 78) rotate(55)\"><path d=\"M0 0 C-1.7 -2.8 -5 -4.9 -4.7 -7.4 C-4.5 -9.7 -1.6 -10 -0.6 -8.5 C-0.3 -7.9 0.3 -7.9 0.7 -8.5 C1.6 -10 4.5 -9.7 4.8 -7.4 C5 -4.9 1.7 -2.8 0 0 Z\" fill=\"url(#g-driftpetal)\" fill-opacity=\".85\"/><circle cx=\"0\" cy=\"-0.9\" r=\"0.8\" fill=\"#C98F6B\" fill-opacity=\".3\"/></g></g></g></svg>" }, drift: "<span class=\"petal-fall\" style=\"left:7%; width:20px; height:20px; animation-duration:27s; animation-delay:-5s\"><span class=\"petal-sway\" style=\"animation-duration:3.6s\">" + BUTTERFLY_DRIFT + "</span></span><span class=\"petal-fall\" style=\"left:19%; width:14px; height:16px; animation-duration:24s; animation-delay:-14s\"><span class=\"petal-sway\" style=\"animation-duration:3.2s\"><svg viewBox=\"-13 -27 26 30\" width=\"100%\" height=\"100%\" aria-hidden=\"true\"><path d=\"M0 0 C-3.6 -7.2 -10.5 -12.5 -10 -18.7 C-9.5 -24.5 -3.4 -25.2 -1.4 -21.6 C-0.6 -19.9 0.6 -19.9 1.4 -21.6 C3.4 -25.2 9.5 -24.5 10 -18.7 C10.5 -12.5 3.6 -7.2 0 0 Z\" fill=\"url(#g-driftpetal)\"/><circle cx=\"0\" cy=\"-2.4\" r=\"1.7\" fill=\"#C98F6B\" fill-opacity=\".3\"/></svg></span></span><span class=\"petal-fall\" style=\"left:31%; width:18px; height:18px; animation-duration:30s; animation-delay:-21s\"><span class=\"petal-sway\" style=\"animation-duration:4.2s\">" + BUTTERFLY_DRIFT + "</span></span><span class=\"petal-fall\" style=\"left:44%; width:13px; height:15px; animation-duration:26s; animation-delay:-9s\"><span class=\"petal-sway\" style=\"animation-duration:3.8s\"><svg viewBox=\"-13 -27 26 30\" width=\"100%\" height=\"100%\" aria-hidden=\"true\"><path d=\"M0 0 C-3.6 -7.2 -10.5 -12.5 -10 -18.7 C-9.5 -24.5 -3.4 -25.2 -1.4 -21.6 C-0.6 -19.9 0.6 -19.9 1.4 -21.6 C3.4 -25.2 9.5 -24.5 10 -18.7 C10.5 -12.5 3.6 -7.2 0 0 Z\" fill=\"url(#g-driftpetal)\"/><circle cx=\"0\" cy=\"-2.4\" r=\"1.7\" fill=\"#C98F6B\" fill-opacity=\".3\"/></svg></span></span><span class=\"petal-fall\" style=\"left:56%; width:21px; height:21px; animation-duration:25s; animation-delay:-17s\"><span class=\"petal-sway\" style=\"animation-duration:3.4s\">" + BUTTERFLY_DRIFT + "</span></span><span class=\"petal-fall\" style=\"left:68%; width:12px; height:14px; animation-duration:29s; animation-delay:-25s\"><span class=\"petal-sway\" style=\"animation-duration:4.5s\"><svg viewBox=\"-13 -27 26 30\" width=\"100%\" height=\"100%\" aria-hidden=\"true\"><path d=\"M0 0 C-3.6 -7.2 -10.5 -12.5 -10 -18.7 C-9.5 -24.5 -3.4 -25.2 -1.4 -21.6 C-0.6 -19.9 0.6 -19.9 1.4 -21.6 C3.4 -25.2 9.5 -24.5 10 -18.7 C10.5 -12.5 3.6 -7.2 0 0 Z\" fill=\"url(#g-driftpetal)\"/><circle cx=\"0\" cy=\"-2.4\" r=\"1.7\" fill=\"#C98F6B\" fill-opacity=\".3\"/></svg></span></span><span class=\"petal-fall\" style=\"left:79%; width:17px; height:17px; animation-duration:28s; animation-delay:-3s\"><span class=\"petal-sway\" style=\"animation-duration:3.9s\">" + BUTTERFLY_DRIFT + "</span></span><span class=\"petal-fall\" style=\"left:89%; width:15px; height:17px; animation-duration:24s; animation-delay:-19s\"><span class=\"petal-sway\" style=\"animation-duration:3.1s\"><svg viewBox=\"-13 -27 26 30\" width=\"100%\" height=\"100%\" aria-hidden=\"true\"><path d=\"M0 0 C-3.6 -7.2 -10.5 -12.5 -10 -18.7 C-9.5 -24.5 -3.4 -25.2 -1.4 -21.6 C-0.6 -19.9 0.6 -19.9 1.4 -21.6 C3.4 -25.2 9.5 -24.5 10 -18.7 C10.5 -12.5 3.6 -7.2 0 0 Z\" fill=\"url(#g-driftpetal)\"/><circle cx=\"0\" cy=\"-2.4\" r=\"1.7\" fill=\"#C98F6B\" fill-opacity=\".3\"/></svg></span></span><span class=\"petal-fall\" style=\"left:38%; width:16px; height:16px; animation-duration:31s; animation-delay:-27s\"><span class=\"petal-sway\" style=\"animation-duration:4s\">" + BUTTERFLY_DRIFT + "</span></span><span class=\"petal-fall\" style=\"left:63%; width:19px; height:19px; animation-duration:26s; animation-delay:-12s\"><span class=\"petal-sway\" style=\"animation-duration:3.7s\">" + BUTTERFLY_DRIFT + "</span></span>" };
+
+
+/* FotoBro decor theme — M1 Cá bơi (fragment, không phải file hoàn chỉnh).
+   Chèn vào khối đăng ký DECOR_THEMES trong www/index.html (w08 tích hợp),
+   sau khi DECOR_THEMES đã được khai báo. Chuỗi motifs/drift lấy nguyên văn
+   từ mock v7 (shared/motifs-drifts.js: MOTIFS.m1 / DRIFTS.m1), tạo bằng cách
+   chạy helpers.js + motifs-drifts.js với RNG hạt giống cố định (_seed = 11)
+   theo đúng thứ tự trong mock — xem NOTES.md. */
+DECOR_THEMES['m1'] = { label: 'Cá bơi', bg: 'assets/themes/bg-fish.webp', motifs: { hero: '<svg viewBox="0 0 150 98" width="100%" height="100%" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g filter="url(#wc-rough)"><path d="M105.2 79.4 Q75 77.5 105.2 79.4 Q135.4 81.3 143.4 87.2 Q151.4 93.1 128.7 97.4 Q106.1 101.7 76.2 101.2 Q46.3 100.8 24 96.9 Q1.6 93 9.1 87.3 Q16.6 81.6 45.8 79.5 Z" fill="#A9CBEC" opacity="0.3" filter="url(#wc-bleed)"/><g class="anim-fishbob" style="animation-duration:4.0s"><g transform="translate(56 38) scale(1.1 1.1)"><path class="anim-tail" style="animation-duration:1.3s" d="M-12 0 C-18 -7 -22 -9.5 -26 -11 C-23 -4 -23 4 -26 11 C-22 9.5 -18 7 -12 0 Z" fill="url(#g-deep)" fill-opacity=".48"/><path d="M6.3 -6 Q0 -6.9 6.3 -6 Q12.6 -5.1 14.2 -1.6 Q15.7 1.8 11 4.3 Q6.4 6.7 0 6.7 Q-6.4 6.8 -10.4 4.2 Q-14.3 1.7 -12.7 -1.4 Q-11.1 -4.5 -5.5 -5.7 Z" fill="url(#g-deep)" fill-opacity=".62"/><path d="M2.9 -8.9 Q1 -9.6 2.9 -8.9 Q4.8 -8.1 6 -6.9 Q7.2 -5.6 5.4 -4.5 Q3.6 -3.4 1.1 -3.6 Q-1.3 -3.7 -3 -4.7 Q-4.7 -5.7 -3.9 -6.9 Q-3.1 -8.2 -1 -8.9 Z" fill="url(#g-deep)" fill-opacity=".42"/><path d="M3.5 -0.2 Q-1 -0.9 3.5 -0.2 Q7.9 0.4 8 1.9 Q8.1 3.5 5.5 4.5 Q2.9 5.6 -1.3 5.8 Q-5.5 6 -8.6 4.8 Q-11.6 3.6 -10 2.2 Q-8.4 0.8 -4.7 0 Z" fill="#FFFFFF" fill-opacity=".26"/><circle cx="9.6" cy="-1.7" r="1.5" fill="#17344D" fill-opacity=".75"/></g></g><g class="anim-fishbob" style="animation-duration:4.1s"><g transform="translate(114 64) scale(-0.7 0.7)"><path class="anim-tail" style="animation-duration:1.9s" d="M-12 0 C-18 -7 -22 -9.5 -26 -11 C-23 -4 -23 4 -26 11 C-22 9.5 -18 7 -12 0 Z" fill="url(#g-sky)" fill-opacity=".48"/><path d="M5.1 -6.5 Q0 -8.8 5.1 -6.5 Q10.3 -4.1 12.4 -1.2 Q14.5 1.7 11.1 4.9 Q7.6 8 0.9 7.1 Q-5.8 6.1 -11.5 4.1 Q-17.1 2 -15 -1.6 Q-12.9 -5.2 -6.5 -7 Z" fill="url(#g-sky)" fill-opacity=".62"/><path d="M3.1 -8.9 Q1 -9.5 3.1 -8.9 Q5.1 -8.3 5.7 -7 Q6.2 -5.7 4.8 -4.7 Q3.4 -3.6 0.9 -3.5 Q-1.6 -3.4 -3 -4.5 Q-4.3 -5.7 -3.8 -7 Q-3.3 -8.3 -1.1 -8.9 Z" fill="url(#g-sky)" fill-opacity=".42"/><path d="M2.5 0.3 Q-1 -0.4 2.5 0.3 Q5.9 0.9 7.3 2.2 Q8.6 3.5 6 4.7 Q3.3 5.8 -1.1 5.9 Q-5.6 6 -8.1 4.8 Q-10.6 3.5 -9.4 2.2 Q-8.2 0.9 -4.6 0.3 Z" fill="#FFFFFF" fill-opacity=".26"/><circle cx="9.6" cy="-1.7" r="1.5" fill="#17344D" fill-opacity=".75"/></g></g><g class="anim-fishbob" style="animation-duration:3.9s"><g transform="translate(102 20) scale(0.5 0.5)"><path class="anim-tail" style="animation-duration:1.7s" d="M-12 0 C-18 -7 -22 -9.5 -26 -11 C-23 -4 -23 4 -26 11 C-22 9.5 -18 7 -12 0 Z" fill="url(#g-teal)" fill-opacity=".48"/><path d="M6 -5.7 Q0 -6.5 6 -5.7 Q12 -4.9 14.5 -1.4 Q17 2 12 4.6 Q7 7.3 0.1 7.3 Q-6.8 7.2 -11.2 4.5 Q-15.5 1.8 -13.3 -1.4 Q-11.1 -4.5 -5.6 -5.5 Z" fill="url(#g-teal)" fill-opacity=".62"/><path d="M2.8 -8.6 Q1 -9.1 2.8 -8.6 Q4.6 -8 5.7 -6.8 Q6.8 -5.6 5.2 -4.5 Q3.6 -3.3 1.1 -3.5 Q-1.4 -3.6 -2.8 -4.7 Q-4.2 -5.7 -3.8 -7.1 Q-3.5 -8.4 -1.2 -8.7 Z" fill="url(#g-teal)" fill-opacity=".42"/><path d="M3 0.1 Q-1 -0.5 3 0.1 Q6.9 0.7 7.9 2.1 Q8.9 3.6 6.4 5 Q4 6.3 -0.6 6.1 Q-5.3 5.8 -7.3 4.6 Q-9.4 3.5 -9.5 2 Q-9.7 0.5 -5.3 0 Z" fill="#FFFFFF" fill-opacity=".26"/><circle cx="9.6" cy="-1.7" r="1.5" fill="#17344D" fill-opacity=".75"/></g></g><circle cx="26" cy="30" r="3" fill="url(#g-sky)" fill-opacity=".55"/><circle cx="25" cy="29" r="0.9" fill="#FFFFFF" fill-opacity=".6"/><circle cx="33" cy="19" r="2.1" fill="url(#g-sky)" fill-opacity=".55"/><circle cx="32.3" cy="18.3" r="0.6" fill="#FFFFFF" fill-opacity=".6"/><circle cx="128" cy="34" r="2.5" fill="url(#g-sky)" fill-opacity=".55"/><circle cx="127.2" cy="33.2" r="0.8" fill="#FFFFFF" fill-opacity=".6"/><circle cx="135" cy="25" r="1.7" fill="url(#g-sky)" fill-opacity=".55"/><circle cx="134.5" cy="24.5" r="0.5" fill="#FFFFFF" fill-opacity=".6"/></g></svg>', sprig: '<svg viewBox="0 0 90 90" width="100%" height="100%" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g filter="url(#wc-rough)"><g class="anim-fishbob" style="animation-duration:4.8s"><g transform="translate(44 36) scale(0.8 0.8)"><path class="anim-tail" style="animation-duration:1.9s" d="M-12 0 C-18 -7 -22 -9.5 -26 -11 C-23 -4 -23 4 -26 11 C-22 9.5 -18 7 -12 0 Z" fill="url(#g-deep)" fill-opacity=".48"/><path d="M6 -5.8 Q0 -6.7 6 -5.8 Q12 -4.8 12.4 -1.7 Q12.8 1.5 9.4 3.9 Q6 6.3 -0.6 6.9 Q-7.2 7.6 -10.7 4.6 Q-14.1 1.6 -12.8 -1.5 Q-11.5 -4.6 -5.7 -5.7 Z" fill="url(#g-deep)" fill-opacity=".62"/><path d="M3 -8.9 Q1 -9.5 3 -8.9 Q5 -8.2 5.9 -6.9 Q6.8 -5.7 5 -4.8 Q3.1 -3.9 1 -4 Q-1 -4 -2.4 -4.9 Q-3.7 -5.8 -3.8 -7.2 Q-3.9 -8.6 -1.4 -9.1 Z" fill="url(#g-deep)" fill-opacity=".42"/><path d="M2.7 0.1 Q-1 -0.6 2.7 0.1 Q6.4 0.8 7.1 2.1 Q7.9 3.5 5.4 4.5 Q2.9 5.6 -1.1 5.6 Q-5.1 5.7 -7.6 4.6 Q-10.2 3.5 -9.1 2.2 Q-8.1 0.9 -4.5 0.2 Z" fill="#FFFFFF" fill-opacity=".26"/><circle cx="9.6" cy="-1.7" r="1.5" fill="#17344D" fill-opacity=".75"/></g></g><g class="anim-fishbob" style="animation-duration:4.6s"><g transform="translate(64 66) scale(-0.5 0.5)"><path class="anim-tail" style="animation-duration:1.9s" d="M-12 0 C-18 -7 -22 -9.5 -26 -11 C-23 -4 -23 4 -26 11 C-22 9.5 -18 7 -12 0 Z" fill="url(#g-teal)" fill-opacity=".48"/><path d="M5.9 -5.6 Q0 -6.4 5.9 -5.6 Q11.9 -4.8 14.1 -1.5 Q16.3 1.9 11.7 4.7 Q7.2 7.5 0.2 7.3 Q-6.8 7.2 -10 4.3 Q-13.1 1.5 -12.9 -1.8 Q-12.7 -5.1 -6.3 -5.8 Z" fill="url(#g-teal)" fill-opacity=".62"/><path d="M2.8 -8.6 Q1 -9.3 2.8 -8.6 Q4.6 -8 5.3 -6.9 Q6 -5.8 4.7 -4.7 Q3.3 -3.7 1.1 -3.8 Q-1.2 -3.9 -2.9 -4.8 Q-4.7 -5.7 -4.3 -7.1 Q-3.9 -8.6 -1.5 -8.9 Z" fill="url(#g-teal)" fill-opacity=".42"/><path d="M2.8 -0.2 Q-1 -1.1 2.8 -0.2 Q6.6 0.8 6.9 2.1 Q7.2 3.4 5.2 4.6 Q3.2 5.8 -1.3 6 Q-5.8 6.2 -7.6 4.8 Q-9.4 3.5 -9.1 2.1 Q-8.7 0.7 -4.9 -0.2 Z" fill="#FFFFFF" fill-opacity=".26"/><circle cx="9.6" cy="-1.7" r="1.5" fill="#17344D" fill-opacity=".75"/></g></g><circle cx="18" cy="58" r="2.4" fill="url(#g-sky)" fill-opacity=".55"/><circle cx="17.2" cy="57.2" r="0.7" fill="#FFFFFF" fill-opacity=".6"/><circle cx="24" cy="47" r="1.7" fill="url(#g-sky)" fill-opacity=".55"/><circle cx="23.5" cy="46.5" r="0.5" fill="#FFFFFF" fill-opacity=".6"/><circle cx="72" cy="18" r="2.2" fill="url(#g-sky)" fill-opacity=".55"/><circle cx="71.3" cy="17.3" r="0.7" fill="#FFFFFF" fill-opacity=".6"/></g></svg>', empty: '<svg viewBox="0 0 140 92" width="100%" height="100%" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g filter="url(#wc-rough)"><path d="M94.3 75 Q70 72.9 94.3 75 Q118.5 77.1 123.1 81.7 Q127.7 86.3 113.5 90.6 Q99.3 94.8 73.2 93.6 Q47.2 92.4 23.4 89.6 Q-0.4 86.8 7.4 81.5 Q15.1 76.2 42.6 74.6 Z" fill="#A9CBEC" opacity="0.28" filter="url(#wc-bleed)"/><g class="anim-fishbob" style="animation-duration:5.0s"><g transform="translate(50 34) scale(0.9 0.9)"><path class="anim-tail" style="animation-duration:1.8s" d="M-12 0 C-18 -7 -22 -9.5 -26 -11 C-23 -4 -23 4 -26 11 C-22 9.5 -18 7 -12 0 Z" fill="url(#g-deep)" fill-opacity=".48"/><path d="M6.4 -5.9 Q0 -6.6 6.4 -5.9 Q12.8 -5.2 14.6 -1.6 Q16.4 1.9 11.6 4.5 Q6.7 7.1 -0.4 7.5 Q-7.5 7.9 -11 4.8 Q-14.4 1.7 -13.9 -1.9 Q-13.3 -5.4 -6.7 -6 Z" fill="url(#g-deep)" fill-opacity=".62"/><path d="M2.9 -8.6 Q1 -9.1 2.9 -8.6 Q4.7 -8.1 5.7 -6.9 Q6.7 -5.7 5.2 -4.4 Q3.7 -3.2 1.1 -3.3 Q-1.5 -3.4 -2.7 -4.6 Q-3.9 -5.8 -3.9 -7.2 Q-3.9 -8.6 -1.5 -8.9 Z" fill="url(#g-deep)" fill-opacity=".42"/><path d="M2.6 0.3 Q-1 -0.2 2.6 0.3 Q6.2 0.8 7.8 2.2 Q9.4 3.6 6.7 4.9 Q3.9 6.2 -0.5 5.9 Q-4.8 5.5 -8.5 4.6 Q-12.2 3.7 -10 2.3 Q-7.8 1 -4.4 0.4 Z" fill="#FFFFFF" fill-opacity=".26"/><circle cx="9.6" cy="-1.7" r="1.5" fill="#17344D" fill-opacity=".75"/></g></g><g class="anim-fishbob" style="animation-duration:5.2s"><g transform="translate(104 58) scale(-0.6 0.6)"><path class="anim-tail" style="animation-duration:1.5s" d="M-12 0 C-18 -7 -22 -9.5 -26 -11 C-23 -4 -23 4 -26 11 C-22 9.5 -18 7 -12 0 Z" fill="url(#g-sky)" fill-opacity=".48"/><path d="M5.1 -5.6 Q0 -7 5.1 -5.6 Q10.3 -4.2 11.4 -1.4 Q12.5 1.4 10 4.6 Q7.4 7.8 0.5 7.2 Q-6.3 6.7 -10.4 4.2 Q-14.5 1.7 -12.7 -1.4 Q-10.9 -4.4 -5.4 -5.7 Z" fill="url(#g-sky)" fill-opacity=".62"/><path d="M3.2 -8.7 Q1 -9.1 3.2 -8.7 Q5.4 -8.4 6.2 -7 Q7.1 -5.6 5.4 -4.4 Q3.8 -3.1 1.3 -3.5 Q-1.2 -3.8 -2.5 -4.8 Q-3.8 -5.8 -3.8 -7.1 Q-3.7 -8.5 -1.4 -8.8 Z" fill="url(#g-sky)" fill-opacity=".42"/><path d="M3.5 -0.2 Q-1 -0.7 3.5 -0.2 Q8.1 0.3 8.6 2 Q9 3.6 6.3 4.8 Q3.6 6.1 -1 6 Q-5.5 6 -8.3 4.8 Q-11 3.6 -9.6 2.2 Q-8.3 0.8 -4.6 0.1 Z" fill="#FFFFFF" fill-opacity=".26"/><circle cx="9.6" cy="-1.7" r="1.5" fill="#17344D" fill-opacity=".75"/></g></g><circle cx="84" cy="22" r="2.4" fill="url(#g-sky)" fill-opacity=".55"/><circle cx="83.2" cy="21.2" r="0.7" fill="#FFFFFF" fill-opacity=".6"/><circle cx="90" cy="14" r="1.7" fill="url(#g-sky)" fill-opacity=".55"/><circle cx="89.5" cy="13.5" r="0.5" fill="#FFFFFF" fill-opacity=".6"/><circle cx="24" cy="62" r="2" fill="url(#g-sky)" fill-opacity=".55"/><circle cx="23.4" cy="61.4" r="0.6" fill="#FFFFFF" fill-opacity=".6"/></g></svg>' }, drift: '<span class="drift-fish" style="top:15%; width:66px; height:33px; animation-duration:36s; animation-delay:-8s"><span class="drift-bob" style="animation-duration:3.9s"><svg viewBox="-30 -15 60 30" width="100%" height="100%" aria-hidden="true"><g class="anim-fishbob" style="animation-duration:3.8s"><g transform="translate(0 0) scale(1 1)"><path class="anim-tail" style="animation-duration:1.6s" d="M-12 0 C-18 -7 -22 -9.5 -26 -11 C-23 -4 -23 4 -26 11 C-22 9.5 -18 7 -12 0 Z" fill="url(#g-deep)" fill-opacity=".48"/><path d="M5.4 -5.4 Q0 -6.5 5.4 -5.4 Q10.7 -4.3 11.6 -1.4 Q12.5 1.4 9.6 4.3 Q6.7 7.1 -0.1 7.2 Q-7 7.3 -11.3 4.6 Q-15.6 1.8 -12.8 -1.1 Q-9.9 -4 -5 -5.2 Z" fill="url(#g-deep)" fill-opacity=".62"/><path d="M3.3 -9.2 Q1 -9.9 3.3 -9.2 Q5.6 -8.5 5.9 -7.1 Q6.1 -5.7 4.9 -4.5 Q3.6 -3.4 1 -3.3 Q-1.6 -3.3 -3.3 -4.5 Q-5 -5.6 -4.1 -6.9 Q-3.2 -8.3 -1.1 -9.1 Z" fill="url(#g-deep)" fill-opacity=".42"/><path d="M3.5 0.1 Q-1 -0.2 3.5 0.1 Q8 0.4 9.1 2 Q10.2 3.7 6.9 4.9 Q3.7 6.1 -0.9 6 Q-5.5 6 -8.7 4.8 Q-11.9 3.6 -10.5 2.1 Q-9.2 0.6 -5.1 0.2 Z" fill="#FFFFFF" fill-opacity=".26"/><circle cx="9.6" cy="-1.7" r="1.5" fill="#17344D" fill-opacity=".75"/></g></g></svg></span></span><span class="drift-fish" style="top:47%; width:44px; height:22px; animation-duration:47s; animation-delay:-29s"><span class="drift-bob" style="animation-duration:4.7s"><svg viewBox="-30 -15 60 30" width="100%" height="100%" aria-hidden="true"><g class="anim-fishbob" style="animation-duration:5.4s"><g transform="translate(0 0) scale(1 1)"><path class="anim-tail" style="animation-duration:1.7s" d="M-12 0 C-18 -7 -22 -9.5 -26 -11 C-23 -4 -23 4 -26 11 C-22 9.5 -18 7 -12 0 Z" fill="url(#g-sky)" fill-opacity=".48"/><path d="M5.9 -6.5 Q0 -8.1 5.9 -6.5 Q11.8 -4.8 12.2 -1.7 Q12.6 1.5 9.7 4.3 Q6.8 7.2 -0.1 7.3 Q-7 7.3 -11.1 4.5 Q-15.3 1.8 -13.5 -1.5 Q-11.7 -4.7 -5.8 -6.4 Z" fill="url(#g-sky)" fill-opacity=".62"/><path d="M3.2 -9.1 Q1 -9.8 3.2 -9.1 Q5.5 -8.4 5.8 -7.1 Q6 -5.8 4.8 -4.6 Q3.6 -3.4 0.9 -3.3 Q-1.7 -3.2 -3 -4.5 Q-4.2 -5.7 -3.7 -7 Q-3.2 -8.3 -1.1 -9 Z" fill="url(#g-sky)" fill-opacity=".42"/><path d="M3.3 -0.3 Q-1 -1.1 3.3 -0.3 Q7.5 0.5 9 2.1 Q10.5 3.7 7.2 4.9 Q3.8 6.2 -1 6.2 Q-5.8 6.2 -8.1 4.9 Q-10.5 3.5 -10.3 1.9 Q-10.2 0.3 -5.6 -0.4 Z" fill="#FFFFFF" fill-opacity=".26"/><circle cx="9.6" cy="-1.7" r="1.5" fill="#17344D" fill-opacity=".75"/></g></g></svg></span></span><span class="drift-bubble" style="left:16%; width:9px; height:9px; animation-duration:17s; animation-delay:-4s"></span><span class="drift-bubble" style="left:55%; width:6px; height:6px; animation-duration:13s; animation-delay:-9s"></span><span class="drift-bubble" style="left:82%; width:11px; height:11px; animation-duration:20s; animation-delay:-13s"></span>' };
+
+
+/* FotoBro decor theme m2 — Núi rừng (worker w06).
+   Fragment đăng ký theme, chèn sau khi DECOR_THEMES được khởi tạo (w08).
+   motifs/drift là chuỗi SVG/HTML literal, đánh giá nguyên văn từ
+   shared/motifs-drifts.js (MOTIFS.m2 / DRIFTS.m2) bằng shared/helpers.js
+   (seed RNG _seed=11, thứ tự đánh giá như trong file shared) — KHÔNG sửa nội dung.
+   Không định nghĩa lại helper, không chạm cơ chế accent/theme hiện có của app. */
+DECOR_THEMES['m2'] = {
+  label: 'Núi rừng',
+  bg: 'assets/themes/bg-forest.webp',
+  motifs: {
+    hero: "<svg viewBox=\"0 0 150 98\" width=\"100%\" height=\"100%\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><g filter=\"url(#wc-rough)\"><path d=\"M131.3 7.7 Q128 5.6 131.3 7.7 Q134.5 9.8 134.6 13.2 Q134.7 16.5 132.9 19.1 Q131.2 21.6 127.6 22.5 Q124 23.3 122.6 19.9 Q121.2 16.6 121.4 13.3 Q121.7 9.9 124.8 7.8 Z\" fill=\"url(#g-sun)\" fill-opacity=\".5\"/><path d=\"M-4 98 Q-4 98 6 80 Q16 62 26 53 Q36 44 46 51 Q56 58 68 48 Q80 38 92 46 Q104 54 115 50 Q126 46 140 72 L154 98 Z\" fill=\"url(#g-sage)\" fill-opacity=\"0.5\"/><path d=\"M-4 98 Q-4 98 2 87 Q8 76 21 68 Q34 60 48 67 Q62 74 77 66 Q92 58 106 65 Q120 72 131 68 Q142 64 148 81 L154 98 Z\" fill=\"url(#g-pine)\" fill-opacity=\"0.55\"/><g class=\"anim-mist-x\"><path d=\"M97.4 45.7 Q74 43.8 97.4 45.7 Q120.8 47.6 126.8 50.6 Q132.8 53.6 120.4 57 Q108.1 60.3 78 59.3 Q48 58.4 26.7 56.1 Q5.5 53.8 10.8 50.2 Q16.1 46.6 45 45.2 Z\" fill=\"#FFFFFF\" opacity=\"0.32\" filter=\"url(#wc-bleed)\"/></g><path d=\"M30 94 L30 83\" stroke=\"#5A4632\" stroke-width=\"1.7\" stroke-opacity=\".65\" fill=\"none\"/><path d=\"M16.2 79.1 C24.2 73.5 25.9 68.6 30 67.1 C34.1 68.6 35.8 73.5 43.8 79.1 C36.9 76.5 23.1 76.5 16.2 79.1 Z\" class=\"anim-tremble\" style=\"animation-delay:-1.8s\" fill=\"url(#g-pine)\" fill-opacity=\"0.55\"/><path d=\"M19.4 68 C25.6 62.4 26.8 57.5 30 56 C33.2 57.5 34.4 62.4 40.6 68 C35.3 65.4 24.7 65.4 19.4 68 Z\" class=\"anim-tremble\" style=\"animation-delay:-1.4s\" fill=\"url(#g-pine)\" fill-opacity=\"0.6\"/><path d=\"M22.6 57.9 C26.9 52.3 27.8 47.4 30 45.9 C32.2 47.4 33.1 52.3 37.4 57.9 C33.7 55.3 26.3 55.3 22.6 57.9 Z\" class=\"anim-tremble\" style=\"animation-delay:-1.0s\" fill=\"url(#g-pine)\" fill-opacity=\"0.65\"/><path d=\"M120 96 L120 87.4\" stroke=\"#5A4632\" stroke-width=\"1.3\" stroke-opacity=\".65\" fill=\"none\"/><path d=\"M109.2 86.3 C115.5 80.7 116.8 75.8 120 74.3 C123.2 75.8 124.5 80.7 130.8 86.3 C125.4 83.7 114.6 83.7 109.2 86.3 Z\" class=\"anim-tremble\" style=\"animation-delay:-1.4s\" fill=\"url(#g-pine)\" fill-opacity=\"0.55\"/><path d=\"M111.7 77.6 C116.5 72 117.5 67.1 120 65.6 C122.5 67.1 123.5 72 128.3 77.6 C124.1 75 115.9 75 111.7 77.6 Z\" class=\"anim-tremble\" style=\"animation-delay:-1.1s\" fill=\"url(#g-pine)\" fill-opacity=\"0.6\"/><path d=\"M114.2 69.7 C117.6 64.1 118.3 59.2 120 57.7 C121.7 59.2 122.4 64.1 125.8 69.7 C122.9 67.1 117.1 67.1 114.2 69.7 Z\" class=\"anim-tremble\" style=\"animation-delay:-0.7s\" fill=\"url(#g-pine)\" fill-opacity=\"0.65\"/></g></svg>",
+    sprig: "<svg viewBox=\"0 0 90 90\" width=\"100%\" height=\"100%\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><g filter=\"url(#wc-rough)\"><path d=\"M-4 90 Q-4 90 3 74 Q10 58 20 51 Q30 44 41 50 Q52 56 63 51 Q74 46 84 68 L94 90 Z\" fill=\"url(#g-sage)\" fill-opacity=\"0.5\"/><path d=\"M-4 90 Q-4 90 0 81 Q4 72 16 66 Q28 60 41 66 Q54 72 67 67 Q80 62 87 76 L94 90 Z\" fill=\"url(#g-pine)\" fill-opacity=\"0.55\"/><g class=\"anim-mist-x\" style=\"animation-delay:-4s\"><path d=\"M62.3 44.2 Q45 42.8 62.3 44.2 Q79.6 45.7 85 48.7 Q90.3 51.6 77 53.8 Q63.6 56 45.4 55.8 Q27.3 55.7 18.7 53.5 Q10 51.2 10.5 48.5 Q11 45.8 28 44.3 Z\" fill=\"#FFFFFF\" opacity=\"0.3\" filter=\"url(#wc-bleed)\"/></g><path d=\"M62 88 L62 80.1\" stroke=\"#5A4632\" stroke-width=\"1.2\" stroke-opacity=\".65\" fill=\"none\"/><path d=\"M52.1 79.8 C57.8 74.2 59 69.3 62 67.8 C65 69.3 66.2 74.2 71.9 79.8 C67 77.2 57.1 77.2 52.1 79.8 Z\" class=\"anim-tremble\" style=\"animation-delay:-1.3s\" fill=\"url(#g-pine)\" fill-opacity=\"0.55\"/><path d=\"M54.4 71.9 C58.8 66.3 59.7 61.4 62 59.9 C64.3 61.4 65.2 66.3 69.6 71.9 C65.8 69.3 58.2 69.3 54.4 71.9 Z\" class=\"anim-tremble\" style=\"animation-delay:-1.0s\" fill=\"url(#g-pine)\" fill-opacity=\"0.6\"/><path d=\"M56.7 64.7 C59.8 59.1 60.4 54.2 62 52.7 C63.6 54.2 64.2 59.1 67.3 64.7 C64.6 62.1 59.4 62.1 56.7 64.7 Z\" class=\"anim-tremble\" style=\"animation-delay:-0.7s\" fill=\"url(#g-pine)\" fill-opacity=\"0.65\"/></g></svg>",
+    empty: "<svg viewBox=\"0 0 140 92\" width=\"100%\" height=\"100%\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><g filter=\"url(#wc-rough)\"><path d=\"M-4 92 Q-4 92 5 74 Q14 56 25 48 Q36 40 48 47 Q60 54 73 46 Q86 38 99 45 Q112 52 128 72 L144 92 Z\" fill=\"url(#g-sage)\" fill-opacity=\"0.5\"/><path d=\"M-4 92 Q-4 92 1 81 Q6 70 20 63 Q34 56 50 63 Q66 70 83 63 Q100 56 115 61 Q130 66 137 79 L144 92 Z\" fill=\"url(#g-pine)\" fill-opacity=\"0.55\"/><g class=\"anim-mist-x\" style=\"animation-delay:-7s\"><path d=\"M90.7 42.5 Q70 41.1 90.7 42.5 Q111.4 43.9 120.9 46.8 Q130.3 49.7 111.9 51.9 Q93.4 54.1 70 54.1 Q46.7 54 27.7 51.9 Q8.6 49.8 19 46.9 Q29.4 44 49.7 42.5 Z\" fill=\"#FFFFFF\" opacity=\"0.3\" filter=\"url(#wc-bleed)\"/></g><path d=\"M38 88 L38 78.4\" stroke=\"#5A4632\" stroke-width=\"1.4\" stroke-opacity=\".65\" fill=\"none\"/><path d=\"M26 76.2 C33 70.6 34.4 65.7 38 64.2 C41.6 65.7 43 70.6 50 76.2 C44 73.6 32 73.6 26 76.2 Z\" class=\"anim-tremble\" style=\"animation-delay:-1.6s\" fill=\"url(#g-pine)\" fill-opacity=\"0.55\"/><path d=\"M28.8 66.6 C34.1 61 35.2 56.1 38 54.6 C40.8 56.1 41.9 61 47.2 66.6 C42.6 64 33.4 64 28.8 66.6 Z\" class=\"anim-tremble\" style=\"animation-delay:-1.2s\" fill=\"url(#g-pine)\" fill-opacity=\"0.6\"/><path d=\"M31.6 57.8 C35.3 52.2 36.1 47.3 38 45.8 C39.9 47.3 40.7 52.2 44.4 57.8 C41.2 55.2 34.8 55.2 31.6 57.8 Z\" class=\"anim-tremble\" style=\"animation-delay:-0.8s\" fill=\"url(#g-pine)\" fill-opacity=\"0.65\"/><path d=\"M104 90 L104 82.6\" stroke=\"#5A4632\" stroke-width=\"1.1\" stroke-opacity=\".65\" fill=\"none\"/><path d=\"M94.7 82.9 C100.1 77.3 101.2 72.4 104 70.9 C106.8 72.4 107.9 77.3 113.3 82.9 C108.7 80.3 99.4 80.3 94.7 82.9 Z\" class=\"anim-tremble\" style=\"animation-delay:-1.2s\" fill=\"url(#g-pine)\" fill-opacity=\"0.55\"/><path d=\"M96.9 75.4 C101 69.8 101.9 64.9 104 63.4 C106.1 64.9 107 69.8 111.1 75.4 C107.6 72.8 100.4 72.8 96.9 75.4 Z\" class=\"anim-tremble\" style=\"animation-delay:-0.9s\" fill=\"url(#g-pine)\" fill-opacity=\"0.6\"/><path d=\"M99 68.6 C101.9 63 102.5 58.1 104 56.6 C105.5 58.1 106.1 63 109 68.6 C106.5 66 101.5 66 99 68.6 Z\" class=\"anim-tremble\" style=\"animation-delay:-0.6s\" fill=\"url(#g-pine)\" fill-opacity=\"0.65\"/></g></svg>"
+  },
+  drift: "<span class=\"drift-mist\" style=\"top:30%; animation-duration:27s\"></span><span class=\"drift-mist\" style=\"top:57%; animation-duration:34s; animation-delay:-12s\"></span><span class=\"petal-fall\" style=\"left:12%; width:15px; height:15px; animation-duration:30s; animation-delay:-6s\"><span class=\"petal-sway\" style=\"animation-duration:4.2s\"><svg viewBox=\"-11 -11 22 22\" width=\"100%\" height=\"100%\" aria-hidden=\"true\"><path d=\"M3.2 -3.8 Q0 -4.6 3.2 -3.8 Q6.3 -3 6.7 -1 Q7 0.9 5.2 2.6 Q3.4 4.2 -0.1 4.3 Q-3.6 4.4 -6.3 2.8 Q-9 1.2 -7.5 -0.8 Q-6.1 -2.9 -3.1 -3.7 Z\" fill=\"url(#g-pine)\" fill-opacity=\".6\" transform=\"rotate(24)\"/></svg></span></span><span class=\"petal-fall\" style=\"left:38%; width:12px; height:12px; animation-duration:36s; animation-delay:-19s\"><span class=\"petal-sway\" style=\"animation-duration:4.8s\"><svg viewBox=\"-11 -11 22 22\" width=\"100%\" height=\"100%\" aria-hidden=\"true\"><path d=\"M3.2 -3.8 Q0 -4.6 3.2 -3.8 Q6.3 -3 6.7 -1 Q7 0.9 5.2 2.6 Q3.4 4.2 -0.1 4.3 Q-3.6 4.4 -6.3 2.8 Q-9 1.2 -7.5 -0.8 Q-6.1 -2.9 -3.1 -3.7 Z\" fill=\"url(#g-pine)\" fill-opacity=\".6\" transform=\"rotate(24)\"/></svg></span></span><span class=\"petal-fall\" style=\"left:63%; width:16px; height:16px; animation-duration:27s; animation-delay:-12s\"><span class=\"petal-sway\" style=\"animation-duration:3.8s\"><svg viewBox=\"-11 -11 22 22\" width=\"100%\" height=\"100%\" aria-hidden=\"true\"><path d=\"M3.2 -3.8 Q0 -4.6 3.2 -3.8 Q6.3 -3 6.7 -1 Q7 0.9 5.2 2.6 Q3.4 4.2 -0.1 4.3 Q-3.6 4.4 -6.3 2.8 Q-9 1.2 -7.5 -0.8 Q-6.1 -2.9 -3.1 -3.7 Z\" fill=\"url(#g-pine)\" fill-opacity=\".6\" transform=\"rotate(24)\"/></svg></span></span><span class=\"petal-fall\" style=\"left:85%; width:11px; height:11px; animation-duration:33s; animation-delay:-24s\"><span class=\"petal-sway\" style=\"animation-duration:4.5s\"><svg viewBox=\"-11 -11 22 22\" width=\"100%\" height=\"100%\" aria-hidden=\"true\"><path d=\"M3.2 -3.8 Q0 -4.6 3.2 -3.8 Q6.3 -3 6.7 -1 Q7 0.9 5.2 2.6 Q3.4 4.2 -0.1 4.3 Q-3.6 4.4 -6.3 2.8 Q-9 1.2 -7.5 -0.8 Q-6.1 -2.9 -3.1 -3.7 Z\" fill=\"url(#g-pine)\" fill-opacity=\".6\" transform=\"rotate(24)\"/></svg></span></span>"
+};
+
+
+/* FotoBro — theme m3 Biển sóng (fragment, §4 CONTRACT.md).
+   Đăng ký DECOR_THEMES['m3']. Chèn vào app sau khối DECOR_THEMES chung (w08),
+   trước applyDecor(). Motifs/drift là chuỗi SVG/HTML LITERAL, đánh giá sẵn từ
+   shared/motifs-drifts.js (MOTIFS.m3 + DRIFTS.m3, nguyên văn, RNG seed 11,
+   thứ tự đánh giá c1→m4 như mock) — không cần helper lúc chạy.
+   Gradients/filter dùng chung do w08 đặt trong #decorLayer:
+   g-sun, g-sky, g-sea, g-deep (shared/gradients.html), wc-rough (shared/filters.html).
+   Ảnh nền: assets/themes/bg-sea.webp (§9). Bản tối: giữ nguyên như mock (§6) — không override. */
+DECOR_THEMES["m3"] = {
+  label: "Biển sóng",
+  bg: "assets/themes/bg-sea.webp",
+  motifs: {
+    hero: "<svg viewBox=\"0 0 150 98\" width=\"100%\" height=\"100%\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><g filter=\"url(#wc-rough)\"><path d=\"M27 9.3 Q24 7.4 27 9.3 Q30.1 11.1 31.1 14.5 Q32 17.8 29.7 20.5 Q27.4 23.1 24.1 22.9 Q20.8 22.6 18.1 20.3 Q15.4 18 16.2 14.2 Q17 10.4 20.5 8.9 Z\" fill=\"url(#g-sun)\" fill-opacity=\".5\"/><g class=\"anim-wave-y\" style=\"animation-duration:4.7s\"><path d=\"M-6 60 C1 50 9 50 16 60 C23 63 31 63 38 60 C45 50 53 50 60 60 C67 63 75 63 82 60 C89 50 97 50 104 60 C111 63 119 63 126 60 C133 50 141 50 148 60 C155 63 163 63 170 60 L156 100 L-6 100 Z\" fill=\"url(#g-sky)\" fill-opacity=\"0.5\"/></g><g class=\"anim-wave-y\" style=\"animation-duration:4.7s\"><path d=\"M-6 72 C1 62 9 62 16 72 C23 75 31 75 38 72 C45 62 53 62 60 72 C67 75 75 75 82 72 C89 62 97 62 104 72 C111 75 119 75 126 72 C133 62 141 62 148 72 C155 75 163 75 170 72 L156 100 L-6 100 Z\" fill=\"url(#g-sea)\" fill-opacity=\"0.5\"/></g><g class=\"anim-wave-y\" style=\"animation-duration:4.7s\"><path d=\"M-6 84 C1 74 9 74 16 84 C23 87 31 87 38 84 C45 74 53 74 60 84 C67 87 75 87 82 84 C89 74 97 74 104 84 C111 87 119 87 126 84 C133 74 141 74 148 84 C155 87 163 87 170 84 L156 100 L-6 100 Z\" fill=\"url(#g-deep)\" fill-opacity=\"0.55\"/></g><g class=\"anim-foam\"><circle cx=\"40\" cy=\"66\" r=\"2.6\" fill=\"#FFFFFF\" fill-opacity=\".55\"/></g><g class=\"anim-foam\"><circle cx=\"96\" cy=\"62\" r=\"2\" fill=\"#FFFFFF\" fill-opacity=\".55\"/></g><g class=\"anim-foam\"><circle cx=\"66\" cy=\"78\" r=\"2.3\" fill=\"#FFFFFF\" fill-opacity=\".55\"/></g><g class=\"anim-foam\"><circle cx=\"122\" cy=\"76\" r=\"1.8\" fill=\"#FFFFFF\" fill-opacity=\".55\"/></g></g></svg>",
+    sprig: "<svg viewBox=\"0 0 90 90\" width=\"100%\" height=\"100%\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><g filter=\"url(#wc-rough)\"><g class=\"anim-wave-y\" style=\"animation-duration:3.9s\"><path d=\"M-6 54 C1 44 9 44 16 54 C23 57 31 57 38 54 C45 44 53 44 60 54 C67 57 75 57 82 54 C89 44 97 44 104 54 L96 92 L-6 92 Z\" fill=\"url(#g-sky)\" fill-opacity=\"0.5\"/></g><g class=\"anim-wave-y\" style=\"animation-duration:3.9s\"><path d=\"M-6 66 C1 56 9 56 16 66 C23 69 31 69 38 66 C45 56 53 56 60 66 C67 69 75 69 82 66 C89 56 97 56 104 66 L96 92 L-6 92 Z\" fill=\"url(#g-sea)\" fill-opacity=\"0.55\"/></g><g class=\"anim-wave-y\" style=\"animation-duration:3.9s\"><path d=\"M-6 78 C1 68 9 68 16 78 C23 81 31 81 38 78 C45 68 53 68 60 78 C67 81 75 81 82 78 C89 68 97 68 104 78 L96 92 L-6 92 Z\" fill=\"url(#g-deep)\" fill-opacity=\"0.5\"/></g><g class=\"anim-foam\"><circle cx=\"26\" cy=\"60\" r=\"2.2\" fill=\"#FFFFFF\" fill-opacity=\".55\"/></g><g class=\"anim-foam\"><circle cx=\"58\" cy=\"70\" r=\"1.9\" fill=\"#FFFFFF\" fill-opacity=\".55\"/></g></g></svg>",
+    empty: "<svg viewBox=\"0 0 140 92\" width=\"100%\" height=\"100%\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><g filter=\"url(#wc-rough)\"><g class=\"anim-wave-y\" style=\"animation-duration:4.7s\"><path d=\"M-6 56 C1 46 9 46 16 56 C23 59 31 59 38 56 C45 46 53 46 60 56 C67 59 75 59 82 56 C89 46 97 46 104 56 C111 59 119 59 126 56 C133 46 141 46 148 56 L146 94 L-6 94 Z\" fill=\"url(#g-sky)\" fill-opacity=\"0.5\"/></g><g class=\"anim-wave-y\" style=\"animation-duration:4.7s\"><path d=\"M-6 68 C1 58 9 58 16 68 C23 71 31 71 38 68 C45 58 53 58 60 68 C67 71 75 71 82 68 C89 58 97 58 104 68 C111 71 119 71 126 68 C133 58 141 58 148 68 L146 94 L-6 94 Z\" fill=\"url(#g-sea)\" fill-opacity=\"0.5\"/></g><g class=\"anim-wave-y\" style=\"animation-duration:4.7s\"><path d=\"M-6 80 C1 70 9 70 16 80 C23 83 31 83 38 80 C45 70 53 70 60 80 C67 83 75 83 82 80 C89 70 97 70 104 80 C111 83 119 83 126 80 C133 70 141 70 148 80 L146 94 L-6 94 Z\" fill=\"url(#g-deep)\" fill-opacity=\"0.55\"/></g><g class=\"anim-foam\"><circle cx=\"36\" cy=\"62\" r=\"2.4\" fill=\"#FFFFFF\" fill-opacity=\".55\"/></g><g class=\"anim-foam\"><circle cx=\"88\" cy=\"58\" r=\"2\" fill=\"#FFFFFF\" fill-opacity=\".55\"/></g><g class=\"anim-foam\"><circle cx=\"62\" cy=\"74\" r=\"2.2\" fill=\"#FFFFFF\" fill-opacity=\".55\"/></g><g class=\"anim-foam\"><circle cx=\"112\" cy=\"72\" r=\"1.8\" fill=\"#FFFFFF\" fill-opacity=\".55\"/></g></g></svg>"
+  },
+  drift: "<span class=\"drift-wave\" style=\"height:32px; animation-duration:5.6s\"><svg viewBox=\"0 0 368 56\" width=\"100%\" height=\"100%\" preserveAspectRatio=\"none\" aria-hidden=\"true\"><g class=\"anim-wave-y\" style=\"animation-duration:5.1s\"><path d=\"M-6 17 C1 7 9 7 16 17 C23 20 31 20 38 17 C45 7 53 7 60 17 C67 20 75 20 82 17 C89 7 97 7 104 17 C111 20 119 20 126 17 C133 7 141 7 148 17 C155 20 163 20 170 17 C177 7 185 7 192 17 C199 20 207 20 214 17 C221 7 229 7 236 17 C243 20 251 20 258 17 C265 7 273 7 280 17 C287 20 295 20 302 17 C309 7 317 7 324 17 C331 20 339 20 346 17 C353 7 361 7 368 17 C375 20 383 20 390 17 L374 58 L-6 58 Z\" fill=\"url(#g-sea)\" fill-opacity=\"0.3\"/></g></svg></span><span class=\"drift-wave\" style=\"height:24px; animation-duration:4.3s; animation-delay:-2.1s\"><svg viewBox=\"0 0 368 40\" width=\"100%\" height=\"100%\" preserveAspectRatio=\"none\" aria-hidden=\"true\"><g class=\"anim-wave-y\" style=\"animation-duration:3.9s\"><path d=\"M-6 14 C1 4 9 4 16 14 C23 17 31 17 38 14 C45 4 53 4 60 14 C67 17 75 17 82 14 C89 4 97 4 104 14 C111 17 119 17 126 14 C133 4 141 4 148 14 C155 17 163 17 170 14 C177 4 185 4 192 14 C199 17 207 17 214 14 C221 4 229 4 236 14 C243 17 251 17 258 14 C265 4 273 4 280 14 C287 17 295 17 302 14 C309 4 317 4 324 14 C331 17 339 17 346 14 C353 4 361 4 368 14 C375 17 383 17 390 14 L374 42 L-6 42 Z\" fill=\"url(#g-deep)\" fill-opacity=\"0.36\"/></g></svg></span><span class=\"drift-foam\" style=\"left:13%; bottom:24px; width:8px; height:8px; animation-duration:9s\"></span><span class=\"drift-foam\" style=\"left:63%; bottom:16px; width:6px; height:6px; animation-duration:11s; animation-delay:-4s\"></span><span class=\"drift-foam\" style=\"left:86%; bottom:26px; width:7px; height:7px; animation-duration:10s; animation-delay:-7s\"></span>"
+};
+
+
+/* ============================================================================
+   FotoBro — theme m4 "Máy ảnh film"  (worker w04)
+   FRAGMENT — không phải file JS hoàn chỉnh. Cách chèn (w08):
+     1. Chèn SAU khối helper chung (shared/helpers.js: cần svgWrap, f1, ring,
+        sakuraPetal, blob/rnd qua ring) và SAU khi DECOR_THEMES đã khai báo.
+     2. Chèn TRƯỚC lần gọi applyDecor() đầu tiên.
+   Phụ thuộc: svgWrap, f1, ring, sakuraPetal (helpers.js — KHÔNG định nghĩa lại
+   ở đây). m4FallSpan là bản sao cục bộ của fallSpan trong mock (fallSpan không
+   có trong helpers.js) để fragment tự đủ chạy; w08 có thể thay bằng fallSpan
+   chung nếu đã có sẵn trong app.
+   KHÔNG dùng butterfly()/filmStrip() v7 trong helpers.js (xem NOTES.md).
+   ========================================================================== */
+
+/* ---------- SỬA 3 (Việt): hoa cánh bướm vẽ lại — cánh RỜI RẠC ----------
+   5 cánh, mỗi cánh một hình cánh hoa riêng (sakuraPetal), xòe quanh tâm ở
+   các góc cách nhau 72°. Gốc mỗi cánh lùi ra khỏi tâm 2.2*s nên giữa các cánh
+   có KHOẢNG HỞ thấy rõ (rộng nhất ~7.6 đơn vị ở giữa cánh, tính theo s=1);
+   các cánh chỉ gặp nhau ở tâm nhỏ (chấm tròn r=2*s). BỎ HẲN vệt wash tròn to
+   ở giữa (thủ phạm làm bông v7 dính thành một cục tròn).
+   CHỈ MỘT MÀU HỒNG (SỬA 1): cánh #F49AA9, viền/tâm #E87A90 — cùng họ hồng
+   trong pgrad của helpers.js, không pha pastel khác. Ở cỡ nhỏ 12–21px hoa
+   vẫn đọc ra 5 cánh riêng (rộng mỗi cánh ~4px, hở ~3.6px ở cỡ drift 17px). */
+/* butterfly2 + BUTTERFLY_DRIFT đã định nghĩa ở decor-core.js (dùng chung cho c1–c3/m4) */
+
+/* ---------- SỬA 2 (Việt): cuộn phim KHÔI PHỤC ĐÚNG MÀU GỐC v5 ----------
+   Chép nguyên hàm filmStrip v5 (shared/film-v5-original.txt), chỉ đổi tên
+   thành filmStrip2. Thân cuộn url(#g-sepia2), các ô hình url(#g-sepia),
+   lỗ sprocket #FFF6E8. ĐÃ BỎ: gradient hồng đào url(#g-film) + ô hình luân
+   phiên 5 màu pastel (FILM_COLORS) của vòng v7. Mã màu gốc v5 của g-sepia /
+   g-sepia2 xem NOTES.md — w08 đưa vào khối defs chung (KHÔNG dùng mã đã
+   sáng lên ở v6/v7 trong shared/gradients.html). */
+function filmStrip2(cx, top, w, len, rot){
+  var out = '<g transform="translate(' + f1(cx) + ' ' + f1(top) + ') rotate(' + rot + ')"><g class="anim-film-x">';
+  out += '<rect x="' + f1(-w / 2) + '" y="0" width="' + f1(w) + '" height="' + f1(len) + '" rx="3" fill="url(#g-sepia2)" fill-opacity=".55"/>';
+  var y;
+  for (y = 5; y < len - 3; y += 10.5){
+    out += '<rect x="' + f1(-w / 2 + 2.4) + '" y="' + f1(y) + '" width="3.4" height="5" rx="1.4" fill="#FFF6E8" fill-opacity=".8"/>' +
+           '<rect x="' + f1(w / 2 - 5.8) + '" y="' + f1(y) + '" width="3.4" height="5" rx="1.4" fill="#FFF6E8" fill-opacity=".8"/>';
+  }
+  for (y = 7; y + 15 < len; y += 21){
+    out += '<rect x="' + f1(-w / 2 + 8.5) + '" y="' + f1(y) + '" width="' + f1(w - 17) + '" height="15" rx="2" fill="url(#g-sepia)" fill-opacity=".5"/>';
+  }
+  return out + '</g></g>';
+}
+
+/* Span rơi — bản sao cục bộ của fallSpan trong mock (xem đầu file). */
+function m4FallSpan(left, w, h, dur, delay, sway, svg){
+  return '<span class="petal-fall" style="left:' + left + '%; width:' + w + 'px; height:' + h + 'px; animation-duration:' + dur + 's; animation-delay:' + delay + 's">' +
+    '<span class="petal-sway" style="animation-duration:' + sway + 's">' + svg + '</span></span>';
+}
+
+/* Chuỗi bướm rơi dùng chung — coordinator thay vào placeholder
+   __BUTTERFLY2_DRIFT__ trong drift của w01–w03 (CONTRACT §5). */
+var FILM_DRIFT_M4 = '<svg viewBox="0 0 22 36" width="100%" height="100%" aria-hidden="true">' + filmStrip2(11, 1, 19, 34, 0) + '</svg>';
+
+/* Drift m4: 4 cuộn film + 7 hoa cánh bướm = 11 phần tử, 24–32s.
+   Lấy nguyên DRIFTS.m4 trong mock, chỉ thay filmStrip→filmStrip2 (qua
+   FILM_DRIFT_M4) và butterfly→butterfly2 (qua BUTTERFLY_DRIFT). */
+var M4_DRIFT =
+      m4FallSpan(8, 17, 17, 27, -20, 3.5, BUTTERFLY_DRIFT) +
+      m4FallSpan(10, 19, 31, 28, -6, 6.5, FILM_DRIFT_M4) +
+      m4FallSpan(24, 18, 18, 25, -15, 3.6, BUTTERFLY_DRIFT) +
+      m4FallSpan(38, 15, 25, 31, -22, 7.2, FILM_DRIFT_M4) +
+      m4FallSpan(50, 20, 20, 27, -3, 3.9, BUTTERFLY_DRIFT) +
+      m4FallSpan(62, 17, 28, 29, -18, 6.8, FILM_DRIFT_M4) +
+      m4FallSpan(68, 18, 18, 29, -14, 4.3, BUTTERFLY_DRIFT) +
+      m4FallSpan(74, 16, 16, 24, -11, 3.3, BUTTERFLY_DRIFT) +
+      m4FallSpan(86, 19, 19, 30, -26, 4.1, BUTTERFLY_DRIFT) +
+      m4FallSpan(44, 17, 17, 26, -28, 3.8, BUTTERFLY_DRIFT) +
+      m4FallSpan(93, 14, 23, 32, -9, 7.0, FILM_DRIFT_M4);
+
+/* ---------- Đăng ký theme m4 ----------
+   Motif lấy nguyên cấu trúc MOTIFS.m4 trong mock, chỉ thay
+   butterfly→butterfly2(..., true) và filmStrip→filmStrip2. */
+DECOR_THEMES['m4'] = {
+  label: 'Máy ảnh film',
+  bg: 'assets/themes/bg-film.webp',
+  motifs: {
+    hero: svgWrap('0 0 150 98', '<g filter="url(#wc-rough)">' +
+      filmStrip2(118, 4, 27, 90, -6) +
+      '<g class="anim-sway">' + butterfly2(48, 44, 1.25, true) + '</g>' +
+      '<g class="anim-sway">' + butterfly2(96, 76, 0.7, true) + '</g>' +
+      '</g>'),
+    sprig: svgWrap('0 0 90 90', '<g filter="url(#wc-rough)">' +
+      filmStrip2(70, 2, 22, 62, 8) +
+      '<g class="anim-sway">' + butterfly2(34, 34, 0.9, true) + '</g>' +
+      '</g>'),
+    empty: svgWrap('0 0 140 92', '<g filter="url(#wc-rough)">' +
+      filmStrip2(112, 6, 25, 82, -5) +
+      '<g class="anim-sway">' + butterfly2(52, 42, 1.0, true) + '</g>' +
+      '</g>')
+  },
+  drift: M4_DRIFT
+};
+
 
 </script>
 
@@ -4127,7 +5461,8 @@
       h += '<p class="sec-s">Thông báo</p><div class="list"><label class="row" style="cursor:pointer;"><span class="ic bg-orange">' + I('bell') + '</span><span class="txt"><span class="t1" style="display:block;">Tổng kết mỗi tối lúc 20:30</span></span><input type="checkbox" class="switch" role="switch" id="dailySw" aria-checked="' + (c.dailyNotif !== false && c.notifAsked ? 'true' : 'false') + '"' + (c.dailyNotif !== false && c.notifAsked ? ' checked' : '') + ' /></label></div>' +
         '';
       h += '<p class="sec-s">Giao diện</p><div class="list"><div class="row"><span class="txt"><span class="t1" style="display:block;">Sáng / tối theo điện thoại</span></span></div>' +
-        '<label class="row" style="cursor:pointer;"><span class="txt"><span class="t1" style="display:block;">Kính mờ kiểu iOS</span></span><input type="checkbox" class="switch" role="switch" aria-checked="' + (c.glass !== false ? 'true' : 'false') + '" id="glassSwitch"' + (c.glass !== false ? ' checked' : '') + ' /></label></div>';
+        '<label class="row" style="cursor:pointer;"><span class="txt"><span class="t1" style="display:block;">Kính mờ kiểu iOS</span></span><input type="checkbox" class="switch" role="switch" aria-checked="' + (c.glass !== false ? 'true' : 'false') + '" id="glassSwitch"' + (c.glass !== false ? ' checked' : '') + ' /></label>' +
+        '<div class="row" style="display:block;padding:12px 12px 4px;"><span class="t1" style="display:block;">Họa tiết nền</span><span class="t2" style="display:block;">Chọn 1 trong 8 theme — áp ngay cho cả app, lưu theo máy</span></div><div data-decor-picker></div></div>';
       h += '<p class="sec-s">Bảng giá gói chụp</p><div class="list">' +
         TYPES.filter(function(t){ return t !== 'Khác'; }).map(function(t){ return money('prices.' + t, t, c.prices[t]); }).join('') + '</div>' +
         '';
@@ -4249,12 +5584,46 @@
       if (myName() && myStudio()) return; /* đã tự điền rồi — để nút Thiết lập nhanh trong Cài đặt */
       openSetup(false);
     }
+    /* ---------- Bộ chọn theme trong cài đặt mở đầu (w09; dùng chung cfg.decor với Cài đặt) ---------- */
+var DECOR_PICKER_ORDER = ['default', 'c1', 'c2', 'c3', 'm1', 'm2', 'm3', 'm4'];
+/* Nhãn fallback theo CONTRACT §1 — chỉ dùng khi DECOR_THEMES chưa nạp. */
+var DECOR_PICKER_LABELS = {
+  'default': 'Mặc định', 'c1': 'Sen', 'c2': 'Hoa dại', 'c3': 'Đào + trúc',
+  'm1': 'Cá bơi', 'm2': 'Núi rừng', 'm3': 'Biển sóng', 'm4': 'Máy ảnh film'
+};
+function decorThumb(id){
+  if (typeof DECOR_THEMES !== 'undefined' && DECOR_THEMES[id] && DECOR_THEMES[id].motifs) return DECOR_THEMES[id].motifs.hero || '';
+  if (typeof MOTIFS !== 'undefined' && MOTIFS[id]) return MOTIFS[id].hero || '';
+  return '';
+}
+function decorLabel(id){
+  if (typeof DECOR_THEMES !== 'undefined' && DECOR_THEMES[id] && DECOR_THEMES[id].label) return DECOR_THEMES[id].label;
+  return DECOR_PICKER_LABELS[id] || id;
+}
+function setupDecorStep(c){
+  var cur = c.decor || 'default';
+  var tiles = DECOR_PICKER_ORDER.map(function(id){
+    var pressed = (cur === id);
+    return '<button type="button" class="decor-opt" data-decor-opt="' + id + '"' +
+      ' aria-pressed="' + (pressed ? 'true' : 'false') + '"' +
+      ' aria-label="Theme ' + esc(decorLabel(id)) + '">' +
+      '<span class="decor-thumb" aria-hidden="true">' + decorThumb(id) + '</span>' +
+      '<span class="decor-name">' + esc(decorLabel(id)) + '</span></button>';
+  }).join('');
+  return '<div class="jd-head"><span class="ic lg bg-accent">' + I('sparkle') + '</span>' +
+    '<h2>Chọn giao diện</h2><p>Hoa cỏ, cá bơi, máy ảnh film — đổi lại được bất cứ lúc nào trong Cài đặt</p></div>' +
+    '<div class="decor-picker" role="group" aria-label="Chọn theme trang trí">' + tiles + '</div>' +
+    '<button type="button" class="btn gray" id="suDecorSkip" style="width:100%;margin-top:14px;">Bỏ qua</button>' +
+    '<p class="note-txt" style="text-align:center;margin-top:8px;">Bỏ qua thì giữ theme Mặc định — app trơn như hiện tại, không họa tiết.</p>';
+}
+
     var SETUP_STEPS = [
       function(c){ return '<div class="jd-head"><span class="ic lg bg-accent">' + I('sparkle') + '</span><h2>Studio của bạn</h2><p>Điền 1 lần — tin nhắn, báo giá, hợp đồng tự dùng</p></div><div class="list">' +
         frow('Tên gọi', '<input data-cfg="name" value="' + esc(c.name) + '" placeholder="Tên của bạn" />') +
         frow('Tên studio', '<input data-cfg="studio" value="' + esc(c.studio) + '" placeholder="VD: Nắng Studio" />') +
         frow('Điện thoại', '<input data-cfg="phone" type="tel" inputmode="tel" value="' + esc(c.phone || '') + '" placeholder="0901 234 567" />') + '</div>' +
         '<div class="list" style="margin-top:12px;"><label class="row act" style="cursor:pointer;">' + (c.logo ? '<img src="' + esc(c.logo) + '" alt="" style="width:40px;height:40px;border-radius:10px;object-fit:cover;" />' : '<span class="ic bg-accent">' + I('upload') + '</span>') + '<span class="txt"><span class="t1" style="display:block;">' + (c.logo ? 'Đổi logo' : 'Chọn logo studio') + '</span></span><input type="file" id="suLogo" accept="image/*" class="hidden" /></label></div>'; },
+      setupDecorStep,
       function(c){ return '<div class="jd-head"><span class="ic lg bg-blue">' + I('globe') + '</span><h2>Trang mạng xã hội</h2><p>Khách bấm là tới trang của bạn — điền cái nào có thì điền</p></div>' + socialFields(c) + ''; },
       function(c){ var mv = function(v){ return v ? (+v).toLocaleString('vi-VN') : ''; };
         return '<div class="jd-head"><span class="ic lg bg-green">' + I('tag') + '</span><h2>Giá & cọc</h2><p>App dùng để tự điền giá, tính cọc, hạn giao</p></div><div class="list">' +
@@ -4298,6 +5667,19 @@
           var ap = $('#suApple', b); if (ap) ap.addEventListener('click', function(){ Promise.resolve(aConnect()).then(refreshSetup); });
           var sfb = $('#suFb', b); if (sfb) sfb.addEventListener('click', function(){ fbConnect(); });
           var lk = $('#suLock', b); if (lk) lk.addEventListener('click', function(){ openLockSetup(); });
+          $$('[data-decor-opt]', b).forEach(function(btn){
+            btn.addEventListener('click', function(){
+              var id = btn.getAttribute('data-decor-opt');
+              if (typeof setDecor === 'function') setDecor(id);
+              else { state.cfg.decor = id; saveLocal(); if (typeof applyDecor === 'function') applyDecor(); }
+              refreshSetup();
+              b.scrollTop = 0;
+            });
+          });
+          var sk = $('#suDecorSkip', b);
+          if (sk) sk.addEventListener('click', function(){
+            if (setupStep < SETUP_STEPS.length - 1){ setupStep++; refreshSetup(); b.scrollTop = 0; }
+          });
           var pv = $('#suPrev', b); if (pv) pv.addEventListener('click', function(){ setupStep--; refreshSetup(); b.scrollTop = 0; });
           $('#suNext', b).addEventListener('click', function(){
             if (setupStep < SETUP_STEPS.length - 1){ setupStep++; refreshSetup(); b.scrollTop = 0; return; }
@@ -4489,6 +5871,7 @@
       $$('#themeSeg button', b).forEach(function(x){ x.addEventListener('click', function(){
         state.cfg.theme = x.getAttribute('data-th'); $$('#themeSeg button', b).forEach(function(y){ y.classList.toggle('on', y === x); }); applyTheme(); renderAll();
       }); });
+      if (typeof bindDecorPicker === 'function') bindDecorPicker(b);
       $$('[data-gfeat]', b).forEach(function(sw){ sw.addEventListener('change', function(){
         var k = sw.getAttribute('data-gfeat'); state.cfg.gFeat = state.cfg.gFeat || {}; state.cfg.gFeat[k] = sw.checked; saveLocal();
         if (sw.checked && gToken() && !gHas(FEAT_SCOPE[k])){
@@ -6362,6 +7745,7 @@
     if (!lockCfg()){ maybeShowAuthGate(); if (typeof maybeSilentGoogle === 'function') maybeSilentGoogle(); }
     if (!state.cfg.since){ state.cfg.since = dstr(0); saveLocal(); }
     if (typeof maybeSetup === 'function') maybeSetup();
+    if (typeof applyDecor === 'function') applyDecor();
     if (typeof autoAdvanceSoon === 'function') setTimeout(autoAdvanceSoon, 1200);
     </script>
   </body>

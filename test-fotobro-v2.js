@@ -2748,6 +2748,120 @@ async function loadDom(beforeParse) {
     t('40: APP_VERSION vẫn 2.3 (không nâng số)', html.includes("var APP_VERSION = '2.3'"));
   }
 
+  console.log('\n[41] Hệ theme trang trí (decor) — đổi 8 theme, drift, nền, 2 picker, lưu bền');
+  {
+    var DECOR_IDS = ['default', 'c1', 'c2', 'c3', 'm1', 'm2', 'm3', 'm4'];
+    /* Tên file nền theo CONTRACT §1/§9 (bg-<tên>.webp, không phải bg-<id>.webp). */
+    var DECOR_BG = { default: '', c1: 'bg-lotus.webp', c2: 'bg-wildflower.webp', c3: 'bg-peach.webp', m1: 'bg-fish.webp', m2: 'bg-forest.webp', m3: 'bg-sea.webp', m4: 'bg-film.webp' };
+    /* Số phần tử con của #decorDrift — đếm từ shared/motifs-drifts.js:
+       FLOWER_DRIFT = 10 fallSpan (6 bướm + 4 cánh); m1 = 2 cá + 3 bọt = 5;
+       m2 = 2 sương + 4 lá = 6; m3 = 2 sóng + 3 bọt = 5; m4 = 11 fallSpan. */
+    var DECOR_DRIFT = { default: 0, c1: 10, c2: 10, c3: 10, m1: 5, m2: 6, m3: 5, m4: 11 };
+    var decorEl = function () { return doc.documentElement.getAttribute('data-decor'); };
+    var driftN = function () { var d = doc.querySelector('#decorDrift'); return d ? d.children.length : -1; };
+    var bgImg = function () { var b = doc.querySelector('#decorBg'); return b ? (b.style.backgroundImage || '') : 'MISSING'; };
+    var slotHtml = function (m) { var s = doc.querySelector('.decor-slot[data-motif="' + m + '"]'); return s ? s.innerHTML : 'MISSING'; };
+    var MOTIF_SLOTS = ['hero', 'sprig', 'empty'];
+
+    /* --- (A) Hàm + khung DOM + mặc định --- */
+    t('41: có hàm setDecor', typeof W.setDecor === 'function');
+    t('41: có hàm applyDecor', typeof W.applyDecor === 'function');
+    t('41: có #decorLayer', !!doc.querySelector('#decorLayer'));
+    t('41: có #decorBg', !!doc.querySelector('#decorBg'));
+    t('41: có #decorDrift', !!doc.querySelector('#decorDrift'));
+    t('41: đủ 3 motif slot hero/sprig/empty', doc.querySelectorAll('.decor-slot[data-motif]').length === 3);
+    eq('41: mergeCfg(null).decor mặc định', W.mergeCfg(null).decor, 'default');
+
+    /* --- (B) Đổi cả 8 theme qua setDecor() --- */
+    DECOR_IDS.forEach(function (id) {
+      W.setDecor(id);
+      eq('41: setDecor ' + id + ' -> data-decor', decorEl(), id);
+      eq('41: setDecor ' + id + ' -> cfg.decor', W.state.cfg.decor, id);
+      eq('41: drift ' + id + ' = ' + DECOR_DRIFT[id], driftN(), DECOR_DRIFT[id]);
+      if (id === 'default') {
+        t('41: default không có ảnh nền', bgImg() === '' || bgImg() === 'none', bgImg());
+        t('41: default 3 slot rỗng', MOTIF_SLOTS.every(function (m) { return slotHtml(m) === ''; }));
+      } else {
+        t('41: nền ' + id + ' chứa ' + DECOR_BG[id], bgImg().includes(DECOR_BG[id]), bgImg());
+        t('41: ' + id + ' đủ 3 slot có SVG', MOTIF_SLOTS.every(function (m) { return slotHtml(m).includes('<svg'); }));
+      }
+    });
+    /* id lạ không được đổi theme đang dùng (sau vòng lặp đang ở m4). */
+    W.setDecor('khong-co');
+    eq('41: id lạ không đổi theme (vẫn m4)', decorEl(), 'm4');
+    eq('41: id lạ không đổi cfg.decor (vẫn m4)', W.state.cfg.decor, 'm4');
+    /* Tên file nền trong DECOR_THEMES phải khớp bảng CONTRACT §1/§9. */
+    ['c1', 'c2', 'c3', 'm1', 'm2', 'm3', 'm4'].forEach(function (id) {
+      t('41: DECOR_THEMES.' + id + '.bg khớp ' + DECOR_BG[id],
+        !!(W.DECOR_THEMES && W.DECOR_THEMES[id] && (W.DECOR_THEMES[id].bg || '').endsWith(DECOR_BG[id])));
+    });
+
+    /* --- (C) Picker trong Cài đặt: bấm đổi được theme --- */
+    W.openSettings();
+    await sleep(100);
+    var st41 = [...doc.querySelectorAll('.sheet .sheet-body')].pop();
+    if (st41 && !st41.querySelector('[data-decor-opt]')) {
+      /* Cài đặt nhóm (v2.4–2.5): picker nằm trong nhóm "Giao diện" — mở nhóm đó. */
+      var g41 = [...st41.querySelectorAll('[data-sg-open]')].find(function (x) { return (x.textContent || '').includes('Giao diện'); });
+      if (g41) { g41.click(); await sleep(50); st41 = [...doc.querySelectorAll('.sheet .sheet-body')].pop(); }
+    }
+    t('41: Cài đặt có đủ 8 ô chọn theme', !!st41 && st41.querySelectorAll('[data-decor-opt]').length === 8,
+      st41 ? String(st41.querySelectorAll('[data-decor-opt]').length) : 'không mở được Cài đặt');
+    if (st41 && st41.querySelector('[data-decor-opt="m2"]')) {
+      st41.querySelector('[data-decor-opt="m2"]').click();
+      await sleep(50);
+      st41 = [...doc.querySelectorAll('.sheet .sheet-body')].pop();
+    }
+    eq('41: bấm m2 ở Cài đặt -> data-decor m2', decorEl(), 'm2');
+    eq('41: bấm m2 ở Cài đặt -> cfg.decor m2', W.state.cfg.decor, 'm2');
+    t('41: aria-pressed chỉ m2 bật', !!st41 && st41.querySelector('[data-decor-opt="m2"]') &&
+      st41.querySelector('[data-decor-opt="m2"]').getAttribute('aria-pressed') === 'true' &&
+      [...st41.querySelectorAll('[data-decor-opt]')].filter(function (x) { return x.getAttribute('aria-pressed') === 'true'; }).length === 1);
+    /* Đóng Cài đặt trong đúng doc của mục này: saveSheet() dùng DOC toàn cục (đã trỏ sang DOM khác ở [F10-3]) nên crash. */
+    var xr41 = doc.querySelector('.sheet .sh-r'); if (xr41) { xr41.click(); await sleep(100); }
+
+    /* --- (D) Picker trong cài đặt mở đầu: bấm đổi được theme --- */
+    var g41b = await loadDom();
+    var W41 = g41b.win, d41 = g41b.doc;
+    var ag41 = d41.querySelector('#authGate'); if (ag41) ag41.remove();
+    W41.maybeSetup(); await sleep(100);
+    t('41: người mới (chưa tên) -> mở Thiết lập nhanh', !!W41.setupSheet);
+    var found41 = false;
+    for (var i41 = 0; i41 < 8 && !found41; i41++) {
+      if (d41.querySelector('.sheet [data-decor-opt]')) { found41 = true; break; }
+      var nx41 = [...d41.querySelectorAll('.sheet #suNext')].pop();
+      if (!nx41) break;
+      nx41.click(); await sleep(60);
+    }
+    t('41: Thiết lập nhanh có bước chọn theme', found41);
+    var m4opt41 = found41 ? d41.querySelector('.sheet [data-decor-opt="m4"]') : null;
+    if (m4opt41) { m4opt41.click(); await sleep(50); }
+    eq('41: bấm m4 ở Thiết lập -> data-decor m4', found41 ? d41.documentElement.getAttribute('data-decor') : null, 'm4');
+    eq('41: bấm m4 ở Thiết lập -> cfg.decor m4', found41 ? W41.state.cfg.decor : null, 'm4');
+    t('41: Thiết lập có nút Bỏ qua giữ mặc định',
+      [...d41.querySelectorAll('.sheet button')].some(function (b) { return (b.textContent || '').includes('Bỏ qua'); }));
+
+    /* --- (E) Theme lưu bền vững qua saveLocal / tải lại DOM --- */
+    W.setDecor('m3');
+    W.saveLocal();
+    var saved41 = W.localStorage.getItem(W.LS_KEY) || '';
+    t('41: localStorage đã lưu decor m3', saved41.includes('"decor":"m3"'));
+    var g41c = await loadDom(function (w) { w.localStorage.setItem('troLyXeo.v1', saved41); });
+    var W41c = g41c.win, d41c = g41c.doc;
+    eq('41: tải lại giữ cfg.decor m3', W41c.state.cfg.decor, 'm3');
+    eq('41: tải lại giữ data-decor m3', d41c.documentElement.getAttribute('data-decor'), 'm3');
+    eq('41: tải lại drift m3 = 5', d41c.querySelector('#decorDrift') ? d41c.querySelector('#decorDrift').children.length : -1, 5);
+    t('41: tải lại nền m3 chứa bg-sea.webp',
+      (d41c.querySelector('#decorBg') ? (d41c.querySelector('#decorBg').style.backgroundImage || '') : '').includes('bg-sea.webp'));
+    /* Vòng save/load trong cùng DOM (theo mẫu [12]). */
+    W.setDecor('m1');
+    W.saveLocal();
+    W.state.cfg.decor = 'default';
+    W.loadLocal();
+    eq('41: save/load giữ decor m1', W.state.cfg.decor, 'm1');
+    W.setDecor('default');
+  }
+
   console.log('\n===== KẾT QUẢ: ' + pass + ' đạt / ' + (pass + fail) + ' =====');
   if (fail) { console.log('FAILURES:', fails.join(' | ')); process.exit(1); }
 })().catch(e => { console.error('TEST CRASH:', e); process.exit(2); });

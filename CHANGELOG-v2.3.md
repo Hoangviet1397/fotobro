@@ -206,3 +206,50 @@ trước 1 ngày, soát UX". Giữ đủ cả hai bên, phiên bản vẫn 2.3.
 
 - Google không đụng tới (Google Lịch đang chạy tốt).
 - Storage key `troLyXeo.v1` / `troLyXeoPhotos` không đổi.
+
+## Hệ theme trang trí — 8 theme (21/11/2026, Việt duyệt "Cho cả lên" 11:35)
+
+Dựng hệ theme trang trí vào code thật theo mock v7 (artifact "FotoBro — họa tiết
+hoa cỏ", 8 theme). Giữ nguyên phiên bản 2.3, giữ nguyên toàn bộ tính năng, storage
+key `troLyXeo.v1` / `troLyXeoPhotos` không đổi. 10 worker làm song song, gộp bằng
+script tích hợp (không sửa tay).
+
+- **8 theme:** Mặc định (Liquid Glass C trơn) + C1 Sen, C2 Hoa dại, C3 Đào + trúc,
+  M1 Cá bơi, M2 Núi rừng, M3 Biển sóng, M4 Máy ảnh film. Một config key duy nhất
+  `cfg.decor` (mặc định `'default'`), sanitize qua `mergeCfg`, lưu bền theo máy.
+- **Khung decor:** `#decorLayer` ngay sau `<body>` — `#decorBg` (ảnh nền theo theme,
+  `www/assets/themes/bg-<tên>.webp`) + 3 ô họa tiết cố định (hero góc trên phải
+  150×98, sprig giữa 90×90, empty dưới 140×92) + `#decorDrift` (cánh/hoa/cá/bọt rơi
+  trôi). Nội dung app nổi trên khung (`main.wrap{position:relative;z-index:1}`).
+- **Chọn theme 2 chỗ:** Cài đặt → mục Giao diện (đủ 8 lựa chọn, áp ngay) và bước 2
+  của "thiết lập nhanh lần đầu" (sau bước Studio, có nút "Bỏ qua").
+- **M4 film — 3 sửa bắt buộc của Việt:** (1) hoa cánh bướm CHỈ màu hồng
+  (`#F49AA9`/`#E87A90`); (2) cuộn phim khôi phục đúng màu gốc sepia v5
+  (`g-sepia #E8D3A8→#C9A87C`, `g-sepia2 #B49B78→#8A7A66`, khung `url(#g-sepia)`,
+  răng phim `#FFF6E8`) — bỏ gradient hồng đào `g-film` + ô hình 5 màu pastel của
+  vòng v7; (3) hoa cánh bướm vẽ lại 5 cánh rời rạc (cách nhau 72°, hở −2.2*s),
+  tâm nhỏ, bỏ vệt wash tròn to ở giữa, viền tròn mềm chỉ ở bông lớn.
+- **Bản tối:** nền decor tối theo mock (`.62` + phủ nâu `rgba(46,38,28,…)`, drift
+  `.72`, ô họa tiết `.5`); riêng C1/C2/C3/M4 sáng lên tông nâu sữa ấm
+  (bgimg `.92` + phủ `rgba(107,90,68,…)`).
+- **Hiệu ứng bấm nút (Việt 10:47):** toàn app `button:active{transform:scale(.96)}`;
+  tôn trọng `prefers-reduced-motion` (tắt drift/animation).
+- **Lệch khỏi mock (ghi rõ):** app dùng 3 ô họa tiết cố định thay cho 11 điểm họa
+  tiết rải khắp các màn trong mock; ảnh nền đổi ngay (mock có fade .45s); keyframes
+  `decor-petal-fall` thống nhất 105vh (mock 790px); blob wobble khác mock ở mức
+  pixel do thứ tự gọi RNG khác (cùng seed 11, mắt thường không thấy).
+- **Test:** thêm mục [41] (71 test mới: đổi cả 8 theme, drift đúng số lượng
+  c1–c3=10, m1=5, m2=6, m3=5, m4=11; nền đúng theme; cả hai chỗ chọn theme; lưu
+  theme bền vững; M4 đúng sepia v5 + hoa hồng + 5 cánh rời).
+- **Sửa sau tích hợp (kiểm chứng bắt được):** `setDecor('id lạ')` giữ nguyên theme
+  đang dùng thay vì reset về mặc định (giá trị lưu hỏng vẫn về `'default'` qua
+  `mergeCfg`/`applyDecor`); comment đầu file decor-core.css chứa chuỗi
+  `"</style>"` làm trình duyệt cắt thẻ `<style>` sớm (CSS decor mất + hiện text
+  trong body) — 13 test "trang tải không lỗi jsdom" fail trước khi sửa, 977/977
+  sau khi sửa. Test [41] đóng Cài đặt bằng nút "Xong" trong đúng DOM của mục
+  (helper `saveSheet()` dùng `DOC` toàn cục đã trỏ sang DOM khác ở [F10-3]).
+
+## Chưa làm
+
+- Logo v9 đã gắn local trước đó, chưa đẩy lên TestFlight (chờ Việt quyết).
+- Storage key `troLyXeo.v1` / `troLyXeoPhotos` không đổi.
