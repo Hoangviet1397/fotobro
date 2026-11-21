@@ -241,8 +241,6 @@
       .fin-chart svg{ display:block; width:100%; height:auto; max-height:200px; overflow:visible; }
       .fin-chart .fc-lg{ display:flex; gap:14px; font-size:0.8125rem; color:var(--label2); margin-top:6px; }
       .fin-chart .fc-lg i{ display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px; }
-      .prep-add{ gap:10px; }
-      .prep-add input{ flex:1; min-width:0; border:0; background:none; font:inherit; color:var(--label); padding:10px 0; outline:none; }
       /* Tài chính: tóm tắt Thu / Chi / Lời trên 1 dòng */
       .msum{ display:grid; grid-template-columns:repeat(3,1fr); margin-top:14px; padding:12px 6px; text-align:center; }
       .msum-c{ min-width:0; padding:0 4px; }
@@ -487,7 +485,7 @@
       .sheet-head b{ font-size:1.0625rem; font-weight:600; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:52vw; }
       .sh-btn{ border:0; background:none; color:var(--accent-t); font-size:1.0625rem; min-height:44px; padding:0 10px; }
       .sh-btn:active{ opacity:.5; }
-      .sh-l{ justify-self:start; font-weight:600; } .sh-r{ justify-self:end; font-weight:600; }
+      .sh-l{ justify-self:start; font-weight:600; white-space:nowrap; } .sh-r{ justify-self:end; font-weight:600; white-space:nowrap; }
       .sheet-body{ overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; padding:4px 16px calc(30px + env(safe-area-inset-bottom)); flex:1; }
       .asheet{ position:fixed; left:8px; right:8px; bottom:calc(8px + env(safe-area-inset-bottom)); max-width:480px; margin:0 auto;
         transform:translateY(130%); transition:transform .38s var(--spring-bounce); }
@@ -503,7 +501,7 @@
       .ag button.cancel{ font-weight:600; }
 
       /* ---------- Thông báo nổi ---------- */
-      .hud{ position:fixed; left:50%; top:calc(env(safe-area-inset-top) + 8px); z-index:200; transform:translate(-50%,-140%);
+      .hud{ position:fixed; left:50%; top:calc(env(safe-area-inset-top, 0px) + 60px); z-index:200; transform:translate(-50%,-140%);
         background:var(--bar-strong); -webkit-backdrop-filter:blur(30px); backdrop-filter:blur(30px); color:var(--label);
         padding:11px 18px 11px 13px; border-radius:999px; box-shadow:0 10px 34px rgba(0,0,0,.18), 0 0 0 .5px var(--sep);
         font-size:0.9375rem; font-weight:600; max-width:calc(100% - 28px); display:flex; gap:9px; align-items:center;
@@ -894,12 +892,12 @@
       /* Hôm nay & sắp tới / Buổi chụp: danh sách job = sky */
       html[data-glass="1"] #todayList, html[data-glass="1"] #upcomingList, html[data-glass="1"] #jobList .list{ background:var(--tint-sky) !important; }
       html[data-glass="1"] #todayList{ -webkit-backdrop-filter:blur(22px) saturate(160%) !important; backdrop-filter:blur(22px) saturate(160%) !important; }
-      /* Tài chính: 3 khối Thu/Chi/Lời = sage/peach/sun; biểu đồ = sky; còn thiếu + lời theo job + sổ thu chi = lilac */
+      /* Tài chính: 3 khối Thu/Chi/Lời = sage/peach/sun; biểu đồ = sky; còn thiếu + sổ thu chi = lilac */
       html[data-glass="1"] .msum-c:nth-child(1){ background:var(--tint-sage) !important; }
       html[data-glass="1"] .msum-c:nth-child(2){ background:var(--tint-peach) !important; }
       html[data-glass="1"] .msum-c:nth-child(3){ background:var(--tint-sun) !important; }
       html[data-glass="1"] #moneyChart{ background:var(--tint-sky) !important; }
-      html[data-glass="1"] #oweList, html[data-glass="1"] #jobProfit, html[data-glass="1"] #txList .list{ background:var(--tint-lilac) !important; }
+      html[data-glass="1"] #oweList, html[data-glass="1"] #txList .list{ background:var(--tint-lilac) !important; }
       /* Phòng ban: mỗi thẻ giữ màu pastel riêng (--kc) nhưng ở dạng kính 55% + blur */
       html[data-glass="1"] .dtile{ background:color-mix(in srgb, var(--kc, var(--k-cream)) 55%, transparent) !important;
         border:.5px solid var(--glass-edge); }
@@ -1510,6 +1508,16 @@ html[data-decor="m4"] #mascotTagB{ display:block; }
 :root[data-theme="dark"] #decorBg::after{ background:linear-gradient(180deg, rgba(46,38,28,.52), rgba(46,38,28,.44) 42%, rgba(46,38,28,.56)); }
 :root[data-theme="dark"] #decorDrift{ opacity:.72; }
 :root[data-theme="dark"] #decorLayer .decor-slot{ opacity:.5; }
+/* ---------- Ban toi THAT cho lop voan decor (muc 2, 21/11/2026):
+   cac rule :root[data-theme="dark"] o tren KHONG bao gio chay vi
+   applyTheme() luon dat data-theme="warm" — guong lai bang media query
+   de voan kem khong bien nen toi thanh xam. ---------- */
+@media (prefers-color-scheme: dark){
+  #decorLayer .decor-bg{ filter:brightness(.62) saturate(.85); }
+  #decorLayer .decor-bg::after{ background:linear-gradient(180deg, rgba(46,38,28,.52), rgba(46,38,28,.44) 42%, rgba(46,38,28,.56)); }
+  #decorLayer .decor-drift{ opacity:.72; }
+  #decorLayer .decor-slot{ opacity:.5; }
+}
 /* ============================================================================
    w09 — OVERRIDE BẢN TỐI CHO C1 / C2 / C3 / M4 (theo mock v7)
    File: dark-overrides.css — nạp SAU CSS decor nền của w08.
@@ -1758,6 +1766,11 @@ html[data-decor="m4"] #mascotTagB{ display:block; }
       <section class="view" id="view-money" data-title="Tài chính">
         <div class="lt"><p class="eyebrow" id="moneyEyebrow">Tháng này</p><h1>Tài chính</h1></div>
         <div class="list msum" id="moneyStats"></div>
+        <div class="seg" id="chartSeg" style="margin-top:12px;">
+          <button type="button" data-cp="week">Tuần</button>
+          <button type="button" class="on" data-cp="month">Tháng</button>
+          <button type="button" data-cp="year">Năm</button>
+        </div>
         <div class="list fin-chart" id="moneyChart" style="margin-top:12px;"></div>
 
         <div id="gmBank"></div>
@@ -1773,9 +1786,6 @@ html[data-decor="m4"] #mascotTagB{ display:block; }
         </div>
         <div id="txList"></div>
         
-
-        <div class="sec-h"><h2>Lời theo từng job</h2></div>
-        <div class="list" id="jobProfit"></div>
 
         <div class="list" style="margin-top:22px;"><button type="button" class="row" id="xlsxBtn"><span class="ic bg-green" data-i="download"></span><span class="txt"><span class="t1" style="display:block;">Xuất file Excel</span></span><span class="chev" data-i="chev"></span></button></div>
       </section>
@@ -1804,12 +1814,7 @@ html[data-decor="m4"] #mascotTagB{ display:block; }
 
 
         <!-- v2.7b (Việt: "bỏ mấy cái linh tinh"): bỏ ảnh trang trí, Câu của hôm nay, ảnh Instagram mẫu, chân trang.
-             Ảnh của bạn giờ là ẢNH BÌA của thẻ danh thiếp studio ở Hôm nay. -->
-        <div class="sec-h"><h2>Ảnh bìa danh thiếp</h2></div>
-        <div class="moments" id="myShots" style="display:none;margin-bottom:10px;"></div>
-        <div class="list" style="margin-top:12px;">
-          <label class="row act" style="cursor:pointer;"><span class="ic bg-pink" data-i="plus"></span><span class="txt"><span class="t1" style="display:block;">Thêm ảnh từ máy</span><span class="t2" style="display:block;" id="myShotCount">Chọn vài ảnh đẹp nhất — thẻ studio đổi ảnh bìa mỗi ngày</span></span><input type="file" id="myShotFile" accept="image/*" multiple class="hidden" /></label>
-        </div>
+             Ảnh bìa danh thiếp giờ đổi trong Cài đặt → Hồ sơ studio (mục 4, 21/11/2026). -->
         
 
       </section>
@@ -1922,13 +1927,6 @@ html[data-decor="m4"] #mascotTagB{ display:block; }
     function jobTypeLabel(j){ var m = jobMedium(j); return j.type + (m === 'Digital' ? '' : ' — ' + (m === 'Cả hai' ? 'Ảnh số + ảnh film' : m)); }
     /* v2.6 (Việt: hợp đồng "cả hai là gì???"): nói rõ chụp bằng gì. */
     function mediumText(m){ m = normMedium(m); return m === 'Film' ? 'ảnh film' : (m === 'Cả hai' ? 'ảnh số + ảnh film' : 'ảnh số'); }
-    /* Giá theo bảng: Film chưa đặt (=0), hoặc Cả hai thiếu một bảng, thì trả về 0 = chưa tính được, để trống cho bạn tự gõ. */
-    function priceFor(type, medium){
-      var d = +((state.cfg.prices || {})[type] || 0), f = +((state.cfg.pricesFilm || {})[type] || 0);
-      if (medium === 'Film') return f;
-      if (medium === 'Cả hai') return (d > 0 && f > 0) ? d + f : 0;
-      return d;
-    }
     var TYPE_COLOR = {Portrait:'orange', Couple:'purple', Wedding:'pink', Lookbook:'blue', Event:'teal', 'Khác':'gray'};
     var THU_CATS = ['Cọc','Tiền sau buổi chụp','Tiền sau khi giao ảnh','Thêm giờ chụp','Thêm địa điểm','Thêm ảnh retouch','Lấy file gốc','Album thêm','In thêm ảnh','Thu khác'];
     var CHI_GROUPS = {
@@ -1949,8 +1947,6 @@ html[data-decor="m4"] #mascotTagB{ display:block; }
     /* Thông số riêng — chỉnh trong Cài đặt, lưu chung với dữ liệu */
     var DEFAULT_CFG = {
       name:'', studio:'', instagram:'', tagline:'',
-      prices:{ Portrait:2500000, Couple:4000000, Wedding:15000000, Lookbook:8000000, Event:5000000 },
-      pricesFilm:{ Portrait:0, Couple:0, Wedding:0, Lookbook:0, Event:0 },
       extraHour:0, extraLoc:0, retouch:0, album:0,
       depositPct:40, deliverDays:14,
       equipment:[], fixed:[], checkExtra:{}, theme:'warm', decor:'default', petals:false, gCals:[], gFeat:{cal:true, bank:false, leads:false, contacts:false, drive:false, calw:true, send:false}, glass:true, notifAsked:false, locale:'vi', currency:'VND', locAuto:true, curAuto:true, logo:'', phone:'', fb:'', ms:'', threads:'', brand:'', brandAuto:'', setupDone:false, contractTerms:'', dailyNotif:true, email:'', avatar:'', since:'', fbAcc:null, proofDays:3, selectRemindDays:7, cancelLockDays:3, mailTpls:{}, apple:null, authAsked:false, appleLastError:null, googleEverLinked:false
@@ -1959,9 +1955,10 @@ html[data-decor="m4"] #mascotTagB{ display:block; }
       var o = JSON.parse(JSON.stringify(DEFAULT_CFG));
       if (c && typeof c === 'object'){
         Object.keys(o).forEach(function(k){
-          if ((k === 'prices' || k === 'pricesFilm') && c[k] && typeof c[k] === 'object') Object.keys(c[k]).forEach(function(t){ if (o[k][t] !== undefined || TYPES.indexOf(t) >= 0) o[k][t] = +c[k][t] || 0; });
-          else if ((k === 'equipment' || k === 'fixed') && Array.isArray(c[k])) o[k] = c[k];
-          else if (c[k] !== undefined && k !== 'prices' && k !== 'pricesFilm') o[k] = c[k];
+          /* muc 1 (21/11/2026): bo han bang gia co dinh — gia theo tung job,
+             luu trong j.price; cfg cu co prices/pricesFilm cung bi bo. */
+          if ((k === 'equipment' || k === 'fixed') && Array.isArray(c[k])) o[k] = c[k];
+          else if (c[k] !== undefined) o[k] = c[k];
         });
       }
       ['extraHour','extraLoc','retouch','album','depositPct','deliverDays'].forEach(function(k){ o[k] = cleanNum(o[k]); });
@@ -2047,7 +2044,7 @@ html[data-decor="m4"] #mascotTagB{ display:block; }
       var jobs = (Array.isArray(d.jobs) ? d.jobs : []).filter(function(x){ return x && typeof x === 'object'; }).map(function(j){
         var o = { client:cleanStr(j.client, 120).trim() || 'Khách chưa đặt tên', type:TYPES.indexOf(j.type) >= 0 ? j.type : 'Khác', medium:normMedium(j.medium),
           stage:OLD_STAGE[j.stage] || (STAGES.indexOf(j.stage) >= 0 ? j.stage : 'Khách hỏi'), cancelled:!!j.cancelled, cancelledFrom:OLD_STAGE[j.cancelledFrom] || cleanStr(j.cancelledFrom, 40), stageSince:cleanDate(j.stageSince), shootDate:cleanDate(j.shootDate), shootTime:cleanTime(j.shootTime),
-          location:cleanStr(j.location, 200), deadline:cleanDate(j.deadline), price:cleanNum(j.price), phone:cleanStr(j.phone, 30).replace(/[^\d+]/g, ''), email:cleanStr(j.email, 200),
+          location:cleanStr(j.location, 200), deadline:cleanDate(j.deadline), price:cleanNum(j.price), exHour:cleanNum(j.exHour), exLoc:cleanNum(j.exLoc), exRetouch:cleanNum(j.exRetouch), exAlbum:cleanNum(j.exAlbum), contact:cleanStr(j.contact, 2000), phone:cleanStr(j.phone, 30).replace(/[^\d+]/g, ''), email:cleanStr(j.email, 200),
           fbLink:safeUrl(j.fbLink), msLink:safeUrl(j.msLink), driveLink:safeUrl(j.driveLink), note:cleanStr(j.note, 3000), calUid:cleanStr(j.calUid, 200), gEventId:cleanStr(j.gEventId, 200), depPrompted:!!j.depPrompted };
         /* v2.4: danh sách đồ riêng của job, mã sự kiện Lịch iPhone, cờ đã sao lưu ảnh */
         if (Array.isArray(j.prep)) o.prep = j.prep.map(function(x){ return cleanStr(x, 120).trim(); }).filter(Boolean).slice(0, 80);
@@ -2212,7 +2209,7 @@ html[data-decor="m4"] #mascotTagB{ display:block; }
     function scheduleJobReminders(j){
       if (!j || !j.shootDate || j.cancelled || state.sample) return;
       if (typeof window.__trolyxeoScheduleReminder !== 'function') return;
-      var jr = Object.assign({}, j, { prepText:prepText(j) }); /* v2.4: nhắc hôm trước kèm đồ chưa tick */
+      var jr = Object.assign({}, j, { prepText:prepText(j) }); /* mục 12: nhắc hôm trước kèm ghi chú */
       if (state.cfg.notifAsked){ window.__trolyxeoScheduleReminder(jr); return; }
       openSheet({ title:'Nhắc lịch chụp', left:'Để sau', tall:false,
         body:'<div class="jd-head"><span class="ic lg bg-orange">' + I('bell') + '</span><h2>Nhắc trước buổi chụp 1 ngày</h2><p>App nhắc 1 lần trước buổi chụp 1 ngày và 1 lần trước hạn giao ảnh 1 ngày — chỉ từ job trên máy bạn, không qua máy chủ. Job gấp quá, mốc 1 ngày đã qua thì app nhắc 60 phút trước giờ chụp (hoặc nhắc ngay nếu còn dưới 60 phút).</p></div>' +
@@ -2253,13 +2250,16 @@ html[data-decor="m4"] #mascotTagB{ display:block; }
       else fallback();
     }
     function jobById(id){ for (var i = 0; i < state.jobs.length; i++) if (String(state.jobs[i].id) === String(id)) return state.jobs[i]; return null; }
+    /* Tong gia job = gia + phu phi (muc 10, 21/11/2026) — dung chung cho con
+       thieu, coc, Excel, hop dong, tra loi tro ly. Job cu chua co phu phi -> 0. */
+    function jobTotal(j){ return (+(j && j.price) || 0) + (+(j && j.exHour) || 0) + (+(j && j.exLoc) || 0) + (+(j && j.exRetouch) || 0) + (+(j && j.exAlbum) || 0); }
     function jobThu(id){ return state.txs.filter(function(t){ return t.kind==='thu' && String(t.jobId)===String(id); }).reduce(function(s,t){ return s+t.amount; },0); }
     function jobChi(id){ return state.txs.filter(function(t){ return t.kind==='chi' && String(t.jobId)===String(id); }).reduce(function(s,t){ return s+t.amount; },0); }
     /* Cọc chuẩn: 1 công thức duy nhất, làm tròn 10.000đ — dùng chung cho
        form cọc (setStage), máy tính giá và matchJob (UNIT-TEST-PLAN).
        Trước đây setStage làm tròn 10.000đ nhưng matchJob không, lệch 2.000đ. */
-    function depFor(j){ return Math.round(((j.price || 0) * (+state.cfg.depositPct || 0) / 100) / 10000) * 10000; }
-    function jobOwe(j){ return Math.max(0, (j.price||0) - jobThu(j.id)); }
+    function depFor(j){ return Math.round(((jobTotal(j)) * (+state.cfg.depositPct || 0) / 100) / 10000) * 10000; }
+    function jobOwe(j){ return Math.max(0, jobTotal(j) - jobThu(j.id)); }
     function isLate(j){ return !j.cancelled && j.deadline && j.deadline < dstr(0) && ['Xong','Đã giao'].indexOf(j.stage) < 0; }
     /* Job kẹt: ở 1 bước quá 7 ngày (mặc định khi không có hạn), hoặc đã qua ngày chụp
        mà vẫn ở bước trước 'Đã chụp', hoặc đã quá hạn giao mà chưa tới 'Đã giao'. */
@@ -2591,7 +2591,7 @@ html[data-decor="m4"] #mascotTagB{ display:block; }
         if (j.stage === 'Đang làm ảnh' && !j.noSelect && j.proofSentAt && !j.selectedAt && dayDiff(j.proofSentAt) <= -(+state.cfg.selectRemindDays || 7))
           items.push({c:'orange', icon:'bubble', id:j.id, title:'Nhắc ' + j.client + ' chọn ảnh', desc:'Gửi link ' + (-dayDiff(j.proofSentAt)) + ' ngày rồi mà khách chưa chọn.'});
         if (j.shootDate === dstr(1) && j.stage !== 'Xong')
-          items.push({c:'green', icon:'leaf', id:j.id, title:'Mai chụp ' + jobTypeLabel(j) + ' — ' + j.client, desc:'Tối nay xem qua danh sách chuẩn bị đồ là yên tâm ngủ ngon.'});
+          items.push({c:'green', icon:'leaf', id:j.id, title:'Mai chụp ' + jobTypeLabel(j) + ' — ' + j.client, desc:'Tối nay xem lại ghi chú buổi chụp là yên tâm ngủ ngon.'});
       });
       state.jobs.forEach(function(j){
         if (j.cancelled) return; /* job huỷ không hiện nhắc trên Hôm nay */
@@ -2681,7 +2681,7 @@ html[data-decor="m4"] #mascotTagB{ display:block; }
         '<div class="idc-cover' + (cover ? '' : ' plain') + '"' + (cover ? ' style="background-image:url(\'' + esc(cover) + '\')"' : '') + '><span class="idc-mono-bg">' + (cover ? '' : esc(monogram())) + '</span></div>' +
         '<div class="idc-body">' + av +
           '<div class="idc-name">' + esc(myStudio() || myName()) + '</div>' +
-          '<div class="idc-sub">' + esc([myStudio() && myName() ? 'Nhiếp ảnh gia ' + myName() : '', sp || c.tagline].filter(Boolean).join(' · ') || 'Studio ảnh') + '</div>' +
+          '<div class="idc-sub">' + esc([myStudio() && myName() ? 'Nhiếp ảnh gia ' + myName() : '', c.tagline || sp].filter(Boolean).join(' · ') || 'Studio ảnh') + '</div>' +
           (hs ? '<div class="idc-hs">' + hs + '</div>' : '<button type="button" class="link idc-add" id="idcSoc">+ Thêm Instagram, Threads, Facebook</button>') +
           '<div class="idc-stats"><span><b>' + st.shoots + '</b>buổi chụp ' + st.y + '</span><span><b>' + st.clients + '</b>khách</span><span><b>' + st.days + '</b>ngày cùng FotoBro</span></div>' +
           '<div class="idc-act"><button type="button" class="btn tint sm" id="idcShare">' + I('share') + 'Danh thiếp</button><button type="button" class="btn gray sm" id="idcEdit">Sửa hồ sơ</button></div>' +
@@ -3732,7 +3732,7 @@ async function mascotRunLoop(){
     function chatCtx(j, name){
       j = j || {};
       var ten = name || callName(j.client), paid = j.id != null ? jobThu(j.id) : 0, owe = j.id != null ? jobOwe(j) : 0;
-      var pct = state.cfg.depositPct || 40, price = +j.price || 0;
+      var pct = state.cfg.depositPct || 40, price = jobTotal(j);
       return { ten:ten, Ten:capFirst(ten), loai:j.type ? jobTypeLabel(j) : '', khi:chatWhen(j.shootDate), gio:j.shootTime ? ' lúc ' + j.shootTime : '', noi:j.location ? ' ở ' + j.location : '',
         gia:price ? fmt(price) : '', ngay:j.shootDate ? (dayDiff(j.shootDate) < 0 ? 'ngày ' + j.shootDate.split('-').reverse().join('/') : chatWhen(j.shootDate)) : '', pct:pct, coc:price ? fmt(depFor({price:price})) : '', depPaid:(j.id != null && jobDep(j) > 0) ? fmt(jobDep(j)) : '', da:paid ? fmt(paid) : '', con:owe ? fmt(owe) : '',
         drive:safeUrl(j.driveLink) || '', ig:state.cfg.instagram || '', intro:selfIntro() };
@@ -3785,7 +3785,7 @@ async function mascotRunLoop(){
         'UID:job-' + j.id + '@trolyxeo','DTSTART:' + icsDate(j.shootDate, j.shootTime),'DTEND:' + icsEnd(j),
         'SUMMARY:' + icsEsc('Chụp ' + jobTypeLabel(j) + ' — ' + j.client),
         'LOCATION:' + icsEsc(j.location || ''),'DESCRIPTION:' + icsEsc(j.note || 'Buổi chụp của ' + state.cfg.studio),
-        'BEGIN:VALARM','TRIGGER:-P1D','ACTION:DISPLAY','DESCRIPTION:Mai có buổi chụp — chuẩn bị đồ nha','END:VALARM',
+        'BEGIN:VALARM','TRIGGER:-P1D','ACTION:DISPLAY','DESCRIPTION:Mai có buổi chụp','END:VALARM',
         'BEGIN:VALARM','TRIGGER:-PT1H','ACTION:DISPLAY','DESCRIPTION:Còn 1 tiếng nữa tới giờ chụp','END:VALARM',
         'END:VEVENT','END:VCALENDAR'].join('\r\n');
       var a = document.createElement('a');
@@ -3930,12 +3930,12 @@ async function mascotRunLoop(){
         if (atDate !== dstr(0)) atTxt = fmtRel(atDate) + ' ' + atTxt;
         P.lich += '<p class="sec-f" style="color:var(--orange);">' + (ri.mode === '60m' ? 'Mốc nhắc trước 1 ngày đã qua — app sẽ nhắc 60 phút trước giờ chụp, lúc ' + esc(atTxt) + '.' : 'Buổi chụp trong chưa tới 60 phút nữa — app sẽ nhắc ngay.') + '</p>';
       }
-      P.prep = prepShow(j) ? prepHTML(j) : '';
       P.note = j.note ? '<p class="sec-s">Ghi chú</p><div class="list"><div class="note-txt">' + esc(j.note) + '</div></div>' : '';
+      var exT = (j.exHour || 0) + (j.exLoc || 0) + (j.exRetouch || 0) + (j.exAlbum || 0), tot = jobTotal(j);
       P.tien = '<p class="sec-s">Tiền</p><div class="list">' +
-        infoRow('tag', 'gray', 'Giá job', j.price ? fmt(j.price) : 'Chưa ghi giá') +
+        infoRow('tag', 'gray', 'Giá job', tot ? fmt(tot) + (exT ? '<span class="muted" style="display:block;font-size:.8125rem;font-weight:400;">giá ' + fmt(j.price || 0) + ' + phụ phí ' + fmt(exT) + '</span>' : '') : 'Chưa ghi giá') +
         infoRow('inarrow', 'gray', 'Đã thu', fmt(paid) + (spent ? '<span class="muted" style="display:block;font-size:.8125rem;font-weight:400;">chi ' + fmt(spent) + ' · lời ' + fmt(paid - spent) + '</span>' : ''), 'green') +
-        (owe > 0 ? infoRow('wallet', 'gray', 'Còn thiếu', fmt(owe), 'red b') : (j.price > 0 ? infoRow('check', 'gray', 'Thanh toán', 'Đã thu đủ', 'green b') : '')) +
+        (owe > 0 ? infoRow('wallet', 'gray', 'Còn thiếu', fmt(owe), 'red b') : (tot > 0 ? infoRow('check', 'gray', 'Thanh toán', 'Đã thu đủ', 'green b') : '')) +
         '<button type="button" class="row act" data-act="addtx"><span class="ic bg-accent">' + I('plus', 2.4) + '</span><span class="txt t1">Ghi thu / chi cho job này</span></button></div>';
       P.nhan = '';
       if (!j.cancelled){
@@ -3943,6 +3943,7 @@ async function mascotRunLoop(){
         P.nhan = '<p class="sec-s">Nhắn khách · ' + esc(chatTpl(sk).t) + '</p><div class="list"><div class="tpl"><p style="margin-top:0;">' + esc(msgFor(j)) + '</p>' +
           '<div class="jd-chips">' + jdChip('copymsg1', 'copy', 'Chép') + (j.phone ? jdChip('zalo', 'bubble', 'Zalo') + jdChip('call', 'phone', 'Gọi') : '') + jdChip('msgr', 'bubble', 'Messenger') + jdChip('mail', 'mail', 'Email', !j.email) +
           (early ? jdChip('fb', 'globe', 'Facebook', !j.fbLink) : '') + '</div>' +
+          (j.contact ? '<div class="note-txt" style="margin-top:10px;">Liên lạc đã lưu: ' + esc(j.contact) + '</div>' : '') +
           '<button type="button" class="jd-prev" data-act="copymsg" style="margin:10px 0 0;display:inline-block;color:var(--accent-t);font-weight:600;">Đổi mẫu tin khác</button></div></div>';
       }
       P.hopdong = j.cancelled ? '' : '<p class="sec-s">Hợp đồng</p><div class="list">' + actRow('contract', 'doc', 'blue', 'Hợp đồng chụp ảnh') + '</div>';
@@ -3952,9 +3953,9 @@ async function mascotRunLoop(){
         (googleClientId() && state.cfg.gFeat && state.cfg.gFeat.drive ? actRow('drivepick', 'folder', 'gray', 'Chọn thư mục từ Google Drive') : '') + '</div>' +
         '';
       var LAYOUT = {
-        'Khách hỏi':    [['lich','tien','nhan','hopdong','note'], ['prep']],
-        'Đã chốt':      [['lich','prep','nhan','tien','hopdong','note'], []],
-        'Đã chụp':      [['anh','nhan','note'], ['lich','tien','prep','hopdong']],
+        'Khách hỏi':    [['lich','tien','nhan','hopdong','note'], []],
+        'Đã chốt':      [['lich','nhan','tien','hopdong','note'], []],
+        'Đã chụp':      [['anh','nhan','note'], ['lich','tien','hopdong']],
         'Đang làm ảnh': [['anh','lich','nhan','note'], ['tien','hopdong']],
         'Đã giao':      [['tien','nhan','anh'], ['lich','note','hopdong']],
         'Xong':         [['tien','anh','nhan'], ['lich','note','hopdong']]
@@ -3983,7 +3984,6 @@ async function mascotRunLoop(){
         bind:function(api){
           $$('[data-act]', api.body).forEach(function(b){ b.addEventListener('click', function(){ jobAction(b.getAttribute('data-act'), id); }); });
           $$('[data-jump]', api.body).forEach(function(b){ b.addEventListener('click', function(){ jumpToStage(id, +b.getAttribute('data-jump')); }); });
-          var pj = jobById(id); if (pj && prepShow(pj)) bindPrep(api, pj);
           var g = $('[data-gcal]', api.body); if (g) g.addEventListener('click', function(e){ if (!jobById(id).shootDate){ e.preventDefault(); toast('Job này chưa có ngày chụp', 'warn'); } });
           var di = $('#driveInp', api.body);
           if (di) di.addEventListener('change', function(){ var jj = jobById(id); if (!jj) return; var raw = di.value.trim(); jj.driveLink = safeUrl(raw); di.value = jj.driveLink; saveLocal(); toast(!raw || jj.driveLink ? 'Đã lưu link Drive' : 'Link này không mở được, dán link https:// nha', !raw || jj.driveLink ? '' : 'warn'); });
@@ -4006,7 +4006,7 @@ async function mascotRunLoop(){
       var m = [];
       if (!j.shootDate) m.push('ngày chụp'); if (!j.shootTime) m.push('giờ chụp'); if (!String(j.location || '').trim()) m.push('địa điểm');
       if (!(+j.price > 0)) m.push('giá');
-      if (!(j.phone || j.fbLink || j.msLink || j.email)) m.push('liên lạc (SĐT, Facebook, Messenger hoặc email)');
+      if (!(j.contact || j.phone || j.fbLink || j.msLink || j.email)) m.push('liên lạc (SĐT, Facebook, Messenger hoặc email)');
       return m;
     }
     function askConsultInfo(j, m){
@@ -4042,8 +4042,6 @@ async function mascotRunLoop(){
         }
       }
       /* v2.7: lùi tay thì giữ nguyên, không tự nhảy lại; tiến thì bỏ giữ. */
-      /* Đã chốt mà sắp tới ngày chụp: nhắc đồ còn thiếu. */
-      if (target === 'Đã chốt' && cur < ti && !j.cancelled && j.shootDate && dayDiff(j.shootDate) <= 3) setTimeout(function(){ remindPrep(j); }, 450);
       /* Chụp xong: gửi ảnh xem trước trong 48 giờ (studio chuyên nghiệp làm vậy). */
       if (target === 'Đã chụp' && cur < ti && !j.cancelled && !opts.auto){
         setTimeout(function(){ actionSheet({ title:'Gửi ảnh xem trước cho ' + j.client + '?', msg:'Studio chuyên nghiệp gửi 10–30 tấm xem trước trong 48 giờ sau buổi chụp — khách vui, hay khoe, đỡ hỏi “bao giờ có ảnh”.', actions:[
@@ -4135,13 +4133,13 @@ async function mascotRunLoop(){
       if (act === 'addtx'){ openTxForm({jobId:id, kind: jobOwe(j) > 0 ? 'thu' : 'chi'}); }
       if (act === 'msgr'){
         var mh = fbHandle(j.msLink) || fbHandle(j.fbLink);
-        if (!mh){ askFbLink(j, 'msgr'); return; }
+        if (!mh){ toast('Chưa có Messenger của khách — ghi link vào phần Liên lạc của buổi chụp này nhé', 'warn'); return; }
         copyText(msgFor(j), 'Đã chép tin nhắn — vào Messenger Dán rồi Gửi');
         openAppOrWeb(/^\d+$/.test(mh) ? 'fb-messenger://user-thread/' + mh : 'fb-messenger://user-thread/' + encodeURIComponent(mh), 'https://m.me/' + encodeURIComponent(mh));
       }
       if (act === 'fb'){
         var fu = safeUrl(j.fbLink);
-        if (!fu || !fbHandle(fu)){ askFbLink(j, 'fb'); return; }
+        if (!fu || !fbHandle(fu)){ toast('Chưa có Facebook của khách — ghi link vào phần Liên lạc của buổi chụp này nhé', 'warn'); return; }
         openAppOrWeb('fb://facewebmodal/f?href=' + encodeURIComponent(fu), fu);
       }
       if (act === 'call'){ location.href = 'tel:' + String(j.phone).replace(/[^\d+]/g, ''); return; }
@@ -4191,8 +4189,8 @@ async function mascotRunLoop(){
     }
 
     /* v2.4 (Việt): Messenger / Facebook mở thẳng APP (scheme riêng), máy không
-       có app thì mới mở web. Chưa có link khách thì hỏi dán link — không
-       nhảy ra trang chủ Facebook nữa. */
+       có app thì mới mở web. Chưa có link khách thì báo ghi vào phần Liên lạc
+       của job (mục 11, 21/11/2026) — không còn sheet dán link riêng. */
     function fbHandle(url){
       url = safeUrl(url || ''); if (!url) return '';
       try{
@@ -4214,41 +4212,36 @@ async function mascotRunLoop(){
       try{ location.href = appUrl; }catch(e){}
       setTimeout(function(){ document.removeEventListener('visibilitychange', vis); if (!left && !document.hidden) window.open(webUrl, '_blank'); }, 1600);
     }
-    function askFbLink(j, then){
-      openSheet({ title:then === 'fb' ? 'Facebook của khách' : 'Messenger của khách', left:'Huỷ', right:'Lưu & mở',
-        body:'<form id="fbLinkForm" autocomplete="off"><div class="list" style="margin-top:8px;"><label class="frow full"><input name="u" placeholder="Dán link Facebook của ' + esc(callName(j.client)) + '" inputmode="url" /></label></div>' +
-          '<p class="sec-f">Mở trang Facebook của khách → Chia sẻ → Sao chép liên kết, rồi dán vào đây. Lưu một lần, lần sau bấm là mở thẳng app.</p>' +
-          '<div class="list" style="margin-top:12px;"><button type="button" class="row" id="fbSearch"><span class="ic bg-gray">' + I('globe') + '</span><span class="txt t1">Tìm “' + esc(j.client) + '” trên Facebook</span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button></div></form>',
-        onRight:function(api){ $('#fbLinkForm', api.body).dispatchEvent(new Event('submit', {cancelable:true})); },
-        bind:function(api){
-          var f = $('#fbLinkForm', api.body);
-          f.addEventListener('submit', function(ev){
-            ev.preventDefault(); var raw = f.elements.u.value.trim(), u = safeUrl(raw);
-            if (!u || !fbHandle(u)){ toast('Dán link Facebook / Messenger của khách nha', 'warn'); f.elements.u.focus(); return; }
-            if (/m\.me|messenger\.com/.test(u)) j.msLink = u; else j.fbLink = u;
-            saveLocal(); api.close(); refreshJobSheet(); setTimeout(function(){ jobAction(then, j.id); }, 380);
-          });
-          $('#fbSearch', api.body).addEventListener('click', function(){
-            var q = 'https://www.facebook.com/search/people/?q=' + encodeURIComponent(j.client);
-            openAppOrWeb('fb://facewebmodal/f?href=' + encodeURIComponent(q), q);
-          });
-        } });
-    }
 
     /* ---------- Form thêm / sửa buổi chụp ---------- */
+    /* Muc 11: tach SDT/email/link Facebook/Messenger tu o ghi chu lien lac
+       (best-effort, chi de nut goi/nhan/email van chay; khong bao gio xoa
+       du lieu cu khi khong tach duoc). */
+    function parseContact(txt){
+      var s = String(txt || ''), out = { phone:'', email:'', fbLink:'', msLink:'' };
+      var em = s.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/); if (em) out.email = em[0];
+      var urls = s.match(/https?:\/\/[^\s,;]+/g) || [];
+      (s.match(/(?:facebook\.com|fb\.com|m\.me|messenger\.com)\/[^\s,;]+/gi) || []).forEach(function(u){ if (!/^https?:\/\//i.test(u)) urls.push('https://' + u); });
+      urls.forEach(function(u){ var l = u.toLowerCase(); if (/m\.me|messenger\.com/.test(l)){ if (!out.msLink) out.msLink = u; } else if (/facebook\.com|fb\.com/.test(l)){ if (!out.fbLink) out.fbLink = u; } });
+      var ph = s.replace(/https?:\/\/[^\s,;]+/g, ' ').match(/(\+?84|0)\s*\d[\d\s.]{7,12}\d/);
+      if (ph){ var d = ph[0].replace(/[^\d+]/g, ''); if (d.replace(/\D/g, '').length >= 9) out.phone = d.slice(0, 20); }
+      return out;
+    }
+    function contactPrefill(s){ return [s.phone, s.email, s.fbLink, s.msLink].filter(Boolean).join('\n'); }
     function frow(label, inner, cls){ return '<label class="frow' + (cls ? ' ' + cls : '') + '"><span>' + label + '</span>' + inner + '</label>'; }
     function openJobForm(j, pre){
-      var e = j || Object.assign({client:'', type:'Portrait', medium:'Digital', stage:'Khách hỏi', shootDate:'', shootTime:'', location:'', deadline:'', price:state.cfg.prices.Portrait || 0, phone:'', email:'', fbLink:'', msLink:'', driveLink:'', note:''}, pre || {});
-      /* Tạo mới mà pre chỉ định loại chụp (vd từ Gmail) nhưng không ghi giá:
-         lấy giá theo đúng loại + hình thức, khỏi nhầm giá Portrait mặc định. */
-      if (!j && !(pre && pre.price)) e.price = priceFor(e.type, e.medium || 'Digital');
+      var e = j || Object.assign({client:'', type:'Portrait', medium:'Digital', stage:'Khách hỏi', shootDate:'', shootTime:'', location:'', deadline:'', price:0, contact:'', exHour:0, exLoc:0, exRetouch:0, exAlbum:0, phone:'', email:'', fbLink:'', msLink:'', driveLink:'', note:''}, pre || {});
+      /* Muc 9 (21/11/2026): job moi LUON bat dau o Khach hoi — tru su kien
+         Lich da qua ngay (pre.stage 'Đã chụp') thi giu nguyen la da chup.
+         Muc 1: khong lay gia goi co dinh nua; gia moi mac dinh 0, nhap tay. */
+      if (!j) e.stage = (pre && pre.stage === 'Đã chụp') ? 'Đã chụp' : 'Khách hỏi';
       var opt = function(arr, cur){ return arr.map(function(x){ return '<option' + (x === cur ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join(''); };
       var body = '<form id="jobForm" autocomplete="off">' +
         '<div class="list" style="margin-top:8px;">' +
           frow('Khách', '<input name="client" value="' + esc(e.client) + '" placeholder="Tên khách" enterkeyhint="next" />', 'req') +
           frow('Loại chụp', '<select name="type">' + opt(TYPES, e.type) + '</select>') +
           frow('Chụp bằng', '<select name="medium">' + MEDIUMS.map(function(m){ return '<option value="' + esc(m) + '"' + (m === (e.medium || 'Digital') ? ' selected' : '') + '>' + (m === 'Cả hai' ? 'Ảnh số + ảnh film' : esc(m)) + '</option>'; }).join('') + '</select>') +
-          frow('Đang ở bước', '<select name="stage">' + opt(STAGES, e.stage) + '</select>') + '</div>' +
+          (j ? frow('Đang ở bước', '<select name="stage">' + opt(STAGES, e.stage) + '</select>') : '') + '</div>' +
         '<p class="sec-s">Lịch</p><div class="list">' +
           frow('Ngày chụp', '<input type="date" name="shootDate" value="' + esc(e.shootDate) + '" placeholder="Chọn ngày" />') +
           frow('Giờ chụp', '<input type="time" name="shootTime" value="' + esc(e.shootTime) + '" placeholder="Chọn giờ" />') +
@@ -4259,25 +4252,29 @@ async function mascotRunLoop(){
         '<p class="sec-s">Giá</p><div class="list">' +
           frow('Tổng giá job', '<input name="price" inputmode="numeric" value="' + (e.price ? (+e.price).toLocaleString('vi-VN') : '') + '" placeholder="VD: 2.500.000" />') +
           (j ? '' : frow('Cọc đã nhận', '<input name="deposit" inputmode="numeric" placeholder="Chưa nhận thì để trống" />')) + '</div>' +
+        '<p class="sec-s">Phụ phí (nhập tay theo job này)</p><div class="list">' +
+          frow('Thêm giờ', '<input name="exHour" inputmode="numeric" value="' + (e.exHour ? (+e.exHour).toLocaleString('vi-VN') : '') + '" placeholder="0" />') +
+          frow('Thêm địa điểm', '<input name="exLoc" inputmode="numeric" value="' + (e.exLoc ? (+e.exLoc).toLocaleString('vi-VN') : '') + '" placeholder="0" />') +
+          frow('Retouch thêm', '<input name="exRetouch" inputmode="numeric" value="' + (e.exRetouch ? (+e.exRetouch).toLocaleString('vi-VN') : '') + '" placeholder="0" />') +
+          frow('Album thêm', '<input name="exAlbum" inputmode="numeric" value="' + (e.exAlbum ? (+e.exAlbum).toLocaleString('vi-VN') : '') + '" placeholder="0" />') + '</div>' +
         '<p class="sec-f">' + (j ? 'Tiền cọc và các đợt trả ghi ở tab Tài chính — app tự trừ ra số khách còn thiếu.' : 'Cọc ghi ở trên sẽ vào tab Tài chính — app tự trừ ra số khách còn thiếu.') + '</p>' +
-        '<p class="sec-s">Liên lạc</p><div class="list">' +
-          frow('Điện thoại', '<input type="tel" name="phone" value="' + esc(e.phone || '') + '" placeholder="0901 234 567" inputmode="tel" />') +
-          frow('Email', '<input type="email" name="email" value="' + esc(e.email) + '" placeholder="khach@email.com" inputmode="email" />') +
-          frow('Facebook', '<input name="fbLink" value="' + esc(e.fbLink) + '" placeholder="facebook.com/…" inputmode="url" />') +
-          frow('Messenger', '<input name="msLink" value="' + esc(e.msLink) + '" placeholder="m.me/…" inputmode="url" />') +
-          frow('Drive', '<input name="driveLink" value="' + esc(e.driveLink) + '" placeholder="drive.google.com/…" inputmode="url" />') + '</div>' +
+        '<p class="sec-s">Liên lạc</p><div class="list"><label class="frow stack"><textarea name="contact" placeholder="Ghi SĐT, Facebook, Instagram… — ghi gì cũng được">' + esc(e.contact || contactPrefill(e)) + '</textarea></label></div>' +
         '<p class="sec-s">Ghi chú</p><div class="list"><label class="frow stack"><textarea name="note" placeholder="Concept, trang phục, makeup, điều cần nhớ…">' + esc(e.note) + '</textarea></label></div>' +
-        '<p class="sec-s">Chuẩn bị đồ</p><div class="list flat" id="jfPrep"></div>' +
         '</form>';
-      /* v2.4: danh sách đồ riêng của job, chỉnh ngay lúc thêm / sửa job */
-      var prepArr = Array.isArray(e.prep) ? e.prep.slice() : checkItems(listType(e.type)), autoPrep = !Array.isArray(e.prep);
       function save(api){
         var f = $('#jobForm', api.body), g = function(n){ return f.elements[n].value.trim(); };
         if (!g('client')){ var r = $('.frow.req', f); r.classList.add('invalid'); f.elements.client.focus(); api.el.classList.remove('shake'); void api.el.offsetWidth; api.el.classList.add('shake'); toast('Nhập tên khách trước nha', 'warn'); return; }
         var link = safeUrl;
-        var data = { client:g('client'), type:g('type'), medium:normMedium(g('medium')), stage:g('stage') || 'Khách hỏi', shootDate:g('shootDate'), shootTime:g('shootTime'), location:g('location'),
-          deadline:g('deadline'), price:moneyVal(f.elements.price), phone:g('phone').replace(/[^\d+]/g, '').slice(0, 20), email:g('email'), fbLink:link(g('fbLink')), msLink:link(g('msLink')), driveLink:link(g('driveLink')), note:g('note'), prep:prepArr.slice(), noSelect:!f.elements.selectOn.checked };
-        if ((!j || j.stage === 'Khách hỏi') && data.stage !== 'Khách hỏi'){
+        var contactTxt = g('contact'), parsed = parseContact(contactTxt);
+        var data = { client:g('client'), type:g('type'), medium:normMedium(g('medium')), stage: j ? (g('stage') || j.stage || 'Khách hỏi') : 'Khách hỏi', shootDate:g('shootDate'), shootTime:g('shootTime'), location:g('location'),
+          deadline:g('deadline'), price:moneyVal(f.elements.price),
+          exHour:moneyVal(f.elements.exHour), exLoc:moneyVal(f.elements.exLoc), exRetouch:moneyVal(f.elements.exRetouch), exAlbum:moneyVal(f.elements.exAlbum),
+          contact:contactTxt, note:g('note'), noSelect:!f.elements.selectOn.checked };
+        /* Lien lac cu giu nguyen; chi ghi de bang thu tach duoc tu o ghi chu moi.
+           Drive van sua trong chi tiet job (driveInp), form khong dung toi. */
+        if (j){ data.phone = parsed.phone || j.phone || ''; data.email = parsed.email || j.email || ''; data.fbLink = parsed.fbLink ? link(parsed.fbLink) : (j.fbLink || ''); data.msLink = parsed.msLink ? link(parsed.msLink) : (j.msLink || ''); data.driveLink = j.driveLink || ''; }
+        else { data.phone = parsed.phone || ''; data.email = parsed.email || ''; data.fbLink = parsed.fbLink ? link(parsed.fbLink) : ''; data.msLink = parsed.msLink ? link(parsed.msLink) : ''; data.driveLink = ''; }
+        if (j && j.stage === 'Khách hỏi' && data.stage !== 'Khách hỏi'){
           var fm = consultMissing(data);
           if (fm.length){ api.el.classList.remove('shake'); void api.el.offsetWidth; api.el.classList.add('shake'); toast('Qua bước “' + data.stage + '” cần đủ: ' + fm.join(', '), 'warn'); return; }
         }
@@ -4310,27 +4307,12 @@ async function mascotRunLoop(){
         bind:function(api){
           var f = $('#jobForm', api.body);
           moneyInput(f.elements.price);
+          ['exHour','exLoc','exRetouch','exAlbum'].forEach(function(n){ moneyInput(f.elements[n]); });
           if (f.elements.deposit) moneyInput(f.elements.deposit);
           f.addEventListener('submit', function(ev){ ev.preventDefault(); save(api); });
           f.elements.client.addEventListener('input', function(){ $('.frow.req', f).classList.remove('invalid'); });
           if (typeof gContactsBind === 'function') gContactsBind(f);
-          var autoP = !j, autoD = !e.deadline;
-          f.elements.price.addEventListener('input', function(){ autoP = false; });
-          var refillPrice = function(){ if (!autoP) return; var p = priceFor(f.elements.type.value, f.elements.medium.value); f.elements.price.value = p ? (+p).toLocaleString('vi-VN') : ''; };
-          f.elements.type.addEventListener('change', refillPrice);
-          var drawPrep = function(){
-            var box = $('#jfPrep', api.body); if (!box) return;
-            box.innerHTML = prepArr.map(function(it, i){ return '<div class="row" style="padding-right:8px;"><span class="txt t1" style="padding:11px 0;">' + esc(it) + '</span><button type="button" class="ck-del" data-jx="' + i + '" aria-label="Bỏ món ' + esc(it) + '">' + I('xmark', 2.4) + '</button></div>'; }).join('') +
-              '<div class="row prep-add"><span class="chk" style="border-style:dashed;color:var(--accent);">' + I('plus', 3) + '</span><input id="jfPrepInp" placeholder="Thêm món…" enterkeyhint="done" aria-label="Thêm món" autocomplete="off" /><button type="button" class="btn tint sm" id="jfPrepAdd">Thêm</button></div>';
-            $$('[data-jx]', box).forEach(function(b){ b.addEventListener('click', function(){ prepArr.splice(+b.getAttribute('data-jx'), 1); autoPrep = false; drawPrep(); }); });
-            var inp = $('#jfPrepInp', box);
-            var add = function(){ var v = cleanStr(inp.value, 120).trim(); if (!v) return; if (prepArr.indexOf(v) < 0) prepArr.push(v); autoPrep = false; drawPrep(); var ni = $('#jfPrepInp', api.body); if (ni) try{ ni.focus({preventScroll:true}); }catch(err){} };
-            $('#jfPrepAdd', box).addEventListener('click', add);
-            inp.addEventListener('keydown', function(ev){ if (ev.key === 'Enter'){ ev.preventDefault(); add(); } });
-          };
-          drawPrep();
-          f.elements.type.addEventListener('change', function(){ if (autoPrep){ prepArr = checkItems(listType(f.elements.type.value)); drawPrep(); } });
-          f.elements.medium.addEventListener('change', refillPrice);
+          var autoD = !e.deadline;
           f.elements.deadline.addEventListener('input', function(){ autoD = false; });
           f.elements.selectOn.addEventListener('change', function(){
             var on = f.elements.selectOn.checked, nt = $('#jfDlNote', api.body);
@@ -4348,68 +4330,11 @@ async function mascotRunLoop(){
         } });
     }
 
-    /* ================= CHECKLIST ================= */
-    var CHECKLISTS = {
-      'Portrait': ['Sạc đầy pin + mang pin dự phòng','Thẻ nhớ đã format, mang thẻ dự phòng','Lens chân dung (85mm / 50mm)','Máy đã lau sensor, kiểm tra nhanh','Trang phục & phụ kiện đã hẹn với khách','Địa điểm + giờ ánh sáng đẹp đã chốt','Hoa / đạo cụ theo concept (sen, lồng đèn…)'],
-      'Couple': ['Sạc đầy pin + pin dự phòng','Thẻ nhớ dự phòng','Lens 35mm + 85mm','Trang phục cặp đôi đã thống nhất','Địa điểm + tuyến di chuyển','Đạo cụ: hoa, ô trong, bóng bay…','Timeline hoàng hôn đã tính giờ'],
-      'Wedding': ['2 thân máy sẵn sàng, pin sạc đầy hết','Thẻ nhớ nhiều + đã format','Đèn flash + pin đèn','Lens 24-70 + 85mm','Timeline ngày cưới + danh sách người nhà cần chụp','Hợp đồng + số điện thoại phù rể / người điều phối','Đồ dự phòng: kim chỉ, băng keo, sạc dự phòng','Thỏa thuận giờ ăn / nghỉ của ê-kíp'],
-      'Lookbook': ['Shot list từ shop đã in / lưu sẵn','Mẫu + makeup đã xác nhận giờ','Phông nền / studio đã đặt','Đèn studio + tản sáng','Sản phẩm đã ủi phẳng, đánh số thứ tự','Bàn là hơi / cây lăn bụi','Thỏa thuận số ảnh giao + hạn giao'],
-      'Event': ['2 thân máy sẵn sàng, pin sạc đầy hết','Đèn flash + pin đèn','Lens 24-70 + 35mm','Timeline chương trình + giờ các tiết mục chính','Danh sách khách VIP / người điều phối + số điện thoại','Thẻ nhớ nhiều + đã format','Pin dự phòng + sạc dự phòng']
-    };
     var checkSel = null;   /* 'job:<id>' = riêng một buổi chụp, 'type:<Loại>' = danh sách chung */
     var checkPinned = false; /* true khi bạn tự bấm chọn; không thì luôn tự chọn buổi chụp gần nhất */
-    function shortName(s){ s = String(s).split(/s*[&,]s*/)[0]; return s.length > 16 ? s.slice(0, 15) + "…" : s; }
-    function listType(t){ return CHECKLISTS[t] ? t : 'Portrait'; }
-    function checkItems(t){ return (CHECKLISTS[t] || []).concat((state.cfg.checkExtra && state.cfg.checkExtra[t]) || []); }
-    function upcomingShoots(){
-      var t = dstr(0);
-      return state.jobs.filter(function(j){ return j.shootDate && j.shootDate >= t && STAGES.indexOf(j.stage) <= 3; })
-        .sort(function(a, b){ return a.shootDate < b.shootDate ? -1 : 1; }).slice(0, 5);
-    }
-    function migrateChecks(){
-      /* bản cũ lưu tick theo số thứ tự, theo loại chụp → đổi sang lưu theo tên món */
-      Object.keys(CHECKLISTS).forEach(function(t){
-        var old = checkDone[t]; if (!old || typeof old !== 'object') return;
-        var nu = checkDone['type:' + t] = checkDone['type:' + t] || {};
-        Object.keys(old).forEach(function(k){ if (old[k] && CHECKLISTS[t][+k]) nu[CHECKLISTS[t][+k]] = true; });
-        delete checkDone[t];
-      });
-    }
-    function checkContext(){
-      var up = upcomingShoots();
-      if (checkPinned && checkSel && checkSel.indexOf('job:') === 0){
-        var j = jobById(checkSel.slice(4));
-        if (!j){ checkSel = null; checkPinned = false; } else return {key:checkSel, job:j, type:listType(j.type), up:up};
-      }
-      if (!checkSel || !checkPinned) checkSel = up.length ? 'job:' + up[0].id : (checkSel && checkSel.indexOf('type:') === 0 ? checkSel : 'type:Portrait');
-      if (checkSel.indexOf('job:') === 0){ var jj = jobById(checkSel.slice(4)); return {key:checkSel, job:jj, type:listType(jj.type), up:up}; }
-      return {key:checkSel, job:null, type:checkSel.slice(5), up:up};
-    }
-    /* v2.4 (Việt chốt): chuẩn bị đồ nằm TRONG từng buổi chụp, không ở ngoài tab.
-       Mỗi job có danh sách riêng (j.prep), lấy từ mẫu theo loại chụp lúc tạo
-       job, thêm/bớt ngay trong job. Hôm trước ngày chụp app nhắc kèm danh sách.
-       Mẫu theo loại chụp sửa trong Cài đặt → Danh sách đồ mẫu. */
-    function renderChecklist(){ /* giữ tên cũ cho chỗ gọi cũ — tab không còn danh sách */ }
-    function jobPrep(j){ return Array.isArray(j.prep) ? j.prep : checkItems(listType(j.type)); }
-    function prepDone(j){ return checkDone['job:' + j.id] || {}; }
-    function prepShow(j){ return !j.cancelled && STAGES.indexOf(j.stage) <= 1; }
-    function prepText(j){ var d = prepDone(j); return jobPrep(j).filter(function(x){ return !d[x]; }).join(', '); }
-    function prepHTML(j){
-      var items = jobPrep(j), d = prepDone(j), n = items.filter(function(x){ return d[x]; }).length;
-      return '<p class="sec-s">Chuẩn bị đồ · ' + n + '/' + items.length + '</p><div class="list flat" id="prepList">' +
-        items.map(function(it, i){
-          return '<div class="row' + (d[it] ? ' done' : '') + '" style="padding-right:8px;"><button type="button" class="ck-tap" data-pk="' + i + '" role="checkbox" aria-checked="' + (d[it] ? 'true' : 'false') + '"><span class="chk">' + I('check', 3) + '</span><span class="txt t1">' + esc(it) + '</span></button>' +
-            '<button type="button" class="ck-del" data-pdel="' + i + '" aria-label="Bỏ món ' + esc(it) + '">' + I('xmark', 2.4) + '</button></div>';
-        }).join('') +
-        '<form class="row prep-add" id="prepAdd" autocomplete="off"><span class="chk" style="border-style:dashed;color:var(--accent);">' + I('plus', 3) + '</span><input name="pitem" placeholder="Thêm món… (quạt, kẹp tóc)" enterkeyhint="done" aria-label="Thêm món" /><button type="submit" class="btn tint sm">Thêm</button></form></div>' +
-        '<p class="sec-f">' + (n === items.length && items.length ? 'Đủ đồ rồi — xách máy đi thôi!' : 'Danh sách riêng của buổi này. Hôm trước ngày chụp app nhắc kèm những món chưa tick.') + '</p>';
-    }
-    function remindPrep(j){
-      var miss = jobPrep(j).filter(function(x){ return !prepDone(j)[x]; });
-      if (!miss.length) return;
-      actionSheet({ title:'Đã chốt ' + j.client + ' — còn ' + miss.length + ' món chưa chuẩn bị', msg:miss.slice(0, 8).join(' · ') + (miss.length > 8 ? ' … và ' + (miss.length - 8) + ' món nữa' : ''),
-        actions:[{ label:'Mở danh sách chuẩn bị đồ', fn:function(){ openJob(j.id); setTimeout(function(){ var p = jobSheet && $('#prepList', jobSheet.body); if (p) p.scrollIntoView({ block:'start', behavior:'smooth' }); }, 450); } }] });
-    }
+    /* Muc 12: khong con checklist do — nhac truoc ngay chup kem ghi chu (do
+       chuan bi ghi trong ghi chu). Ham giu ten cu de bridge khong doi. */
+    function prepText(j){ return cleanStr(j.note || '', 200).trim(); }
     /* v2.7 (Việt duyệt): bước TỰ CHUYỂN theo việc đã xảy ra, không bắt bấm tay —
        • Khách hỏi → Đã chốt: khi đã ghi cọc
        • Đã chốt → Đã chụp: khi đã qua giờ chụp 2 tiếng
@@ -4425,7 +4350,7 @@ async function mascotRunLoop(){
           if (j.cancelled || j.holdAuto) return;
           var to = null;
           if (j.stage === 'Khách hỏi' && jobDep(j) > 0) to = 'Đã chốt';
-          else if (j.stage === 'Đã giao' && +j.price > 0 && jobOwe(j) === 0) to = 'Xong';
+          else if (j.stage === 'Đã giao' && jobTotal(j) > 0 && jobOwe(j) === 0) to = 'Xong';
           if (to){ j.stage = to; j.stageSince = dstr(0); moved.push({ j:j, to:to }); }
         });
         if (moved.length){
@@ -4440,8 +4365,6 @@ async function mascotRunLoop(){
            qua giờ chụp thì HỎI: đã chụp xong / dời lịch / huỷ. Mỗi buổi hỏi tối đa 1 lần mỗi ngày. */
         var ask = state.jobs.filter(function(j){ return !j.cancelled && j.stage === 'Đã chốt' && shootPassed(j) && j.shotAsked !== dstr(0); })[0];
         if (ask && !document.querySelector('.sheet.on, .asheet, #authGate, #lockScreen')){ ask.shotAsked = dstr(0); saveLocal(); setTimeout(function(){ askShot(ask); }, 900); return moved.length; }
-        var soon = state.jobs.filter(function(j){ return !j.cancelled && j.stage === 'Đã chốt' && !j.prepReminded && j.shootDate && dayDiff(j.shootDate) >= 0 && dayDiff(j.shootDate) <= AUTO_SOON_DAYS && jobPrep(j).some(function(x){ return !prepDone(j)[x]; }); })[0];
-        if (soon && !document.querySelector('.sheet.on, .asheet')){ soon.prepReminded = true; saveLocal(); setTimeout(function(){ remindPrep(soon); }, 1200); }
       } finally { _flowBusy = false; }
       return moved.length;
     }
@@ -4512,7 +4435,7 @@ async function mascotRunLoop(){
         if (th || ch) parts.push('Hôm nay thu ' + fmtShort(th) + ', chi ' + fmtShort(ch) + '.');
       }
       var sh = state.jobs.filter(function(j){ return !j.cancelled && j.shootDate === next; }).sort(function(a, b){ return (a.shootTime || '') < (b.shootTime || '') ? -1 : 1; });
-      parts.push(sh.length ? 'Mai chụp: ' + sh.map(function(j){ var miss = jobPrep(j).filter(function(x){ return !prepDone(j)[x]; }).length; return j.client + (j.shootTime ? ' ' + j.shootTime : '') + (j.location ? ' ở ' + j.location : '') + (miss ? ' (còn ' + miss + ' món chưa chuẩn bị)' : ''); }).join('; ') + '.' : 'Mai không có lịch chụp.');
+      parts.push(sh.length ? 'Mai chụp: ' + sh.map(function(j){ return j.client + (j.shootTime ? ' ' + j.shootTime : '') + (j.location ? ' ở ' + j.location : ''); }).join('; ') + '.' : 'Mai không có lịch chụp.');
       var dl = state.jobs.filter(function(j){ return !j.cancelled && j.deadline === next && ['Đã giao','Xong'].indexOf(j.stage) < 0; });
       if (dl.length) parts.push('Hạn giao mai: ' + dl.map(function(j){ return j.client; }).join(', ') + '.');
       var late = state.jobs.filter(function(j){ return isLate(j); }).length; if (late && d === 0) parts.push(late + ' job đã trễ hạn giao.');
@@ -4532,55 +4455,7 @@ async function mascotRunLoop(){
         window.__fotobroScheduleDaily(list);
       }, 2500);
     }
-    function prepSave(j){ saveLocal(); refreshJobSheet(); if (state.cfg.notifAsked) scheduleJobReminders(j); }
-    function bindPrep(api, j){
-      $$('[data-pk]', api.body).forEach(function(b){ b.addEventListener('click', function(){
-        var it = jobPrep(j)[+b.getAttribute('data-pk')], key = 'job:' + j.id; if (it == null) return;
-        checkDone[key] = checkDone[key] || {}; checkDone[key][it] = !checkDone[key][it];
-        var all = jobPrep(j).every(function(x){ return checkDone[key][x]; });
-        prepSave(j); haptic('tap');
-        if (all && checkDone[key][it]) celebrate('Đủ đồ rồi, diễn thôi!', 'party');
-      }); });
-      $$('[data-pdel]', api.body).forEach(function(b){ b.addEventListener('click', function(){
-        var arr = jobPrep(j).slice(), k = +b.getAttribute('data-pdel'), it = arr[k]; if (it == null) return;
-        arr.splice(k, 1); j.prep = arr; prepSave(j); toast('Đã bỏ “' + it + '”', 'del');
-      }); });
-      var f = $('#prepAdd', api.body);
-      if (f) f.addEventListener('submit', function(ev){
-        ev.preventDefault(); var v = cleanStr(f.elements.pitem.value, 120).trim();
-        if (!v){ f.elements.pitem.focus(); return; }
-        var arr = jobPrep(j).slice();
-        if (arr.indexOf(v) >= 0){ toast('Món này có rồi', 'warn'); return; }
-        arr.push(v); j.prep = arr; prepSave(j); toast('Đã thêm “' + v + '”');
-      });
-    }
     /* Mẫu theo loại chụp — Cài đặt → Danh sách đồ mẫu. Job mới lấy mẫu này. */
-    function openPrepTemplates(){
-      var cur = 'Portrait';
-      function body(){
-        var extra = (state.cfg.checkExtra && state.cfg.checkExtra[cur]) || [];
-        return '<div class="pills" style="margin-top:6px;">' + Object.keys(CHECKLISTS).map(function(t){ return '<button type="button" class="pill' + (t === cur ? ' on' : '') + '" data-pt="' + esc(t) + '">' + esc(t) + '</button>'; }).join('') + '</div>' +
-          '<div class="list flat" style="margin-top:12px;">' + checkItems(cur).map(function(it){
-            var mine = extra.indexOf(it) >= 0;
-            return '<div class="row" style="padding-right:8px;"><span class="txt t1" style="padding:12px 0;">' + esc(it) + '</span>' + (mine ? '<button type="button" class="ck-del" data-tx="' + esc(it) + '" aria-label="Xoá món ' + esc(it) + '">' + I('xmark', 2.4) + '</button>' : '') + '</div>';
-          }).join('') +
-          '<form class="row prep-add" id="tplAdd" autocomplete="off"><span class="chk" style="border-style:dashed;color:var(--accent);">' + I('plus', 3) + '</span><input name="pitem" placeholder="Thêm món cho mọi buổi ' + esc(cur) + '…" enterkeyhint="done" aria-label="Thêm món" /><button type="submit" class="btn tint sm">Thêm</button></form></div>' +
-          '<p class="sec-f">Buổi chụp ' + esc(cur) + ' tạo mới sẽ lấy danh sách này. Trong từng buổi vẫn thêm / bớt riêng được.</p>';
-      }
-      openSheet({ title:'Danh sách đồ mẫu', left:'Xong', tall:true, body:body(), bind:function(api){
-        $$('[data-pt]', api.body).forEach(function(b){ b.addEventListener('click', function(){ cur = b.getAttribute('data-pt'); api.setBody(body()); }); });
-        $$('[data-tx]', api.body).forEach(function(b){ b.addEventListener('click', function(){
-          var it = b.getAttribute('data-tx'), arr = state.cfg.checkExtra[cur] || []; arr.splice(arr.indexOf(it), 1); saveLocal(); api.setBody(body()); toast('Đã xoá món', 'del');
-        }); });
-        var f = $('#tplAdd', api.body);
-        f.addEventListener('submit', function(ev){
-          ev.preventDefault(); var v = cleanStr(f.elements.pitem.value, 120).trim(); if (!v){ f.elements.pitem.focus(); return; }
-          if (checkItems(cur).indexOf(v) >= 0){ toast('Món này có rồi', 'warn'); return; }
-          state.cfg.checkExtra = state.cfg.checkExtra || {}; (state.cfg.checkExtra[cur] = state.cfg.checkExtra[cur] || []).push(v);
-          saveLocal(); api.setBody(body()); toast('Đã thêm “' + v + '”');
-        });
-      } });
-    }
 
     /* ================= TIỀN BẠC ================= */
     var txFilter = 'all';
@@ -4666,6 +4541,12 @@ async function mascotRunLoop(){
       renderMoney();
     }); });
     var profitShowAll = false;
+    var chartPeriod = 'month'; /* mục 6: kỳ biểu đồ thu chi — week | month | year */
+    $$('#chartSeg button').forEach(function(c){ c.addEventListener('click', function(){
+      chartPeriod = c.getAttribute('data-cp');
+      $$('#chartSeg button').forEach(function(x){ x.classList.toggle('on', x === c); });
+      renderMoney();
+    }); });
     /* ---------- v2.4 (Việt): biểu đồ + xuất Excel ---------- */
     function lastMonths(n){
       var d = parseD(dstr(0)), out = [];
@@ -4673,24 +4554,35 @@ async function mascotRunLoop(){
       return out;
     }
     function monthSum(m, kind){ return state.txs.filter(function(t){ return t.kind === kind && monthOf(t.date) === m; }).reduce(function(a, t){ return a + t.amount; }, 0); }
+    function daySum(d, kind){ return state.txs.filter(function(t){ return t.kind === kind && t.date === d; }).reduce(function(a, t){ return a + t.amount; }, 0); }
+    function chartBuckets(){
+      if (chartPeriod === 'week'){
+        var out = [];
+        for (var k = 6; k >= 0; k--){ var d = dstr(-k), dd = parseD(d); out.push({ label:['CN','T2','T3','T4','T5','T6','T7'][dd.getDay()], thu:daySum(d, 'thu'), chi:daySum(d, 'chi') }); }
+        return { label:'7 ngày qua', buckets:out };
+      }
+      var n = chartPeriod === 'year' ? 12 : 6;
+      return { label: n === 12 ? '12 tháng qua' : '6 tháng qua', buckets:lastMonths(n).map(function(m){ return { label:'T' + (+m.slice(5)), thu:monthSum(m, 'thu'), chi:monthSum(m, 'chi') }; }) };
+    }
     function renderMoneyChart(){
       var box = $('#moneyChart'); if (!box) return;
-      var ms = lastMonths(6), thu = ms.map(function(m){ return monthSum(m, 'thu'); }), chi = ms.map(function(m){ return monthSum(m, 'chi'); });
+      var cb = chartBuckets(), buckets = cb.buckets, n = buckets.length;
+      var thu = buckets.map(function(b){ return b.thu; }), chi = buckets.map(function(b){ return b.chi; });
       var max = Math.max.apply(null, thu.concat(chi).concat([1]));
-      if (max <= 1){ box.innerHTML = '<div class="fc-h"><span class="b">Thu chi 6 tháng</span></div><p class="muted" style="margin:6px 0 4px;font-size:0.875rem;">Ghi khoản thu chi đầu tiên là biểu đồ hiện ở đây.</p>'; return; }
-      var W = 330, H = 140, top = 16, base = H - 20, gw = W / 6, bw = Math.min(16, gw / 3.2);
-      var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Biểu đồ thu chi 6 tháng gần nhất">';
+      if (max <= 1){ box.innerHTML = '<div class="fc-h"><span class="b">Thu chi ' + cb.label + '</span></div><p class="muted" style="margin:6px 0 4px;font-size:0.875rem;">Ghi khoản thu chi đầu tiên là biểu đồ hiện ở đây.</p>'; return; }
+      var W = 330, H = 140, top = 16, base = H - 20, gw = W / n, bw = Math.min(16, gw / 3.2);
+      var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Biểu đồ thu chi ' + cb.label + '">';
       svg += '<line x1="0" x2="' + W + '" y1="' + base + '" y2="' + base + '" stroke="var(--sep)" stroke-width="1"/>';
-      ms.forEach(function(m, i){
-        var cx = gw * i + gw / 2, ht = (base - top) * thu[i] / max, hc = (base - top) * chi[i] / max, cur = i === 5;
-        svg += '<rect x="' + (cx - bw - 1).toFixed(1) + '" y="' + (base - ht).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + Math.max(ht, thu[i] ? 2 : 0).toFixed(1) + '" rx="3" fill="var(--green)"' + (cur ? '' : ' opacity=".55"') + '><title>Thu ' + fmt(thu[i]) + '</title></rect>';
-        svg += '<rect x="' + (cx + 1).toFixed(1) + '" y="' + (base - hc).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + Math.max(hc, chi[i] ? 2 : 0).toFixed(1) + '" rx="3" fill="var(--orange)"' + (cur ? '' : ' opacity=".55"') + '><title>Chi ' + fmt(chi[i]) + '</title></rect>';
-        if (thu[i]) svg += '<text x="' + (cx - bw / 2 - 1).toFixed(1) + '" y="' + (base - ht - 4).toFixed(1) + '" text-anchor="middle" font-size="9" fill="var(--label2)">' + fmtTiny(thu[i]) + '</text>';
-        svg += '<text x="' + cx.toFixed(1) + '" y="' + (H - 5) + '" text-anchor="middle" font-size="10.5" fill="' + (cur ? 'var(--label)' : 'var(--label3)') + '"' + (cur ? ' font-weight="600"' : '') + '>T' + (+m.slice(5)) + '</text>';
+      buckets.forEach(function(b, i){
+        var cx = gw * i + gw / 2, ht = (base - top) * b.thu / max, hc = (base - top) * b.chi / max, cur = i === n - 1;
+        svg += '<rect x="' + (cx - bw - 1).toFixed(1) + '" y="' + (base - ht).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + Math.max(ht, b.thu ? 2 : 0).toFixed(1) + '" rx="3" fill="var(--green)"' + (cur ? '' : ' opacity=".55"') + '><title>Thu ' + fmt(b.thu) + '</title></rect>';
+        svg += '<rect x="' + (cx + 1).toFixed(1) + '" y="' + (base - hc).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + Math.max(hc, b.chi ? 2 : 0).toFixed(1) + '" rx="3" fill="var(--orange)"' + (cur ? '' : ' opacity=".55"') + '><title>Chi ' + fmt(b.chi) + '</title></rect>';
+        if (b.thu) svg += '<text x="' + (cx - bw / 2 - 1).toFixed(1) + '" y="' + (base - ht - 4).toFixed(1) + '" text-anchor="middle" font-size="9" fill="var(--label2)">' + fmtTiny(b.thu) + '</text>';
+        svg += '<text x="' + cx.toFixed(1) + '" y="' + (H - 5) + '" text-anchor="middle" font-size="10.5" fill="' + (cur ? 'var(--label)' : 'var(--label3)') + '"' + (cur ? ' font-weight="600"' : '') + '>' + b.label + '</text>';
       });
       svg += '</svg>';
       var tThu = thu.reduce(function(a, b){ return a + b; }, 0), tChi = chi.reduce(function(a, b){ return a + b; }, 0);
-      box.innerHTML = '<div class="fc-h"><span class="b">Thu chi 6 tháng</span><span class="muted num">Lời ' + esc(fmtShort(tThu - tChi)) + '</span></div>' + svg +
+      box.innerHTML = '<div class="fc-h"><span class="b">Thu chi ' + cb.label + '</span><span class="muted num">Lời ' + esc(fmtShort(tThu - tChi)) + '</span></div>' + svg +
         '<div class="fc-lg"><span><i style="background:var(--green)"></i>Thu</span><span><i style="background:var(--orange)"></i>Chi</span></div>';
     }
     /* Xuất .xlsx thật (zip không nén + XML) — không cần thư viện ngoài. */
@@ -4749,7 +4641,7 @@ async function mascotRunLoop(){
       }));
       var s3 = [['Khách', 'Loại chụp', 'Bước', 'Ngày chụp', 'Địa điểm', 'Giá', 'Đã thu', 'Đã chi', 'Còn thiếu', 'Lời']].concat(sortJobs(state.jobs).map(function(j){
         var p = jobThu(j.id), c = jobChi(j.id);
-        return [j.client, jobTypeLabel(j), j.cancelled ? 'Đã huỷ' : j.stage, xlDate(j.shootDate), j.location || '', +j.price || 0, p, c, j.cancelled ? 0 : jobOwe(j), p - c];
+        return [j.client, jobTypeLabel(j), j.cancelled ? 'Đã huỷ' : j.stage, xlDate(j.shootDate), j.location || '', jobTotal(j), p, c, j.cancelled ? 0 : jobOwe(j), p - c];
       }));
       var NS = 'http://schemas.openxmlformats.org/', names = ['Sổ thu chi', 'Theo tháng', 'Buổi chụp'];
       var files = [
@@ -4784,8 +4676,9 @@ async function mascotRunLoop(){
     }
     $('#xlsxBtn').addEventListener('click', exportXlsx);
     function renderMoney(){
-      var sThu = sum(monthTxs('thu')), sChi = sum(monthTxs('chi'));
-      var mm = parseD(dstr(0)); $('#moneyEyebrow').textContent = 'Tháng ' + (mm.getMonth()+1) + ', ' + mm.getFullYear();
+      var cb0 = chartBuckets();
+      var sThu = cb0.buckets.reduce(function(s, b){ return s + b.thu; }, 0), sChi = cb0.buckets.reduce(function(s, b){ return s + b.chi; }, 0);
+      $('#moneyEyebrow').textContent = cb0.label;
       $('#moneyStats').innerHTML = '<div class="msum-c"><span>Thu</span><b class="num green">' + esc(fmtShort(sThu)) + '</b><span class="exact num">' + esc(fmt(sThu)) + '</span></div>' +
         '<div class="msum-c"><span>Chi</span><b class="num">' + esc(fmtShort(sChi)) + '</b><span class="exact num">' + esc(fmt(sChi)) + '</span></div>' +
         '<div class="msum-c"><span>Lời</span><b class="num' + (sThu - sChi < 0 ? ' red' : '') + '">' + (sThu - sChi < 0 ? '−' : '') + esc(fmtShort(Math.abs(sThu - sChi))) + '</b><span class="exact num">' + esc(fmt(sThu - sChi)) + '</span></div>';
@@ -4795,7 +4688,7 @@ async function mascotRunLoop(){
       $('#oweTitle').textContent = 'Khách còn thiếu' + (owes.length ? ' · ' + fmt(totalOwe()) : '');
       var oweHtml = owes.length ? owes.map(function(j){
         var paid = jobThu(j.id);
-        return '<div class="row owe-row" data-job="' + j.id + '" role="button" tabindex="0"><span class="txt"><span class="t1 b wrap2" style="display:block;">' + esc(j.client) + '</span><span class="t2" style="display:block;">' + esc(jobTypeLabel(j)) + ' · ' + (paid ? '<span style="white-space:nowrap;">đã nhận ' + fmt(paid) + ' / ' + fmt(j.price) + '</span>' : 'chưa nhận cọc') + '</span></span>' +
+        return '<div class="row owe-row" data-job="' + j.id + '" role="button" tabindex="0"><span class="txt"><span class="t1 b wrap2" style="display:block;">' + esc(j.client) + '</span><span class="t2" style="display:block;">' + esc(jobTypeLabel(j)) + ' · ' + (paid ? 'đã nhận ' + fmt(paid) + ' / ' + fmt(jobTotal(j)) : 'chưa nhận cọc') + '</span></span>' +
           '<span class="val num b red">' + fmt(jobOwe(j)) + '</span><button type="button" class="btn tint sm owe-nhac" data-nhac="' + j.id + '" aria-label="Chép tin nhắc thanh toán cho ' + esc(j.client) + '">Nhắc</button></div>';
       }).join('') : (unpricedN ? '<div class="empty-row muted">Có ' + unpricedN + ' buổi chụp chưa ghi giá — ghi giá để app tính khách còn thiếu.</div>' : '<div class="empty-row muted">Khách trả đủ hết rồi, không ai còn thiếu.</div>');
       /* v2.3b (Phong): job chưa ghi giá phải nhắc LUÔN, kể cả khi đã có job
@@ -4815,29 +4708,31 @@ async function mascotRunLoop(){
       }); });
       $$('#oweList [data-nhac]').forEach(function(b){ b.addEventListener('click', function(e){ e.stopPropagation(); var j = jobById(b.getAttribute('data-nhac')); if (j) copyText(chatMsg('tien', j), 'Đã chép tin nhắc — dán vào Zalo hoặc Messenger'); }); });
       $$('#oweList .owe-row').forEach(function(r){ r.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openJob(r.getAttribute('data-job')); } }); });
-      /* Job đã huỷ không nằm trong "Lời theo từng job" — tiền của nó vẫn nằm trong
-         tổng Thu/Chi tháng, nhưng không tính là thiếu hay lời của job đang chạy. */
+      /* Mục 7 (21/11/2026): lời từng job nằm TRONG sổ thu chi (đầu #txList,
+         chỉ khi xem Tất cả và có job đã có tiền vào/ra) — không để riêng mục nữa. */
       var pjAll = sortJobs(state.jobs.filter(function(j){ return !j.cancelled; })), pjDone = pjAll.filter(function(j){ return j.stage === 'Xong'; }).length;
       var pjFold = !profitShowAll && pjAll.length > 6 && pjDone > 0;
       var pjList = pjFold ? pjAll.filter(function(j){ return j.stage !== 'Xong'; }) : pjAll;
-      $('#jobProfit').innerHTML = (pjList.length ? pjList.map(function(j){
-        var t = jobThu(j.id), c = jobChi(j.id), owe = jobOwe(j), p = t - c;
-        return '<button type="button" class="row" data-job="' + j.id + '">' + typeIcon(j.type) + '<span class="txt"><span class="t1 b wrap2" style="display:block;">' + esc(j.client) + '</span><span class="t2" style="display:block;">Thu ' + fmt(t) + ' · Chi ' + fmt(c) + (owe > 0 ? ' · <span class="red">thiếu ' + fmt(owe) + '</span>' : '') + '</span></span>' +
-          (p === 0 ? '<span class="val num">0₫</span>' : '<span class="val num b ' + (p > 0 ? 'green' : 'red') + '" style="font-size:1.0625rem;">' + (p > 0 ? '+' : '−') + esc(fmt(Math.abs(p))) + '</span>') + I('chev').replace('<svg', '<svg class="chev"') + '</button>';
-      }).join('') : '<div class="empty-row muted">Chưa có job nào.</div>') +
-        (pjFold ? '<button type="button" class="row" id="profitMore"><span class="txt t1" style="color:var(--accent-t);">Xem thêm ' + pjDone + ' job đã xong</span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button>' : '');
-      var pm = $('#profitMore'); if (pm) pm.addEventListener('click', function(){ profitShowAll = true; renderMoney(); });
+      var pjHasMoney = pjAll.some(function(j){ return jobThu(j.id) > 0 || jobChi(j.id) > 0; });
+      var profitHtml = '';
+      if (txFilter === 'all' && pjHasMoney){
+        profitHtml = '<p class="sec-s">Lời từng job</p><div class="list">' + pjList.map(function(j){
+          var t = jobThu(j.id), c = jobChi(j.id), owe = jobOwe(j), p = t - c;
+          return '<button type="button" class="row" data-job="' + j.id + '">' + typeIcon(j.type) + '<span class="txt"><span class="t1 b wrap2" style="display:block;">' + esc(j.client) + '</span><span class="t2" style="display:block;">Thu ' + fmt(t) + ' · Chi ' + fmt(c) + (owe > 0 ? ' · <span class="red">thiếu ' + fmt(owe) + '</span>' : '') + '</span></span>' +
+            (p === 0 ? '<span class="val num">0₫</span>' : '<span class="val num b ' + (p > 0 ? 'green' : 'red') + '" style="font-size:1.0625rem;">' + (p > 0 ? '+' : '−') + esc(fmt(Math.abs(p))) + '</span>') + I('chev').replace('<svg', '<svg class="chev"') + '</button>';
+        }).join('') + (pjFold ? '<button type="button" class="row" id="profitMore"><span class="txt t1" style="color:var(--accent-t);">Xem thêm ' + pjDone + ' job đã xong</span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button>' : '') + '</div>';
+      }
       var list = state.txs.slice().sort(function(a,b){ return a.date < b.date ? 1 : (a.date > b.date ? -1 : (+b.id) - (+a.id)); }).filter(function(t){
         if (txFilter === 'thu') return t.kind === 'thu';
         if (txFilter === 'chi') return t.kind === 'chi';
         if (txFilter === 'month') return monthOf(t.date) === thisMonth();
         return true;
       });
-      if (!list.length){ $('#txList').innerHTML = '<div class="list" style="margin-top:12px;"><div class="empty-row" style="flex-direction:column;text-align:center;padding:24px;"><span class="ic lg bg-green">' + I('wallet') + '</span><div class="b">Chưa có khoản nào</div><button type="button" class="btn fill sm" id="emptyAddTx">' + I('plus', 2.4) + 'Ghi khoản đầu tiên</button></div></div>'; $('#emptyAddTx').addEventListener('click', function(){ openTxForm(); }); }
+      if (!list.length){ $('#txList').innerHTML = profitHtml + '<div class="list" style="margin-top:12px;"><div class="empty-row" style="flex-direction:column;text-align:center;padding:24px;"><span class="ic lg bg-green">' + I('wallet') + '</span><div class="b">Chưa có khoản nào</div><button type="button" class="btn fill sm" id="emptyAddTx">' + I('plus', 2.4) + 'Ghi khoản đầu tiên</button></div></div>'; $('#emptyAddTx').addEventListener('click', function(){ openTxForm(); }); }
       else {
         var groups = [], cur = null;
         list.forEach(function(t){ if (!cur || cur.date !== t.date){ cur = {date:t.date, items:[]}; groups.push(cur); } cur.items.push(t); });
-        $('#txList').innerHTML = groups.map(function(g){
+        $('#txList').innerHTML = profitHtml + groups.map(function(g){
           var net = g.items.reduce(function(s, t){ return s + (t.kind === 'thu' ? t.amount : -t.amount); }, 0);
           return '<p class="sec-s" style="display:flex;justify-content:space-between;"><span>' + esc(fmtHeaderDate(g.date)) + '</span><span class="num" style="text-transform:none;">' + (net >= 0 ? '+' : '−') + fmt(Math.abs(net)) + '</span></p><div class="list">' + g.items.map(function(t){
             var j = t.jobId ? jobById(t.jobId) : null, sub = [j ? j.client : 'Khoản chung', t.method].filter(Boolean).join(' · ');
@@ -4854,6 +4749,7 @@ async function mascotRunLoop(){
           actionSheet({ title:(t.kind === 'thu' ? 'Thu · ' : 'Chi · ') + t.category + ' · ' + fmt(t.amount), msg:fmtDate(t.date) + (t.note ? ' — ' + t.note : ''), actions:acts });
         }); });
       }
+      var pm = $('#profitMore'); if (pm) pm.addEventListener('click', function(){ profitShowAll = true; renderMoney(); });
       bindRows($('#view-money'));
     }
 </script>
@@ -4863,7 +4759,7 @@ async function mascotRunLoop(){
     var DEPTS = [
       /* v2.7b (Việt: tên chuyên nghiệp hơn, bỏ tên người phụ trách) — theo cách chia bộ phận của studio chuyên nghiệp */
       {id:'donkhach', name:'Khách hàng & Tư vấn', short:'Khách hàng', icon:'bubble', color:'pink', role:'Khách hỏi, báo giá, xin cọc, giữ liên lạc.'},
-      {id:'buoichup', name:'Lịch chụp & Chuẩn bị', short:'Lịch chụp', icon:'cam', color:'orange', role:'Lịch chụp sắp tới, địa điểm, chuẩn bị đồ.'},
+      {id:'buoichup', name:'Lịch chụp & Chuẩn bị', short:'Lịch chụp', icon:'cam', color:'orange', role:'Lịch chụp sắp tới, địa điểm, giờ giấc.'},
       {id:'hauky', name:'Hậu kỳ & Giao ảnh', short:'Hậu kỳ', icon:'sparkle', color:'purple', role:'Ảnh xem trước, khách chọn ảnh, chỉnh và giao ảnh.'},
       {id:'tienbac', name:'Tài chính', short:'Tài chính', icon:'wallet', color:'green', role:'Cọc, thu nốt, thu chi, lời từng buổi chụp.'},
       {id:'kechuyen', name:'Marketing & Đánh giá', short:'Marketing', icon:'heart', color:'blue', role:'Xin cảm nhận, ảnh đăng trang, caption.'},
@@ -4884,8 +4780,8 @@ async function mascotRunLoop(){
         var st = state.jobs.filter(function(j){ return j.shootDate===today && j.stage!=='Xong'; });
         var sm = state.jobs.filter(function(j){ return j.shootDate===dstr(1) && j.stage!=='Xong'; });
         lines.push(st.length ? 'Hôm nay chụp: ' + st.map(function(j){ return j.client + ' (' + jobTypeLabel(j) + (j.shootTime ? ', ' + j.shootTime : '') + ')'; }).join('; ') + '.' : 'Hôm nay không có buổi chụp nào.');
-        lines.push(sm.length ? 'Ngày mai chụp: ' + sm.map(function(j){ return j.client; }).join(', ') + ' — tối nay xem danh sách đồ nha.' : 'Ngày mai cũng thong thả.');
-        lines.push('Chuẩn bị đồ của từng buổi nằm trong buổi chụp đó; hôm trước ngày chụp app nhắc kèm danh sách.');
+        lines.push(sm.length ? 'Ngày mai chụp: ' + sm.map(function(j){ return j.client; }).join(', ') + '.' : 'Ngày mai cũng thong thả.');
+        lines.push('Đồ cần chuẩn bị ghi vào phần Ghi chú của từng buổi chụp.');
       }
       if (id === 'hauky'){
         var hk = state.jobs.filter(function(j){ return ['Đang làm ảnh'].indexOf(j.stage) >= 0; });
@@ -4928,8 +4824,7 @@ async function mascotRunLoop(){
       if (id === 'buoichup'){
         live.filter(function(j){ return j.shootDate && j.shootDate >= today && dayDiff(j.shootDate) <= 7 && STAGES.indexOf(j.stage) <= 2; })
           .sort(function(a, b){ return (a.shootDate + a.shootTime) < (b.shootDate + b.shootTime) ? -1 : 1; }).forEach(function(j){
-            var it = jobPrep(j), d = prepDone(j), n = it.filter(function(x){ return d[x]; }).length;
-            add(j, capFirst(fmtRel(j.shootDate)) + (j.shootTime ? ' ' + j.shootTime : '') + ' — ' + j.client, [jobTypeLabel(j), j.location, 'đồ ' + n + '/' + it.length].filter(Boolean).join(' · '), { red:n < it.length && dayDiff(j.shootDate) <= 1, btn:{ l:'Nhắc khách', k:'nhac' } });
+            add(j, capFirst(fmtRel(j.shootDate)) + (j.shootTime ? ' ' + j.shootTime : '') + ' — ' + j.client, [jobTypeLabel(j), j.location].filter(Boolean).join(' · '), { red:dayDiff(j.shootDate) <= 1, btn:{ l:'Nhắc khách', k:'nhac' } });
           });
       }
       if (id === 'hauky'){
@@ -4987,25 +4882,16 @@ async function mascotRunLoop(){
         return '<button type="button" class="row tpl-row" data-tpl="' + t.k + '"><span class="txt"><span class="t1 b" style="display:block;">' + esc(t.t) + '</span><span class="t2 wrap2" style="display:block;">' + esc(chatMsg(t.k, null, nm || 'bạn')) + '</span></span><span class="tpl-copy" aria-hidden="true">' + I('copy') + '</span></button>';
       }).join('');
     }
-    /* Nhãn dropdown máy tính giá theo đúng medium đang chọn: chọn Film thì
-       hiện giá film (hoặc "chưa đặt giá" khi = 0), không hiện giá Digital. */
-    function calcPkgOptions(medium){
-      return Object.keys(state.cfg.prices).filter(function(t){
-        return (state.cfg.prices[t] || 0) > 0 || ((state.cfg.pricesFilm || {})[t] || 0) > 0;
-      }).map(function(t){
-        var p = priceFor(t, medium);
-        return '<option value="' + esc(t) + '">' + esc(t) + ' — ' + (p > 0 ? fmt(p) : 'chưa đặt giá') + '</option>';
-      }).join('');
-    }
     function deptTools(id){
       if (id === 'donkhach'){
         var h = '<p class="sec-s">Mẫu tin nhắn — chạm để chép</p><div class="list">' +
           frow('Tên khách', '<input id="tplName" placeholder="chị Lan Anh" autocomplete="off" />') + '</div>' +
           '<div class="list" style="margin-top:12px;" id="tplList">' + tplRows('') + '</div>' +
           '';
+        var leads = state.jobs.filter(function(j){ return !j.cancelled && j.stage === 'Khách hỏi' && jobTotal(j) > 0; });
         h += '<p class="sec-s">Tính giá nhanh</p><div class="list">' +
-          frow('Gói chụp', '<select id="calcPkg">' + calcPkgOptions('Digital') + '</select>') +
-          frow('Chụp bằng', '<select id="calcMedium">' + MEDIUMS.map(function(m){ return '<option value="' + esc(m) + '">' + (m === 'Cả hai' ? 'Ảnh số + ảnh film' : esc(m)) + '</option>'; }).join('') + '</select>') +
+          frow('Giá job', '<input id="calcPrice" inputmode="numeric" placeholder="Nhập giá tay, VD: 2.500.000" />') +
+          (leads.length ? frow('Lấy giá job đang tư vấn', '<select id="calcJob"><option value="">— Chọn job —</option>' + leads.map(function(j){ return '<option value="' + j.id + '">' + esc(j.client) + ' — ' + fmt(jobTotal(j)) + '</option>'; }).join('') + '</select>') : '') +
           frow('Thêm giờ', '<input type="number" id="calcHours" min="0" value="0" inputmode="numeric" />') +
           frow('Thêm địa điểm', '<input type="number" id="calcLocs" min="0" value="0" inputmode="numeric" />') +
           frow('Ảnh retouch thêm', '<input type="number" id="calcPhotos" min="0" value="0" inputmode="numeric" />') +
@@ -5014,28 +4900,44 @@ async function mascotRunLoop(){
           '<div class="list" style="margin-top:12px;"><div class="report num" id="calcOut"></div><div style="padding:0 12px 12px;"><button type="button" class="btn tint" id="calcCopy">' + I('copy') + 'Chép báo giá gửi khách</button></div></div>';
         return h;
       }
+      if (id === 'hauky'){
+        var live = state.jobs.filter(function(j){ return !j.cancelled; });
+        var steps = [
+          ['1 · Gửi ảnh xem trước', live.filter(function(j){ return j.stage === 'Đã chụp' && !j.sneakSent; }), 'Gửi ảnh xem trước trong 48 giờ sau chụp.'],
+          ['2 · Gửi link chọn ảnh', live.filter(function(j){ return j.stage === 'Đã chụp' && j.sneakSent && !j.noSelect && !j.proofSentAt; }), 'Khách chọn ảnh rồi mới chỉnh.'],
+          ['3 · Chờ khách chọn', live.filter(function(j){ return j.stage === 'Đang làm ảnh' && !j.noSelect && !j.selectedAt; }), 'Nhắc khách chọn nếu quá ' + state.cfg.selectRemindDays + ' ngày.'],
+          ['4 · Chỉnh & giao', live.filter(function(j){ return (j.stage === 'Đang làm ảnh' && (j.noSelect || j.selectedAt)) || j.stage === 'Đã giao'; }), 'Giao đủ ảnh, thu nốt tiền.']
+        ];
+        return steps.map(function(s){
+          return '<p class="sec-s">' + s[0] + ' · ' + s[1].length + '</p>' +
+            (s[1].length ? '<div class="list">' + s[1].map(jobRow).join('') + '</div>' : '<div class="empty-row muted">Không có job nào ở bước này.</div>') +
+            '<p class="sec-f">' + s[2] + '</p>';
+        }).join('');
+      }
       if (id === 'kechuyen'){
         return '<p class="sec-s">Gợi ý nội dung</p><div class="list"><div class="tpl"><b>Caption sẵn</b><p>“' + esc(CAPTION) + '”</p><button type="button" class="btn tint sm" data-cap="1">' + I('copy') + 'Chép caption</button></div>' +
                '<div class="tpl"><b>Ý tưởng bài đăng</b><p>Đăng ảnh trước / sau hậu kỳ của một job (nhớ xin phép khách trước) kèm 3 dòng kể chuyện buổi chụp.</p></div></div>';
       }
       if (id === 'giudo'){
-        return '<p class="sec-s">Thói quen nên giữ</p><div class="list"><div class="note-txt">Chụp xong → chép thẻ vào máy + ổ cứng ngay. Mỗi job một thư mục Drive riêng. Sạc pin ngay khi về tới nhà, đừng chờ tới mai.</div></div>';
+        var eq = state.cfg.equipment || [];
+        var gh = '<p class="sec-s">Thiết bị của bạn</p><div class="list">' +
+          (eq.length ? eq.map(function(e){ return '<div class="row"><span class="txt"><span class="t1" style="display:block;">' + esc(e.name) + '</span><span class="t2" style="display:block;">Khấu hao ' + fmt(e.price) + ' / ' + e.years + ' năm</span></span></div>'; }).join('') : '<div class="empty-row muted">Chưa nhập thiết bị nào — thêm trong Cài đặt → Đồ nghề &amp; chi phí.</div>') + '</div>';
+        gh += '<p class="sec-s">Thói quen nên giữ</p><div class="list"><div class="note-txt">Chụp xong → chép thẻ vào máy + ổ cứng ngay. Mỗi job một thư mục Drive riêng. Sạc pin ngay khi về tới nhà, đừng chờ tới mai.</div></div>';
+        return gh;
       }
       if (id === 'buoichup'){
-        return '<div class="list" style="margin-top:12px;"><button type="button" class="row" data-prept="1"><span class="ic bg-orange">' + I('list') + '</span><span class="txt t1">Danh sách đồ mẫu theo loại chụp</span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button></div>';
-      }
-      if (id === 'tienbac'){
-        return '<div class="list" style="margin-top:12px;"><button type="button" class="row" data-goto="money"><span class="ic bg-green">' + I('wallet') + '</span><span class="txt t1">Mở sổ thu chi</span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button></div>';
+        return '<div class="list" style="margin-top:12px;"><button type="button" class="row" data-goto="cal"><span class="ic bg-orange">' + I('cal') + '</span><span class="txt t1">Mở tab Lịch</span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button></div>';
       }
       return '';
     }
     function openDept(id){
+      if (id === 'tienbac'){ go('money'); return; } /* mục 3: Tài chính nhảy thẳng sang tab có sẵn, không làm màn riêng */
       var d = DEPTS.filter(function(x){ return x.id === id; })[0]; if (!d) return;
       var body = '<div class="jd-head"><span class="ic lg bg-' + d.color + '">' + I(d.icon) + '</span><h2>' + esc(d.name) + '</h2><p>' + esc(d.role) + '</p></div>' +
 
         '<p class="sec-s">Việc cần làm · ' + deptTasks(d.id).length + '</p><div class="list" id="deptTasks">' + deptTaskRows(d.id) + '</div>' +
         '<p class="sec-s">Báo cáo hôm nay</p><div class="list"><ul class="dept-lines">' + deptLines(d.id).map(function(l){ return '<li>' + esc(l) + '</li>'; }).join('') + '</ul></div>' + deptTools(d.id);
-      openSheet({ title:d.name, left:'Đóng', tall:true, body:body, bind:function(api){
+      openSheet({ title:d.name, left:'‹ Phòng ban', tall:true, body:body, bind:function(api){
         var b = api.body;
         var tasks = deptTasks(d.id);
         bindRows($('#deptTasks', b));
@@ -5052,27 +4954,22 @@ async function mascotRunLoop(){
         bindTpl();
         var tn = $('#tplName', b); if (tn) tn.addEventListener('input', function(){ $('#tplList', b).innerHTML = tplRows(tn.value); bindTpl(); });
         $$('[data-cap]', b).forEach(function(x){ x.addEventListener('click', function(){ copyText(CAPTION, 'Đã chép caption'); }); });
-        $$('[data-goto]', b).forEach(function(x){ x.addEventListener('click', function(){ api.close(); go(x.getAttribute('data-goto')); }); });
-        $$('[data-prept]', b).forEach(function(x){ x.addEventListener('click', function(){ openPrepTemplates(); }); });
-        if ($('#calcPkg', b)){
+        $$('[data-goto]', b).forEach(function(x){ x.addEventListener('click', function(){ var v = x.getAttribute('data-goto'); api.close(); if (v === 'cal'){ jobsMode = 'cal'; go('jobs'); renderCal(); } else go(v); }); });
+        bindRows(b); /* hàng công cụ (vd 4 bước giao ảnh) bấm mở đúng buổi chụp */
+        if ($('#calcPrice', b)){
           var total = 0, coc = 0;
           var upd = function(){
-            var c = state.cfg, base = priceFor($('#calcPkg', b).value, $('#calcMedium', b).value), missFilm = base === 0 && $('#calcMedium', b).value !== 'Digital';
-            total = base + (+$('#calcHours', b).value || 0) * c.extraHour + (+$('#calcLocs', b).value || 0) * c.extraLoc + (+$('#calcPhotos', b).value || 0) * c.retouch + (+$('#calcAlbum', b).value);
+            var c = state.cfg;
+            total = moneyVal($('#calcPrice', b)) + (+$('#calcHours', b).value || 0) * c.extraHour + (+$('#calcLocs', b).value || 0) * c.extraLoc + (+$('#calcPhotos', b).value || 0) * c.retouch + (+$('#calcAlbum', b).value);
             coc = depFor({ price:total });
-            $('#calcOut', b).textContent = missFilm ? 'Chưa đặt giá film cho gói ' + $('#calcPkg', b).value + ' — vào Cài đặt → Bảng giá film để điền giá trước nha.' : 'Tổng:                 ' + fmt(total) + '\nCọc trước (' + c.depositPct + '%):  ' + fmt(coc) + '\nCòn lại sau giao:   ' + fmt(total - coc);
+            $('#calcOut', b).textContent = 'Tổng:                 ' + fmt(total) + '\nCọc trước (' + c.depositPct + '%):  ' + fmt(coc) + '\nCòn lại sau giao:   ' + fmt(total - coc);
           };
-          ['calcPkg','calcMedium','calcHours','calcLocs','calcPhotos','calcAlbum'].forEach(function(cid){ $('#' + cid, b).addEventListener('input', upd); $('#' + cid, b).addEventListener('change', upd); });
-          /* Đổi medium thì dựng lại nhãn giá theo medium đó, giữ nguyên gói đang chọn. */
-          $('#calcMedium', b).addEventListener('change', function(){
-            var sel = $('#calcPkg', b), cur = sel.value;
-            sel.innerHTML = calcPkgOptions($('#calcMedium', b).value);
-            if (sel.querySelector('option[value="' + cur + '"]')) sel.value = cur;
-            upd();
-          });
+          ['calcPrice','calcHours','calcLocs','calcPhotos','calcAlbum'].forEach(function(cid){ var el = $('#' + cid, b); if (el){ el.addEventListener('input', upd); el.addEventListener('change', upd); } });
+          moneyInput($('#calcPrice', b));
+          var cj = $('#calcJob', b);
+          if (cj) cj.addEventListener('change', function(){ var j = jobById(cj.value); if (j){ $('#calcPrice', b).value = (+jobTotal(j)).toLocaleString('vi-VN'); upd(); } });
           $('#calcCopy', b).addEventListener('click', function(){
-            var missFilm = priceFor($('#calcPkg', b).value, $('#calcMedium', b).value) === 0 && $('#calcMedium', b).value !== 'Digital';
-            copyText(missFilm ? 'Chưa đặt giá film cho gói ' + $('#calcPkg', b).value + ' — bạn đang cập nhật bảng giá film, mình báo lại bạn ngay nha!' : 'Báo giá từ ' + state.cfg.studio + ' nè: gói ' + $('#calcPkg', b).value + ' — ' + $('#calcMedium', b).value + ', tổng ' + fmt(total) + ', cọc trước ' + fmt(coc) + ' để giữ lịch, còn lại ' + fmt(total - coc) + ' trả sau khi giao ảnh. Bạn xem có ưng không nha!', 'Đã chép báo giá');
+            copyText('Báo giá từ ' + state.cfg.studio + ' nè: giá job ' + fmt(moneyVal($('#calcPrice', b))) + ', tổng ' + fmt(total) + ', cọc trước ' + fmt(coc) + ' để giữ lịch, còn lại ' + fmt(total - coc) + ' trả sau khi giao ảnh. Bạn xem có ưng không nha!', 'Đã chép báo giá');
           });
           upd();
         }
@@ -5109,8 +5006,8 @@ async function mascotRunLoop(){
       $$('[data-askq]', box).forEach(function(b){ b.addEventListener('click', function(){ ask(b.getAttribute('data-askq')); }); });
     }
     /* v2.7b (Việt: "giao diện phòng ban trực quan hơn"): lưới 6 ô (biểu tượng, số việc, 1 dòng tình hình)
-       + MỘT danh sách việc cần làm, việc gấp lên đầu; bấm ô để lọc theo phòng. */
-    var deptFilter = '', deptShowAll = false;
+       + MỘT danh sách việc cần làm, việc gấp lên đầu; bấm ô / dòng việc để mở màn quản lý của phòng đó (mục 3). */
+    var deptShowAll = false;
     function deptMetric(id){
       var live = state.jobs.filter(function(j){ return !j.cancelled; });
       if (id === 'donkhach'){ var a = live.filter(function(j){ return j.stage === 'Khách hỏi'; }).length; return a ? a + ' khách đang hỏi' : 'Không có khách chờ'; }
@@ -5125,35 +5022,35 @@ async function mascotRunLoop(){
     function deptGridHTML(){
       return '<div class="dgrid">' + DEPTS.map(function(d){
         var n = deptTasks(d.id).length, red = deptTasks(d.id).some(function(x){ return x.red; });
-        return '<button type="button" class="dtile' + (deptFilter === d.id ? ' on' : '') + '" data-dfil="' + d.id + '" style="--c:var(--' + d.color + ');--kc:var(--k-' + ({ pink:'peach', orange:'sun', purple:'lilac', green:'sage', blue:'sky', teal:'mint' })[d.color] + ')">' +
+        return '<button type="button" class="dtile" data-dept-open="' + d.id + '" style="--c:var(--' + d.color + ');--kc:var(--k-' + ({ pink:'peach', orange:'sun', purple:'lilac', green:'sage', blue:'sky', teal:'mint' })[d.color] + ')">' +
           '<span class="dt-top"><span class="ic bg-' + d.color + '">' + I(d.icon) + '</span><span class="dt-n' + (red ? ' red' : '') + '">' + (n ? n : I('check', 2.6)) + '</span></span>' +
           '<span class="dt-name">' + esc(d.name) + '</span><span class="dt-sub">' + esc(deptMetric(d.id)) + '</span></button>';
       }).join('') + '</div>';
     }
     function allDeptTasks(){
       var out = [];
-      DEPTS.forEach(function(d){ if (deptFilter && deptFilter !== d.id) return; deptTasks(d.id).forEach(function(x, i){ out.push({ d:d, i:i, x:x }); }); });
+      DEPTS.forEach(function(d){ deptTasks(d.id).forEach(function(x, i){ out.push({ d:d, i:i, x:x }); }); });
       return out.sort(function(a, b){ return (b.x.red ? 1 : 0) - (a.x.red ? 1 : 0); });
     }
     function deptListHTML(){
-      var all = allDeptTasks(), lim = deptShowAll || deptFilter ? all.length : 8, f = DEPTS.filter(function(d){ return d.id === deptFilter; })[0];
-      var head = '<div class="sec-h"><h2>' + (f ? esc(f.name) : 'Việc cần làm') + (all.length ? ' · ' + all.length : '') + '</h2>' + (f ? '<button type="button" class="link" data-dfil="">Tất cả</button>' : '') + '</div>';
+      var all = allDeptTasks(), lim = deptShowAll ? all.length : 8;
+      var head = '<div class="sec-h"><h2>Việc cần làm' + (all.length ? ' · ' + all.length : '') + '</h2></div>';
       var rows = all.slice(0, lim).map(function(o){
         var x = o.x;
-        return '<div class="row dept-task" data-job="' + x.j.id + '" role="button" tabindex="0"><span class="ic sm bg-' + o.d.color + '">' + I(o.d.icon) + '</span><span class="txt"><span class="t1 wrap2" style="display:block;' + (x.red ? 'color:var(--red);' : '') + '">' + esc(x.t) + '</span><span class="t2 wrap2" style="display:block;">' + esc(x.s) + '</span></span>' +
+        return '<div class="row dept-task" data-dtask="' + o.d.id + '" role="button" tabindex="0"><span class="ic sm bg-' + o.d.color + '">' + I(o.d.icon) + '</span><span class="txt"><span class="t1 wrap2" style="display:block;' + (x.red ? 'color:var(--red);' : '') + '">' + esc(x.t) + '</span><span class="t2 wrap2" style="display:block;">' + esc(x.s) + '</span></span>' +
           (x.btn ? '<button type="button" class="btn tint sm" data-dcard="' + o.d.id + ':' + o.i + '">' + esc(x.btn.l) + '</button>' : '') + '</div>';
       }).join('');
-      var body = all.length ? rows : '<div class="empty-row muted">' + (f ? 'Phòng này không có việc gì cần làm.' : 'Không có việc gì cần làm — mọi thứ đang ổn.') + '</div>';
-      var more = (!f && all.length > lim) ? '<button type="button" class="row dept-more" id="deptMoreAll"><span class="txt t1" style="color:var(--accent-t);">Xem thêm ' + (all.length - lim) + ' việc</span></button>' : '';
-      var tools = f ? '<button type="button" class="row" data-dept="' + f.id + '"><span class="ic bg-gray">' + I('list') + '</span><span class="txt t1">Công cụ của phòng</span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button>' : '';
-      return head + '<div class="list">' + body + more + tools + '</div>';
+      var body = all.length ? rows : '<div class="empty-row muted">Không có việc gì cần làm — mọi thứ đang ổn.</div>';
+      var more = (all.length > lim) ? '<button type="button" class="row dept-more" id="deptMoreAll"><span class="txt t1" style="color:var(--accent-t);">Xem thêm ' + (all.length - lim) + ' việc</span></button>' : '';
+      return head + '<div class="list">' + body + more + '</div>';
     }
     function deptCardHTML(d){ return ''; } /* tên cũ — giao diện thẻ đã thay bằng lưới + danh sách */
     function chevSvgSafe(){ return I('chev').replace('<svg', '<svg class="chev"'); }
     function renderDepts(){
       renderProfile(); renderAskBox();
       $('#deptGrid').innerHTML = deptGridHTML() + deptListHTML();
-      $$('[data-dfil]', $('#deptGrid')).forEach(function(b){ b.addEventListener('click', function(){ var v = b.getAttribute('data-dfil'); deptFilter = deptFilter === v ? '' : v; deptShowAll = false; renderDepts(); haptic('tap'); }); });
+      $$('[data-dept-open]', $('#deptGrid')).forEach(function(b){ b.addEventListener('click', function(){ openDept(b.getAttribute('data-dept-open')); haptic('tap'); }); });
+      $$('[data-dtask]', $('#deptGrid')).forEach(function(b){ b.addEventListener('click', function(){ openDept(b.getAttribute('data-dtask')); }); });
       var dma = $('#deptMoreAll'); if (dma) dma.addEventListener('click', function(){ deptShowAll = true; renderDepts(); });
       $$('[data-dcard]', $('#deptGrid')).forEach(function(b){ b.addEventListener('click', function(ev){
         ev.stopPropagation(); var p = b.getAttribute('data-dcard').split(':'), tk = deptTasks(p[0])[+p[1]]; if (!tk || !tk.btn) return;
@@ -5161,7 +5058,6 @@ async function mascotRunLoop(){
         if (tk.btn.k) copyText(chatMsg(tk.btn.k, tk.j), 'Đã chép: ' + chatTpl(tk.btn.k).t + ' — dán vào Zalo / Messenger');
         if (tk.btn.mark){ tk.j[tk.btn.mark] = true; saveLocal(); if (!tk.btn.k) toast('Đã đánh dấu xong'); renderDepts(); }
       }); });
-      bindRows($('#deptGrid'));
       $('#dailyReport').textContent = dailyReportText();
       if ($('#clearLabel')) $('#clearLabel').textContent = state.sample ? 'Xoá dữ liệu mẫu, bắt đầu trống' : 'Xoá toàn bộ dữ liệu';
     }
@@ -5253,7 +5149,7 @@ async function mascotRunLoop(){
       for (var i = 0; i < state.jobs.length; i++){
         var j = state.jobs[i];
         if (q && norm(j.client).split(' ').some(function(w){ return w.length > 2 && q.indexOf(w) >= 0; })){
-          return 'Job của ' + j.client + ' nè: chụp ' + jobTypeLabel(j) + ' vào ' + fmtDate(j.shootDate) + (j.location ? ' ở ' + j.location : '') + ', đang ở bước ' + j.stage + '. Giá ' + fmt(j.price) + ', đã thu ' + fmt(jobThu(j.id)) + ', chi ' + fmt(jobChi(j.id)) + ', còn thiếu ' + fmt(jobOwe(j)) + '. Hạn giao ảnh: ' + fmtDate(j.deadline) + '.';
+          return 'Job của ' + j.client + ' nè: chụp ' + jobTypeLabel(j) + ' vào ' + fmtDate(j.shootDate) + (j.location ? ' ở ' + j.location : '') + ', đang ở bước ' + j.stage + '. Giá ' + fmt(jobTotal(j)) + ', đã thu ' + fmt(jobThu(j.id)) + ', chi ' + fmt(jobChi(j.id)) + ', còn thiếu ' + fmt(jobOwe(j)) + '. Hạn giao ảnh: ' + fmtDate(j.deadline) + '.';
         }
       }
       /* Ngày tương đối (Việt 20/11): 'mai' = hôm nay + 1, 'ngày kia' = hôm nay + 2.
@@ -5336,7 +5232,7 @@ async function mascotRunLoop(){
         if (n.indexOf('cuoi') >= 0) type = 'Wedding';
         else if (n.indexOf('couple') >= 0 || n.indexOf('cap doi') >= 0) type = 'Couple';
         else if (n.indexOf('lookbook') >= 0 || n.indexOf('shop') >= 0) type = 'Lookbook';
-        state.jobs.unshift({id:nid(), client:name, type:type, medium:medium, stage:'Khách hỏi', shootDate:'', shootTime:'', location:'', deadline:'', price:priceFor(type, medium), email:'', fbLink:'', msLink:'', driveLink:'', note:'Thêm bằng lệnh'});
+        state.jobs.unshift({id:nid(), client:name, type:type, medium:medium, stage:'Khách hỏi', shootDate:'', shootTime:'', location:'', deadline:'', price:0, contact:'', exHour:0, exLoc:0, exRetouch:0, exAlbum:0, email:'', fbLink:'', msLink:'', driveLink:'', note:'Thêm bằng lệnh'});
         renderAll();
         return 'Đã thêm job mới cho ' + name + ', loại ' + jobTypeLabel({type:type, medium:medium}) + ', đang ở bước Khách hỏi. bạn vào tab Buổi chụp để điền ngày và giá sau cũng được nha.';
       }
@@ -5599,10 +5495,9 @@ async function mascotRunLoop(){
     window.addEventListener('pagehide', flushSave);
     function renderView(v){
       if (v === 'home') renderHome();
-      else if (v === 'jobs'){ renderJobs(); renderChecklist(); } /* Chuẩn bị đồ nằm trong tab Buổi chụp */
+      else if (v === 'jobs'){ renderJobs(); }
       else if (v === 'money') renderMoney();
       else if (v === 'depts') renderDepts();
-      else if (v === 'ask') renderChecklist(); /* giữ: Trợ lý có thể đổi job → danh sách đồ cập nhật sẵn */
     }
     function renderAll(){
       saveLocalSoon();
@@ -5758,6 +5653,7 @@ async function mascotRunLoop(){
       h += '<p class="sec-s">Logo studio</p><div class="list"><div class="row"><span class="ic bg-gray">' + I('cam') + '</span><span class="txt"><span class="t1" style="display:block;">' + (c.logo ? 'Đã có logo — hiện trên màn Hôm nay và đầu email' : 'Chưa có logo') + '</span></span>' + (c.logo ? '<img src="' + esc(c.logo) + '" alt="" style="width:44px;height:44px;object-fit:contain;border-radius:10px;background:var(--fill);" />' : '') + '</div>' +
         '<label class="row act" style="cursor:pointer;"><span class="ic bg-accent">' + I('upload') + '</span><span class="txt t1">Chọn logo từ máy</span><input type="file" id="logoFile" accept="image/*" class="hidden" /></label>' +
         (c.logo ? '<button type="button" class="row center destr" id="logoRemove">Xoá logo</button>' : '') + '</div>';
+      h += '<p class="sec-s">Ảnh bìa danh thiếp</p><div class="moments" id="myShots" style="display:none;margin-bottom:10px;"></div><div class="list" style="margin-top:12px;"><label class="row act" style="cursor:pointer;"><span class="ic bg-pink">' + I('plus') + '</span><span class="txt"><span class="t1" style="display:block;">Thêm ảnh từ máy</span><span class="t2" style="display:block;" id="myShotCount">Chọn vài ảnh đẹp nhất — thẻ studio đổi ảnh bìa mỗi ngày</span></span><input type="file" id="myShotFile" accept="image/*" multiple class="hidden" /></label></div>'; /* Muc 4: anh bia chi doi o day, khong con tren tab Phong ban */
       h += '<p class="sec-s">Ngôn ngữ &amp; tiền tệ</p><div class="list"><div style="padding:12px 16px;"><div class="seg" id="localeSeg">' +
         '<button type="button" data-loc="auto"' + (c.locAuto !== false ? ' class="on"' : '') + '>Theo máy</button><button type="button" data-loc="vi"' + (c.locAuto === false && c.locale !== 'en' ? ' class="on"' : '') + '>Tiếng Việt</button><button type="button" data-loc="en"' + (c.locAuto === false && c.locale === 'en' ? ' class="on"' : '') + '>English</button></div></div>' +
         '<div style="padding:12px 16px;"><div class="seg" id="currSeg">' +
@@ -5779,12 +5675,7 @@ async function mascotRunLoop(){
       h += '<p class="sec-s">Giao diện</p><div class="list"><div class="row"><span class="txt"><span class="t1" style="display:block;">Sáng / tối theo điện thoại</span></span></div>' +
         '<label class="row" style="cursor:pointer;"><span class="txt"><span class="t1" style="display:block;">Kính mờ kiểu iOS</span></span><input type="checkbox" class="switch" role="switch" aria-checked="' + (c.glass !== false ? 'true' : 'false') + '" id="glassSwitch"' + (c.glass !== false ? ' checked' : '') + ' /></label>' +
         '<div class="row" style="display:block;padding:12px 12px 4px;"><span class="t1" style="display:block;">Họa tiết nền</span><span class="t2" style="display:block;">Chọn 1 trong 8 theme — áp ngay cho cả app, lưu theo máy</span></div><div data-decor-picker></div></div>';
-      h += '<p class="sec-s">Bảng giá gói chụp</p><div class="list">' +
-        TYPES.filter(function(t){ return t !== 'Khác'; }).map(function(t){ return money('prices.' + t, t, c.prices[t]); }).join('') + '</div>' +
-        '';
-      h += '<p class="sec-s">Bảng giá film</p><div class="list">' +
-        TYPES.filter(function(t){ return t !== 'Khác'; }).map(function(t){ return money('pricesFilm.' + t, t, (c.pricesFilm || {})[t]); }).join('') + '</div>' +
-        '<p class="sec-f">Bạn tự điền giá film từng gói, để 0 là chưa đặt giá. Job chụp film dùng bảng này; job “Cả hai” cộng giá digital + giá film. Chưa đặt giá film thì tạo job film sẽ để trống giá để bạn tự gõ.</p>';
+
       h += '<p class="sec-s">Phụ phí</p><div class="list">' +
         money('extraHour', 'Thêm 1 giờ', c.extraHour) + money('extraLoc', 'Thêm 1 địa điểm', c.extraLoc) +
         money('retouch', 'Retouch / ảnh', c.retouch) + money('album', 'Album', c.album) + '</div>';
@@ -5796,7 +5687,6 @@ async function mascotRunLoop(){
         frow('Giao ảnh sau khi khách chọn (ngày)', '<input data-cfg="deliverDays" data-num="1" type="number" min="0" max="365" inputmode="numeric" value="' + esc(c.deliverDays) + '" />') + '</div>' +
         '';
 
-      h += '<p class="sec-s">Chuẩn bị đồ</p><div class="list"><button type="button" class="row" id="cfgPrep"><span class="ic bg-orange">' + I('list') + '</span><span class="txt"><span class="t1" style="display:block;">Danh sách đồ mẫu</span></span>' + chevSvg() + '</button></div>';
       h += '<p class="sec-s">Thiết bị &amp; khấu hao</p><div class="list">' + c.equipment.map(function(e){
         return '<button type="button" class="row" data-eq="' + e.id + '"><span class="ic bg-blue">' + I('cam') + '</span><span class="txt"><span class="t1 clip" style="display:block;">' + esc(e.name) + '</span><span class="t2" style="display:block;">' + fmt(e.price) + ' · dùng ' + esc(e.years) + ' năm</span></span><span class="val num">' + fmtTiny(depMonthly(e)) + '/tháng</span>' + chevSvg() + '</button>';
       }).join('') + '<button type="button" class="row act" data-eq="new"><span class="ic bg-accent">' + I('plus', 2.4) + '</span><span class="txt t1">Thêm máy, lens, đèn…</span></button></div>';
@@ -5832,11 +5722,11 @@ async function mascotRunLoop(){
        giữ nguyên id nên phần gắn sự kiện không đổi. */
     var setGroup = null;
     var SET_GROUPS = [
-      { k:'profile', ic:'person', col:'accent', t:'Hồ sơ studio', s:function(c){ return [c.studio || 'Chưa có tên studio', c.logo ? 'có logo' : '', socialCount(c) ? socialCount(c) + ' trang mạng xã hội' : ''].filter(Boolean).join(' · '); }, m:['Thông tin','Logo studio','Trang mạng xã hội'] },
+      { k:'profile', ic:'person', col:'accent', t:'Hồ sơ studio', s:function(c){ return [c.studio || 'Chưa có tên studio', c.logo ? 'có logo' : '', socialCount(c) ? socialCount(c) + ' trang mạng xã hội' : ''].filter(Boolean).join(' · '); }, m:['Thông tin','Logo studio','Ảnh bìa danh thiếp','Trang mạng xã hội'] },
       { k:'account', ic:'cal', col:'blue', t:'Tài khoản & kết nối', s:function(){ return [aLinked() ? 'Apple' : '', gLinked() ? 'Google' : '', fbLinked() ? 'Facebook' : ''].filter(Boolean).join(' + ') || 'Chưa đăng nhập'; }, m:['Tài khoản','Account','Facebook','Đăng nhập bằng Google','Lấy gì từ Google','Lịch hiển thị trong app','Nhập dữ liệu','Xoá tài khoản'] },
-      { k:'price', ic:'tag', col:'green', t:'Giá & cọc', s:function(c){ return 'Cọc ' + c.depositPct + '% · giao ' + c.deliverDays + ' ngày sau khi khách chọn'; }, m:['Bảng giá gói chụp','Bảng giá film','Phụ phí','Cọc &amp; giao ảnh'] },
+      { k:'price', ic:'tag', col:'green', t:'Giá & cọc', s:function(c){ return 'Cọc ' + c.depositPct + '% · giao ' + c.deliverDays + ' ngày sau khi khách chọn'; }, m:['Phụ phí','Cọc &amp; giao ảnh'] },
       { k:'msg', ic:'mail', col:'purple', t:'Tin nhắn & hợp đồng', s:function(){ return '5 mẫu tin nhắn · hợp đồng mẫu'; }, m:['Mẫu tin nhắn / email','Hợp đồng mẫu'] },
-      { k:'gear', ic:'cam', col:'orange', t:'Đồ nghề & chi phí', s:function(c){ return 'Đồ mẫu · ' + c.equipment.length + ' thiết bị · ' + c.fixed.length + ' khoản cố định'; }, m:['Chuẩn bị đồ','Thiết bị &amp; khấu hao','Chi cố định hằng tháng'] },
+      { k:'gear', ic:'cam', col:'orange', t:'Đồ nghề & chi phí', s:function(c){ return c.equipment.length + ' thiết bị · ' + c.fixed.length + ' khoản cố định'; }, m:['Thiết bị &amp; khấu hao','Chi cố định hằng tháng'] },
       { k:'look', ic:'bell', col:'orange', t:'Thông báo & hiển thị', s:function(c){ return (c.dailyNotif !== false && c.notifAsked ? 'Tổng kết 20:30 · ' : '') + (loc() === 'en' ? 'English' : 'Tiếng Việt') + ' · ' + curCode(); }, m:['Thông báo','Ngôn ngữ &amp; tiền tệ','Giao diện'] },
       { k:'security', ic:'person', col:'red', t:'Khoá Face ID', s:function(){ return (typeof lockCfg === 'function' && lockCfg()) ? 'Đang bật' : 'Đang tắt'; }, m:['Bảo mật'] },
       { k:'data', ic:'download', col:'green', t:'Sao lưu & dữ liệu', s:function(){ var lb = lsGet('troLyXeo.lastBackup'); return lb ? 'Sao lưu gần nhất ' + fmtRel(lb) : 'Chưa sao lưu lần nào'; }, m:['Sao lưu &amp; dữ liệu'] },
@@ -5942,10 +5832,10 @@ function setupDecorStep(c){
       setupDecorStep,
       function(c){ return '<div class="jd-head"><span class="ic lg bg-blue">' + I('globe') + '</span><h2>Trang mạng xã hội</h2><p>Khách bấm là tới trang của bạn — điền cái nào có thì điền</p></div>' + socialFields(c) + ''; },
       function(c){ var mv = function(v){ return v ? (+v).toLocaleString('vi-VN') : ''; };
-        return '<div class="jd-head"><span class="ic lg bg-green">' + I('tag') + '</span><h2>Giá & cọc</h2><p>App dùng để tự điền giá, tính cọc, hạn giao</p></div><div class="list">' +
+        return '<div class="jd-head"><span class="ic lg bg-green">' + I('tag') + '</span><h2>Cọc & giao ảnh</h2><p>Cọc trước và hạn giao ảnh — giá từng job nhập lúc tạo buổi chụp</p></div><div class="list">' +
         frow('Cọc trước (%)', '<input data-cfg="depositPct" data-num="1" type="number" min="0" max="100" inputmode="numeric" value="' + esc(c.depositPct) + '" />') +
         frow('Giao ảnh sau khi khách chọn (ngày)', '<input data-cfg="deliverDays" data-num="1" type="number" min="0" max="365" inputmode="numeric" value="' + esc(c.deliverDays) + '" />') +
-        ['Portrait','Couple','Wedding'].map(function(t){ return frow('Giá ' + t, '<input data-cfg="prices.' + t + '" data-money="1" inputmode="numeric" value="' + mv(c.prices[t]) + '" placeholder="0" />'); }).join('') + '</div>' +
+        '</div>' +
         ''; },
       function(c){ var lc = typeof lockCfg === 'function' && lockCfg(), appleAv = isNativeApp() && typeof window.__fotobroAppleAvailable === 'function' && window.__fotobroAppleAvailable();
         return '<div class="jd-head"><span class="ic lg bg-red">' + I('person') + '</span><h2>Kết nối & bảo mật</h2><p>Lịch chụp tự vào Google Lịch, app khoá bằng Face ID</p></div><div class="list">' +
@@ -6027,10 +5917,10 @@ function setupDecorStep(c){
       var s = out.join(' '); return s.charAt(0).toUpperCase() + s.slice(1) + ' đồng';
     }
     function moneyWords(n){ return fmt(n) + (curCode() === 'VND' ? ' (bằng chữ: ' + vnWords(n) + ')' : ''); }
-    function sampleContractJob(){ return { id:0, sampleCt:true, client:'Nguyễn Mai Anh', type:'Portrait', medium:'Digital', stage:'Đã chốt', shootDate:dstr(7), shootTime:'08:00', location:'Studio', price:priceFor('Portrait', 'Digital') || 2500000, phone:'0901 234 567', email:'maianh@email.com', note:'' }; }
+    function sampleContractJob(){ return { id:0, sampleCt:true, client:'Nguyễn Mai Anh', type:'Portrait', medium:'Digital', stage:'Đã chốt', shootDate:dstr(7), shootTime:'08:00', location:'Studio', price:3500000 /* muc 1: gia nhap tay theo job mau (khong lay tu bang gia co dinh) */, phone:'0901 234 567', email:'maianh@email.com', note:'' }; }
     function contractBlocks(j){
       var c = state.cfg, now = parseD(dstr(0)), B = [];
-      var dep = j.sampleCt ? depFor(j) : (jobDep(j) || depFor(j)), price = +j.price || 0;
+      var dep = j.sampleCt ? depFor(j) : (jobDep(j) || depFor(j)), price = jobTotal(j);
       function p(k, s){ B.push({ k:k, s:s }); }
       p('c1', 'CỘNG HOÀ XÃ HỘI CHỦ NGHĨA VIỆT NAM'); p('c2', 'Độc lập – Tự do – Hạnh phúc'); p('gap', '');
       p('t', 'HỢP ĐỒNG DỊCH VỤ CHỤP ẢNH'); p('c3', 'Số: ' + (j.id || 'MẪU') + '/' + now.getFullYear() + '/HĐCA'); p('gap', '');
@@ -6233,7 +6123,6 @@ function setupDecorStep(c){
         state.cfg.gCals = ids; saveLocal(); if (gToken()) gFetch(false); else toast('Đăng nhập lại để tải lịch vừa chọn', 'warn');
       }); });
       var cc2 = $('#cfgCal', b); if (cc2) cc2.addEventListener('click', function(){ openCalImport(); });
-      var cp2 = $('#cfgPrep', b); if (cp2) cp2.addEventListener('click', function(){ openPrepTemplates(); });
       /* v2.3b: sao lưu/khôi phục/xoá trong Cài đặt — gọi cùng hàm với tab Thêm. */
       var seb = $('#setExportBtn', b); if (seb) seb.addEventListener('click', function(){ downloadBackup(seb); });
       var sif = $('#setImportFile', b); if (sif) sif.addEventListener('change', function(){ var f = sif.files && sif.files[0]; if (f){ sif.value = ''; restoreBackupFile(f); } });
@@ -6257,6 +6146,10 @@ function setupDecorStep(c){
         img.src = URL.createObjectURL(f);
       });
       var lr = $('#logoRemove', b); if (lr) lr.addEventListener('click', function(){ setLogo(''); refreshSettings(); toast('Đã xoá logo', 'del'); });
+      /* Mục 4: input ảnh bìa giờ nằm trong Hồ sơ studio — input được tạo lại mỗi
+         lần mở nhóm nên bind ở đây (có cờ chống bind trùng) rồi vẽ lưới ảnh. */
+      var msf = $('#myShotFile', b);
+      if (msf){ if (!msf._shotBound){ msf._shotBound = true; msf.addEventListener('change', onMyShotFile); } if (typeof renderShots === 'function') renderShots(); }
       $$('[data-sg-open]', b).forEach(function(x){ x.addEventListener('click', function(){ showSetGroup(api, x.getAttribute('data-sg-open')); }); });
       $$('[data-sg-back]', b).forEach(function(x){ x.addEventListener('click', function(){ showSetGroup(api, null); refreshSettings(); }); });
       bindBrand(b);
@@ -6448,17 +6341,17 @@ function setupDecorStep(c){
       var J = [], T = [], id = 500000;
       function job(o){ var j = Object.assign({ id:++id, type:'Portrait', medium:'Digital', shootTime:'', location:'', deadline:'', price:0, phone:'', email:'', fbLink:'', msLink:'', driveLink:'', note:'', stageSince:dstr(-2), cancelled:false, demo:true }, o); J.push(j); return j; }
       function tx(j, kind, cat, amt, d){ T.push({ id:++id, kind:kind, category:cat, jobId:j ? j.id : '', amount:amt, date:dstr(d), method:'Chuyển khoản', note:'', src:'' }); }
-      var a = job({ client:'Lan Anh & Minh', type:'Couple', stage:'Đã chốt', shootDate:dstr(1), shootTime:'16:30', location:'Hồ Tây', deadline:dstr(15), price:4000000, phone:'0901234567' });
-      tx(a, 'thu', 'Cọc', 1600000, -6);
-      var b = job({ client:'Chị Thu Hà', stage:'Khách hỏi', shootDate:dstr(9), type:'Portrait', price:2500000 });
-      var c = job({ client:'Shop Mộc Linen', type:'Lookbook', stage:'Đang làm ảnh', shootDate:dstr(-5), shootTime:'09:00', location:'Studio Nắng', deadline:dstr(3), price:8000000, sneakSent:true, proofSentAt:dstr(-4), selectedAt:dstr(-4) });
-      tx(c, 'thu', 'Cọc', 3200000, -12); tx(c, 'chi', 'Người mẫu', 1500000, -5); tx(c, 'chi', 'Thuê studio / địa điểm', 800000, -5);
+      var a = job({ client:'Lan Anh & Minh', type:'Couple', stage:'Đã chốt', shootDate:dstr(1), shootTime:'16:30', location:'Hồ Tây', deadline:dstr(15), price:4200000, phone:'0901234567' });
+      tx(a, 'thu', 'Cọc', 1680000, -6);
+      var b = job({ client:'Chị Thu Hà', stage:'Khách hỏi', shootDate:dstr(9), type:'Portrait', price:2800000 });
+      var c = job({ client:'Shop Mộc Linen', type:'Lookbook', stage:'Đang làm ảnh', shootDate:dstr(-5), shootTime:'09:00', location:'Studio Nắng', deadline:dstr(3), price:8500000, sneakSent:true, proofSentAt:dstr(-4), selectedAt:dstr(-4) });
+      tx(c, 'thu', 'Cọc', 3400000, -12); tx(c, 'chi', 'Người mẫu', 1500000, -5); tx(c, 'chi', 'Thuê studio / địa điểm', 800000, -5);
       var d = job({ client:'Ngọc Trâm', stage:'Đang làm ảnh', shootDate:dstr(-3), shootTime:'07:00', location:'Đà Lạt', deadline:'', price:3000000, sneakSent:true, proofSentAt:dstr(-1) });
       tx(d, 'thu', 'Cọc', 1200000, -20); tx(d, 'chi', 'Makeup', 500000, -3);
-      var e = job({ client:'Đức & Mai', type:'Wedding', stage:'Đã giao', shootDate:dstr(-24), location:'Nhà hàng Sen', deadline:dstr(-4), price:15000000 });
-      tx(e, 'thu', 'Cọc', 6000000, -60); tx(e, 'thu', 'Tiền sau buổi chụp', 5000000, -24); tx(e, 'chi', 'Trợ lý', 1000000, -24);
-      var f = job({ client:'Bé Su', stage:'Xong', shootDate:dstr(-40), location:'Công viên', deadline:dstr(-26), price:2500000 });
-      tx(f, 'thu', 'Cọc', 1000000, -45); tx(f, 'thu', 'Tiền sau khi giao ảnh', 1500000, -26);
+      var e = job({ client:'Đức & Mai', type:'Wedding', stage:'Đã giao', shootDate:dstr(-24), location:'Nhà hàng Sen', deadline:dstr(-4), price:16000000 });
+      tx(e, 'thu', 'Cọc', 6400000, -60); tx(e, 'thu', 'Tiền sau buổi chụp', 5000000, -24); tx(e, 'chi', 'Trợ lý', 1000000, -24);
+      var f = job({ client:'Bé Su', stage:'Xong', shootDate:dstr(-40), location:'Công viên', deadline:dstr(-26), price:2600000 });
+      tx(f, 'thu', 'Cọc', 1040000, -45); tx(f, 'thu', 'Tiền sau khi giao ảnh', 1560000, -26);
       tx(null, 'chi', 'Phần mềm (Lightroom, Photoshop)', 250000, -8);
       return { jobs:J.reverse(), txs:T.reverse() };
     }
@@ -6550,13 +6443,13 @@ function setupDecorStep(c){
           (c.tagline && c.tagline !== 'portrait | lookbook | wedding' ? '<p class="wl-tag">' + esc(c.tagline) + '</p>' : '') + '</div>',
         '<div class="wl-in"><div class="wl-mini">' + STK('cam') + '</div><h2>Thanh dưới cùng</h2><p class="wl-sub">Bốn tab và một nút Ghi ở giữa, chạm là chuyển.</p><div class="list wl-list">' +
           guideRow('sun', 'orange', 'Hôm nay', 'Hôm nay chụp ai, hạn giao, khách còn thiếu — gọn trong một màn') +
-          guideRow('cam', 'accent', 'Buổi chụp', 'Mỗi khách một dòng, 6 bước từ Khách hỏi tới Xong, phần lớn tự chuyển, danh sách chuẩn bị đồ') +
+          guideRow('cam', 'accent', 'Buổi chụp', 'Mỗi khách một dòng, 6 bước từ Khách hỏi tới Xong, phần lớn tự chuyển') +
           guideRow('plus', 'accent', 'Nút Ghi (+)', 'Ghi buổi chụp mới, khoản thu, khoản chi từ bất cứ đâu') + guideRow('wallet', 'green', 'Tài chính', 'Ai còn thiếu tiền, sổ thu chi, lời từng job — app tự tính') +
           guideRow('person', 'purple', 'Phòng ban', 'Hỏi FotoBro, sáu phòng ban với việc cần làm, báo cáo cuối ngày. Cài đặt + sao lưu ở nút bánh răng') +
           '</div></div>',
         '<div class="wl-in"><div class="wl-mini">' + STK('party') + '</div><h2>Vài mẹo nhỏ</h2><p class="wl-sub">Biết mấy cái này là dùng như dân chuyên.</p><div class="list wl-list">' +
           guideRow('arrowr', 'gray', 'Chạm vào một dòng', 'Mở chi tiết: tiến độ, tiền, nhắn khách, lịch, Drive. Kéo xuống để đóng') +
-          guideRow('gear', 'gray', 'Bánh răng = Cài đặt', 'Giá gói, % cọc, số ngày giao ảnh, thiết bị, chi cố định, màu giao diện, nhập lịch') +
+          guideRow('gear', 'gray', 'Bánh răng = Cài đặt', '% cọc, số ngày giao ảnh, thiết bị, chi cố định, màu giao diện, nhập lịch') +
           guideRow('cal', 'red', 'Lịch chụp tự vào lịch', 'Đăng nhập Google là buổi chụp tự lưu vào Google Lịch. Có lịch sẵn trên iPhone thì Cài đặt → Nhập từ Lịch iPhone') +
           guideRow('download', 'green', 'Sao lưu mỗi tuần', 'Cài đặt → Sao lưu & dữ liệu → Tải bản sao lưu. Đổi máy thì mở lại file đó') +
           guideRow('heart', 'red', 'Dữ liệu là của bạn', 'Job và sổ tiền lưu trên điện thoại của bạn, không gửi lên máy chủ nào') + '</div></div>',
@@ -6763,13 +6656,13 @@ function setupDecorStep(c){
         if (!st || st.readCalendar !== 'granted') st = await Cal.requestPermissions({ permissions:['readCalendar'] });
         if (!st || st.readCalendar !== 'granted'){ toast('Chưa cho phép đọc Lịch iPhone — bật trong Cài đặt iPhone → FotoBro → Lịch', 'warn'); if (res) res.innerHTML = ''; return true; }
         var now = Date.now();
-        var r = await Cal.findEvents({ startDate:now, endDate:now + 30 * 86400000 });
+        var r = await Cal.findEvents({ startDate:now - 365 * 86400000, endDate:now + 365 * 86400000 });
         var raw = (r.events || []).map(nativeEventToRaw);
         processCalEvents(api, raw);
         return true;
       }catch(err){ toast('Chưa đọc được Lịch iPhone (' + (err && err.message ? String(err.message).slice(0, 60) : 'lỗi') + ')', 'warn'); if (res) res.innerHTML = ''; return true; }
     }
-    /* Lịch iPhone native — nhận sự kiện thô, lọc trùng, tích sẵn 30 ngày tới. */
+    /* Lịch iPhone native — nhận sự kiện thô, lọc trùng, tích sẵn 1 năm trước + 1 năm sau. */
     function processCalEvents(api, raw){
       var have = {};
       state.jobs.forEach(function(j){ if (j.calUid) have['u:' + j.calUid] = 1; have['k:' + norm(j.client) + '|' + j.shootDate] = 1; });
@@ -6784,22 +6677,22 @@ function setupDecorStep(c){
     var calImportEvents = [];
     var calImportRange = 'up';
     var calImportClearSample = false;
-    function calInRange(e){ return calImportRange === 'all' || (calImportRange === 'up' ? e.date >= dstr(0) : e.date >= addDays(dstr(0), -60)); }
+    function calInRange(e){ return calImportRange === 'all' || e.date >= dstr(0); }
     function renderCalList(api){
       var events = calImportEvents;
       var res = $('#calResult', api.body), shown = events.filter(calInRange), sel = events.filter(function(e){ return e.on && !e.dup; });
       api.el.querySelector('.sh-r').style.visibility = sel.length ? 'visible' : 'hidden';
       api.el.querySelector('.sh-r').textContent = sel.length ? 'Nạp ' + sel.length : 'Nạp';
-      if (!events.length){ res.innerHTML = '<p class="sec-f" style="text-align:center;margin-top:16px;">Chưa có sự kiện nào trong 30 ngày tới.</p>'; return; }
+      if (!events.length){ res.innerHTML = '<p class="sec-f" style="text-align:center;margin-top:16px;">Chưa có sự kiện nào trong 1 năm qua/tới.</p>'; return; }
       var h = '<p class="sec-s">Chọn buổi chụp để nạp</p>' +
-        '<div class="seg" id="calRange"><button type="button" data-r="up"' + (calImportRange === 'up' ? ' class="on"' : '') + '>Sắp tới</button><button type="button" data-r="60"' + (calImportRange === '60' ? ' class="on"' : '') + '>Từ 2 tháng trước</button><button type="button" data-r="all"' + (calImportRange === 'all' ? ' class="on"' : '') + '>Tất cả</button></div>' +
+        '<div class="seg" id="calRange"><button type="button" data-r="up"' + (calImportRange === 'up' ? ' class="on"' : '') + '>Sắp tới</button><button type="button" data-r="all"' + (calImportRange === 'all' ? ' class="on"' : '') + '>Tất cả (1 năm qua/tới)</button></div>' +
         '<div class="btn-row" style="margin-top:10px;"><button type="button" class="btn gray sm" id="calAll">Chọn hết</button><button type="button" class="btn gray sm" id="calNone">Bỏ chọn</button></div>';
       h += '<div class="list flat" style="margin-top:10px;">' + (shown.length ? shown.slice(0, 400).map(function(e){
         var sub = [fmtRel(e.date) + (e.time ? ' ' + e.time : ''), e.type, e.location].filter(Boolean).join(' · ');
         return '<div class="row' + (e.on && !e.dup ? ' done' : '') + '" style="padding-right:12px;' + (e.dup ? 'opacity:.5;' : '') + '"><button type="button" class="ck-tap" data-ek="' + e.k + '"' + (e.dup ? ' disabled' : '') + '><span class="chk">' + I('check', 3) + '</span><span class="txt"><span class="t1 clip" style="display:block;">' + esc(e.client) + '</span><span class="t2 clip" style="display:block;">' + esc(sub) + '</span></span></button>' +
           (e.dup ? '<span class="tagp tg-gray">Đã có</span>' : (e.repeat ? '<span class="tagp tg-orange">Lặp lại</span>' : '')) + '</div>';
       }).join('') : '<div class="empty-row muted">Không có sự kiện nào trong khoảng này.</div>') + '</div>';
-      h += '<p class="sec-f">' + events.length + ' sự kiện trong Lịch iPhone · đã chọn ' + sel.length + '. Sự kiện lặp lại (sinh nhật, họp…) không chọn sẵn. Loại chụp app tự đoán theo tên, giá điền theo Cài đặt — sửa lại trong từng buổi sau.</p>';
+      h += '<p class="sec-f">' + events.length + ' sự kiện trong Lịch iPhone · đã chọn ' + sel.length + '. Sự kiện lặp lại (sinh nhật, họp…) không chọn sẵn. Loại chụp app tự đoán theo tên, giá nhập tay theo từng buổi — sửa lại trong từng buổi sau.</p>';
       if (state.sample) h += '<div class="list" style="margin-top:12px;"><label class="row" style="cursor:pointer;"><span class="txt"><span class="t1" style="display:block;">Xoá dữ liệu mẫu trước khi nạp</span></span><input type="checkbox" class="switch" role="switch" aria-checked="' + (calImportClearSample ? 'true' : 'false') + '" id="calClear"' + (calImportClearSample ? ' checked' : '') + ' /></label></div>';
       res.innerHTML = h;
       $$('#calRange button', res).forEach(function(b){ b.addEventListener('click', function(){ calImportRange = b.getAttribute('data-r'); renderCalList(api); }); });
@@ -6815,12 +6708,12 @@ function setupDecorStep(c){
       var today = dstr(0);
       sel.forEach(function(e){
         var past = e.date < today;
-        state.jobs.push({ id:nid(), client:e.client, type:e.type, medium:'Digital', stage:past ? 'Đã chụp' : 'Đã chốt', shootDate:e.date, shootTime:e.time,
+        state.jobs.push({ id:nid(), client:e.client, type:e.type, medium:'Digital', stage:past ? 'Đã chụp' : 'Khách hỏi', shootDate:e.date, shootTime:e.time,
           location:e.location.slice(0, 200), deadline:state.cfg.deliverDays > 0 ? addDays(e.date, +state.cfg.deliverDays) : '',
-          price:state.cfg.prices[e.type] || 0, email:'', fbLink:'', msLink:'', driveLink:'', calUid:e.uid.slice(0, 200),
+          price:0, contact:'', exHour:0, exLoc:0, exRetouch:0, exAlbum:0, email:'', fbLink:'', msLink:'', driveLink:'', calUid:e.uid.slice(0, 200),
           note:(e.desc ? e.desc.slice(0, 1500) + '\n' : '') + 'Nhập từ Lịch iPhone' + (e.raw && e.raw !== e.client ? ': ' + e.raw.slice(0, 120) : '') });
       });
-      api.close(); renderAll(); go('jobs');
+      lsSet('troLyXeo.nativeCal', '1'); api.close(); renderAll(); go('jobs');
       celebrate('Đã nạp ' + sel.length + ' buổi chụp từ Lịch iPhone!', 'party');
     }
     /* Màn nhập lịch duy nhất của v1: Lịch iPhone native 1 chạm. Không còn
@@ -6979,6 +6872,12 @@ function setupDecorStep(c){
       if (state.cfg.apple.email && !state.cfg.apple.relay && !state.cfg.email){ state.cfg.email = state.cfg.apple.email; saveLocal(); }
       saveLocal(); renderAll(); refreshSettings();
       toast(tr('apple_signin_ok'), 'ok');
+      /* Mục 5a: đăng nhập Apple xong, tự mở nhập Lịch iPhone 1 lần (user vẫn
+         chọn sự kiện cần nạp — 1 chạm "Nạp"). */
+      if (isNativeApp() && isNativeCalendar() && !lsGet('troLyXeo.nativeCal') && !lsGet('troLyXeo.nativeCalAuto') && !document.querySelector('.sheet.on, .asheet')){
+        lsSet('troLyXeo.nativeCalAuto', '1');
+        setTimeout(openCalImport, 900);
+      }
     }
     function aDisconnect(){
       actionSheet({ title:tr('apple_signout_title'), msg:tr('apple_signout_msg'), actions:[{ label:tr('apple_signout'), destructive:true, fn:function(){
@@ -7122,7 +7021,7 @@ function setupDecorStep(c){
           return { id:cleanStr(c.id, 200), name:cleanStr(c.summaryOverride || c.summary, 80) || 'Lịch', color:/^#[0-9a-f]{6}$/i.test(c.backgroundColor || '') ? c.backgroundColor : '#4285F4', primary:!!c.primary, shown:c.selected !== false };
         });
         var chosen = gChosen(cals), evs = [];
-        var tMin = parseD(dstr(-7)).toISOString(), tMax = parseD(dstr(62)).toISOString();
+        var tMin = parseD(dstr(-365)).toISOString(), tMax = parseD(dstr(365)).toISOString(); /* mục 8: 1 năm trước + 1 năm sau */
         for (var i = 0; i < chosen.length && i < 12; i++){
           var c = chosen[i];
           var r = await gApi('/calendars/' + encodeURIComponent(c.id) + '/events?singleEvents=true&orderBy=startTime&maxResults=250&timeMin=' + encodeURIComponent(tMin) + '&timeMax=' + encodeURIComponent(tMax));
@@ -7155,8 +7054,8 @@ function setupDecorStep(c){
       var e = gEventById(id); if (!e) return;
       var acts = [{ label:'Thêm thành buổi chụp', fn:function(){
         var type = guessType(e.summary + ' ' + e.desc);
-        openJobForm(null, { client:cleanClient(e.summary), type:type, stage:e.date < dstr(0) ? 'Đã chụp' : 'Đã chốt', shootDate:e.date, shootTime:e.time,
-          location:e.location, price:state.cfg.prices[type] || 0, deadline:state.cfg.deliverDays > 0 ? addDays(e.date, +state.cfg.deliverDays) : '',
+        openJobForm(null, { client:cleanClient(e.summary), type:type, stage:e.date < dstr(0) ? 'Đã chụp' : 'Khách hỏi', shootDate:e.date, shootTime:e.time,
+          location:e.location, deadline:state.cfg.deliverDays > 0 ? addDays(e.date, +state.cfg.deliverDays) : '',
           note:(e.desc ? e.desc.slice(0, 1200) + '\n' : '') + 'Từ Google Lịch: ' + e.summary, calUid:e.uid || e.id });
       } }];
       if (e.link) acts.push({ label:'Mở trong Google Lịch', fn:function(){ window.open(e.link, '_blank'); } });
@@ -7173,7 +7072,17 @@ function setupDecorStep(c){
       box.classList.toggle('hidden', !showCal); $('#stageChips').classList.toggle('hidden', showCal); $('#jobList').classList.toggle('hidden', showCal);
       if (!showCal) return;
       var h = '', tok = gToken();
-      if (!googleClientId() || !gcal){
+      var nativeCal = lsGet('troLyXeo.nativeCal') === '1';
+      if (gcal){
+        var st = gState.loading ? 'Đang tải lịch…' : ('Google Lịch · cập nhật ' + agoText(gcal.fetchedAt));
+        h += '<div class="list" style="padding:12px 14px;display:flex;align-items:center;gap:10px;"><span class="ic round bg-blue">' + I('cal') + '</span><div style="flex:1;min-width:0;"><div class="b" style="font-size:0.9375rem;">' + esc(st) + '</div>' +
+          (gState.error ? '<div class="red" style="font-size:0.8125rem;">' + esc(gState.error) + '</div>' : (!tok ? '<div class="muted" style="font-size:0.8125rem;">Phiên đăng nhập đã hết hạn (Google chỉ cho giữ 1 giờ) — đang xem bản đã lưu.</div>' : '')) + '</div>' +
+          (tok ? '<button type="button" class="btn tint sm" id="gRefresh"' + (gState.loading ? ' disabled' : '') + '>Làm mới</button>' : '<button type="button" class="btn fill sm" id="gReconnect">Đăng nhập lại</button>') + '</div>';
+      } else if (nativeCal){
+        /* Mục 5c: đã nối Lịch iPhone thì chỉ hiện dòng gọn này — không hiện khung Google to nữa.
+           (Cờ này chỉ bật sau khi nhập native thật, nên không cần kiểm tra thêm isNativeApp.) */
+        h += '<div class="list" style="padding:12px 14px;display:flex;align-items:center;gap:10px;"><span class="ic round bg-blue">' + I('cal') + '</span><div style="flex:1;min-width:0;"><div class="b" style="font-size:0.9375rem;">Lịch iPhone đã kết nối</div><div class="muted" style="font-size:0.8125rem;">Buổi chụp đã nhập hiện trong dòng thời gian bên dưới.</div></div><button type="button" class="btn tint sm" id="calNativeMore">Nhập thêm</button></div>';
+      } else {
         /* v2.0 chưa có Client ID Google chung: KHÔNG hiện nút "Thiết lập kết nối"
            (bấm vào chỉ mở sheet chữ, không đăng nhập được — ngõ cụt). Chỉ hiện
            dòng "sẽ có ở bản sau" + link thường "Mở Google Lịch" (mở web, vẫn dùng được). */
@@ -7187,32 +7096,31 @@ function setupDecorStep(c){
             '<div class="b" style="font-size:1.1875rem;">Google Lịch sẽ có ở bản sau</div>' +
             '<p class="muted" style="font-size:0.9375rem;margin:6px 0 14px;">Hiện xem lịch hẹn chụp trong app ở dòng thời gian bên dưới.</p>' +
             '<a class="btn plain" href="https://calendar.google.com/" target="_blank" rel="noopener">Mở Google Lịch</a></div>';
-      } else {
-        var st = gState.loading ? 'Đang tải lịch…' : ('Google Lịch · cập nhật ' + agoText(gcal.fetchedAt));
-        h += '<div class="list" style="padding:12px 14px;display:flex;align-items:center;gap:10px;"><span class="ic round bg-blue">' + I('cal') + '</span><div style="flex:1;min-width:0;"><div class="b" style="font-size:0.9375rem;">' + esc(st) + '</div>' +
-          (gState.error ? '<div class="red" style="font-size:0.8125rem;">' + esc(gState.error) + '</div>' : (!tok ? '<div class="muted" style="font-size:0.8125rem;">Phiên đăng nhập đã hết hạn (Google chỉ cho giữ 1 giờ) — đang xem bản đã lưu.</div>' : '')) + '</div>' +
-          (tok ? '<button type="button" class="btn tint sm" id="gRefresh"' + (gState.loading ? ' disabled' : '') + '>Làm mới</button>' : '<button type="button" class="btn fill sm" id="gReconnect">Đăng nhập lại</button>') + '</div>';
       }
-      /* dòng thời gian 30 ngày: buổi chụp trong app + sự kiện Google */
+      /* Dòng thời gian 1 năm trước + 1 năm sau (mục 8): buổi chụp trong app +
+         sự kiện Google chưa nhập. Gom 1 lần theo ngày (không lặp 731 lần
+         qua gEventsOn) để không chậm khi lịch đông. */
+      var byDate = {};
+      state.jobs.forEach(function(j){ if (j.cancelled || !j.shootDate) return; (byDate[j.shootDate] = byDate[j.shootDate] || { js:[], gs:[] }).js.push(j); });
+      if (gcal && gcal.events.length) gcal.events.forEach(function(e){ if (!e.date || gImported(e)) return; (byDate[e.date] = byDate[e.date] || { js:[], gs:[] }).gs.push(e); });
       var days = [];
-      for (var k = 0; k <= 30; k++){
-        var d = dstr(k);
-        var js = state.jobs.filter(function(j){ return j.shootDate === d; }).sort(function(a, b){ return (a.shootTime || '') < (b.shootTime || '') ? -1 : 1; });
-        var gs = gEventsOn(d);
-        if (js.length || gs.length) days.push({ d:d, js:js, gs:gs });
+      for (var k = -365; k <= 365; k++){
+        var d = dstr(k), x = byDate[d];
+        if (x && (x.js.length || x.gs.length)) days.push({ d:d, js:x.js.sort(function(a, b){ return (a.shootTime || '') < (b.shootTime || '') ? -1 : 1; }), gs:x.gs });
       }
-      if (!days.length) h += '<div class="list" style="margin-top:12px;"><div class="empty-row muted">30 ngày tới chưa có lịch nào.</div></div>';
+      if (!days.length) h += '<div class="list" style="margin-top:12px;"><div class="empty-row muted">Chưa có lịch nào trong 1 năm qua/tới.</div></div>';
       days.forEach(function(x){
+        var past = x.d < dstr(0);
         var items = x.js.map(function(j){ return { t:j.shootTime || '', html:jobRow(j) }; }).concat(x.gs.map(function(e){ return { t:e.time || '', html:gRow(e) }; }))
           .sort(function(a, b){ return a.t < b.t ? -1 : (a.t > b.t ? 1 : 0); });
-        h += '<p class="sec-s">' + esc(fmtHeaderDate(x.d)) + '</p><div class="list">' + items.map(function(i){ return i.html; }).join('') + '</div>';
+        h += '<p class="sec-s"' + (past ? ' style="opacity:.55;"' : '') + '>' + esc(fmtHeaderDate(x.d)) + (past ? ' · đã qua' : '') + '</p><div class="list"' + (past ? ' style="opacity:.65;"' : '') + '>' + items.map(function(i){ return i.html; }).join('') + '</div>';
       });
-      if (gcal && gcal.events.length) h += '';
       box.innerHTML = h;
       bindRows(box); bindGev(box);
       var b1 = $('#gConnectBtn', box); if (b1) b1.addEventListener('click', function(){ gConnect(false); });
       var b3 = $('#gRefresh', box); if (b3) b3.addEventListener('click', function(){ gFetch(true); });
       var b4 = $('#gReconnect', box); if (b4) b4.addEventListener('click', function(){ gConnect(true); });
+      var b5 = $('#calNativeMore', box); if (b5) b5.addEventListener('click', function(){ openCalImport(); });
     }
     $$('#jobsSeg button').forEach(function(b){ b.addEventListener('click', function(){
       jobsMode = b.getAttribute('data-jm'); renderCal();
@@ -7238,9 +7146,9 @@ function setupDecorStep(c){
       var h = '<div class="pv">' +
         '<p class="pv-d">Cập nhật 21/11/2026 · FotoBro v' + (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '') + '</p>' +
         '<p class="pv-lead">' + 'FotoBro là trợ lý cho nhiếp ảnh gia tự do. Dữ liệu của bạn nằm trên điện thoại của bạn — và trên Google Lịch hoặc Lịch iPhone của chính bạn, nơi app tự lưu lịch chụp. FotoBro không có máy chủ riêng, không bán dữ liệu, không quảng cáo, không theo dõi bạn (không analytics, không SDK quảng cáo).' + '</p>' +
-        sec('1. App lưu gì, lưu ở đâu', ['Buổi chụp (khách, số điện thoại, email, link Facebook / Messenger của khách, loại chụp, lịch, địa điểm, giá, cọc, tiến độ, danh sách chuẩn bị đồ), sổ thu chi, mẫu tin nhắn, điều khoản hợp đồng.', 'Hồ sơ studio bạn tự điền: tên, tên studio, điện thoại, email, logo, link Facebook / Messenger / Instagram / Threads; ảnh trang chủ bạn tự chọn từ thư viện ảnh (tối đa 60 ảnh, app chỉ nhận đúng ảnh bạn chọn).', 'Tất cả nằm trong vùng nhớ riêng của app trên iPhone, chưa được mã hoá riêng khi lưu — an toàn hơn khi iPhone có đặt mật mã. App không đồng bộ lên đám mây nào.', 'App không lấy vị trí, không dùng micro, không đọc danh bạ iPhone.']) +
+        sec('1. App lưu gì, lưu ở đâu', ['Buổi chụp (khách, số điện thoại, email, link Facebook / Messenger của khách, loại chụp, lịch, địa điểm, giá, cọc, tiến độ), sổ thu chi, mẫu tin nhắn, điều khoản hợp đồng.', 'Hồ sơ studio bạn tự điền: tên, tên studio, điện thoại, email, logo, link Facebook / Messenger / Instagram / Threads; ảnh trang chủ bạn tự chọn từ thư viện ảnh (tối đa 60 ảnh, app chỉ nhận đúng ảnh bạn chọn).', 'Tất cả nằm trong vùng nhớ riêng của app trên iPhone, chưa được mã hoá riêng khi lưu — an toàn hơn khi iPhone có đặt mật mã. App không đồng bộ lên đám mây nào.', 'App không lấy vị trí, không dùng micro, không đọc danh bạ iPhone.']) +
         sec('2. Đăng nhập Apple / Google / Facebook', ['Đăng nhập Apple: app chỉ lưu trên máy mã định danh Apple, tên và email (có thể là email ẩn của Apple) để nhận diện bạn và điền sẵn tên.', 'Đăng nhập Google: app lấy tên, email và ảnh đại diện Google để làm hồ sơ của bạn, và chỉ xin quyền của tính năng bạn bật — mặc định là đọc và ghi Google Lịch. Gmail (mail báo tiền về, khách hỏi chụp), Danh bạ Google, tên thư mục Drive và gửi email chỉ được xin khi bạn bật từng tính năng; email cho khách chỉ gửi khi bạn bấm Gửi.', 'Đăng nhập Facebook (nếu bạn chọn): app chỉ lấy tên, email và ảnh đại diện Facebook để làm thẻ danh thiếp studio, lưu trên máy; dùng chế độ Limited Login nên Facebook không theo dõi bạn qua app. Không đọc bài đăng, ảnh hay bạn bè.', 'App nhớ đăng nhập Google để bạn khỏi đăng nhập lại; thông tin đăng nhập chỉ nằm trên máy bạn và được dùng để nói chuyện trực tiếp với Google, không qua máy chủ nào của chúng tôi.', 'Bấm “Ngắt kết nối”: FotoBro hết quyền vào tài khoản Google của bạn và xoá dữ liệu Google đã tải khỏi máy. Bấm “Đăng xuất Apple”: xoá thông tin Apple khỏi máy.']) +
-        sec('3. Lịch, nhắc lịch và thông báo', ['Buổi chụp có ngày được TỰ lưu vào lịch: đã đăng nhập Google (và bật “Ghi buổi chụp vào Google Lịch”) thì lưu Google Lịch, chưa thì lưu Lịch iPhone (iPhone hỏi quyền lần đầu). Sửa, huỷ, xoá buổi chụp thì sự kiện đổi theo. App chỉ sửa / xoá sự kiện do chính app tạo.', 'App chỉ đọc Lịch iPhone khi bạn bấm “Nhập từ Lịch iPhone”.', 'Thông báo nhắc trước buổi chụp 1 ngày (buổi gấp: trước 60 phút), nhắc hạn giao ảnh, và tổng kết mỗi tối 20:30 — tạo ngay trên máy, có thể hiện tên khách, giờ chụp và đồ cần chuẩn bị trên màn hình khoá. Tắt tổng kết trong app; tắt hẳn trong Cài đặt iPhone → Thông báo → FotoBro.', 'Khoá Face ID: việc nhận diện khuôn mặt do iOS làm, app không nhận được dữ liệu khuôn mặt.']) +
+        sec('3. Lịch, nhắc lịch và thông báo', ['Buổi chụp có ngày được TỰ lưu vào lịch: đã đăng nhập Google (và bật “Ghi buổi chụp vào Google Lịch”) thì lưu Google Lịch, chưa thì lưu Lịch iPhone (iPhone hỏi quyền lần đầu). Sửa, huỷ, xoá buổi chụp thì sự kiện đổi theo. App chỉ sửa / xoá sự kiện do chính app tạo.', 'App chỉ đọc Lịch iPhone khi bạn bấm “Nhập từ Lịch iPhone”.', 'Thông báo nhắc trước buổi chụp 1 ngày (buổi gấp: trước 60 phút), nhắc hạn giao ảnh, và tổng kết mỗi tối 20:30 — tạo ngay trên máy, có thể hiện tên khách và giờ chụp trên màn hình khoá. Tắt tổng kết trong app; tắt hẳn trong Cài đặt iPhone → Thông báo → FotoBro.', 'Khoá Face ID: việc nhận diện khuôn mặt do iOS làm, app không nhận được dữ liệu khuôn mặt.']) +
         sec('4. Chia sẻ với bên thứ ba', ['FotoBro không bán và không gửi dữ liệu của bạn cho bên thứ ba nào.', 'Các nút Gọi, Zalo, Messenger, Facebook, Email, Drive chỉ mở app hoặc trang đó khi bạn bấm (tin nhắn được chép sẵn để bạn tự dán). Nút “Tìm trên Facebook” gửi tên khách sang Facebook để tìm.', 'File Excel, hợp đồng PDF, danh thiếp và bản sao lưu chỉ đi tới nơi bạn chọn trong bảng chia sẻ của iPhone.']) +
         sec('5. Xoá tài khoản và dữ liệu', ['Trong app: Cài đặt → Tài khoản &amp; kết nối → “Xoá tài khoản &amp; toàn bộ dữ liệu”. App xoá mọi thứ trên máy (buổi chụp, thu chi, ảnh, hồ sơ, khoá app), đăng xuất Apple, thu hồi quyền Google, xoá nhắc lịch và sự kiện app đã tạo trên Lịch iPhone. Vì không có máy chủ, xoá xong là hết hẳn.', 'File sao lưu bạn đã tải về và sự kiện đã lưu trên Google Lịch thì bạn tự xoá. Gỡ app cũng xoá dữ liệu trong app.']) +
         sec('6. Trẻ em', ['App dành cho người lớn, không hướng tới trẻ dưới 13 tuổi và không cố ý thu thập dữ liệu của trẻ em.']) +
@@ -7485,7 +7393,7 @@ function setupDecorStep(c){
       var l = (gmail && gmail.leads || []).filter(function(x){ return x.id === id; })[0]; if (!l) return;
       var type = guessType(l.subject + ' ' + l.snippet), ct = contactFor(l.name, l.email);
       actionSheet({ title:l.name + ' · ' + l.email, msg:l.subject + (l.snippet ? '\n' + l.snippet : ''), actions:[
-        { label:'Tạo buổi chụp (Khách hỏi)…', fn:function(){ openJobForm(null, { client:l.name, email:l.email, phone:ct ? ct.p : '', type:type, stage:'Khách hỏi', price:state.cfg.prices[type] || 0, note:'Hỏi qua Gmail: ' + l.subject + (l.snippet ? '\n' + l.snippet : '') }); gSeenAdd(l.id); } },
+        { label:'Tạo buổi chụp (Khách hỏi)…', fn:function(){ openJobForm(null, { client:l.name, email:l.email, phone:ct ? ct.p : '', type:type, stage:'Khách hỏi', note:'Hỏi qua Gmail: ' + l.subject + (l.snippet ? '\n' + l.snippet : '') }); gSeenAdd(l.id); } },
         { label:'Mở trong Gmail', fn:function(){ window.open(gmailLink(l.thread), '_blank'); } },
         { label:'Không phải khách — bỏ qua', destructive:true, fn:function(){ gSeenAdd(l.id); renderAll(); toast('Đã bỏ qua', 'del'); } }
       ] });
@@ -7519,10 +7427,13 @@ function setupDecorStep(c){
       f.appendChild(dl); f.elements.client.setAttribute('list', 'gContactList');
       f.elements.client.addEventListener('change', function(){
         var c = contactFor(f.elements.client.value, ''); if (!c) return;
-        var filled = [];
-        if (c.p && f.elements.phone && !f.elements.phone.value){ f.elements.phone.value = c.p; filled.push('điện thoại'); }
-        if (c.e && !f.elements.email.value){ f.elements.email.value = c.e; filled.push('email'); }
-        if (filled.length) toast('Đã điền ' + filled.join(' + ') + ' từ danh bạ');
+        var ct = f.elements.contact, filled = [];
+        if (ct){
+          var lines = String(ct.value || '').split('\n').map(function(x){ return x.trim(); }).filter(Boolean);
+          if (c.p && lines.indexOf(c.p) < 0){ lines.push(c.p); filled.push('điện thoại'); }
+          if (c.e && lines.indexOf(c.e) < 0){ lines.push(c.e); filled.push('email'); }
+          if (filled.length){ ct.value = lines.join('\n'); toast('Đã điền ' + filled.join(' + ') + ' từ danh bạ'); }
+        }
       });
     }
 
@@ -7601,7 +7512,7 @@ function setupDecorStep(c){
 
     /* ---------- Ghi buổi chụp vào Google Lịch ---------- */
     function gEventBody(j){
-      var desc = [ 'Khách: ' + j.client, j.phone ? 'Điện thoại: ' + j.phone : '', j.email ? 'Email: ' + j.email : '', j.price ? 'Giá: ' + fmt(j.price) + ' · còn thiếu ' + fmt(jobOwe(j)) : '', j.note ? '\n' + j.note : '', '\n— FotoBro' ].filter(Boolean).join('\n');
+      var desc = [ 'Khách: ' + j.client, j.phone ? 'Điện thoại: ' + j.phone : '', j.email ? 'Email: ' + j.email : '', jobTotal(j) ? 'Giá: ' + fmt(jobTotal(j)) + ' · còn thiếu ' + fmt(jobOwe(j)) : '', j.note ? '\n' + j.note : '', '\n— FotoBro' ].filter(Boolean).join('\n');
       var b = { summary:'Chụp ' + jobTypeLabel(j) + ' — ' + j.client, location:j.location || '', description:desc.slice(0, 3000),
         reminders:{ useDefault:false, overrides:[{ method:'popup', minutes:1440 }, { method:'popup', minutes:60 }] } };
       if (j.shootTime){
@@ -7657,7 +7568,7 @@ function setupDecorStep(c){
     function mailCtx(j){
       var c = state.cfg, dep = depFor(j), depPaid = jobDep(j);
       return { ten:callName(j.client), type:jobTypeLabel(j), date:j.shootDate ? fmtDate(j.shootDate) : 'ngày mình hẹn', time:j.shootTime ? ' lúc ' + j.shootTime : '',
-        loc:j.location || 'mình sẽ chốt và báo bạn sau', price:j.price ? fmt(j.price) : 'theo gói mình đã báo', dep:dep ? fmt(dep) : '', depPaid:depPaid ? fmt(depPaid) : '', pct:c.depositPct,
+        loc:j.location || 'mình sẽ chốt và báo bạn sau', price:jobTotal(j) ? fmt(jobTotal(j)) : 'theo gói mình đã báo', dep:dep ? fmt(dep) : '', depPaid:depPaid ? fmt(depPaid) : '', pct:c.depositPct,
         paid:fmt(jobThu(j.id)), owe:fmt(jobOwe(j)), oweN:jobOwe(j), drive:j.driveLink || '', studio:c.studio || '',
         prepLine:j.shootDate === dstr(0) ? 'Chuẩn bị trang phục như đã hẹn và tới sớm 10–15 phút nha.' : 'Bạn nhớ ngủ sớm, chuẩn bị trang phục như đã hẹn và tới sớm 10–15 phút nha.',
         sign:(function(){ var l = [c.name, [c.studio, c.phone, c.email].filter(Boolean).join(' · ')].filter(Boolean).concat(mySocials().map(function(s){ return s.url.replace(/^https?:\/\/(www\.)?/, ''); })); return l.length ? '\n\n' + l.join('\n') : ''; })() };
@@ -7983,7 +7894,7 @@ function setupDecorStep(c){
       }
       var cnt = $('#myShotCount'); if (cnt) cnt.textContent = myShots.length ? myShots.length + ' ảnh · thẻ studio đổi ảnh bìa mỗi ngày' : 'Chọn vài ảnh đẹp nhất — thẻ studio đổi ảnh bìa mỗi ngày';
     }
-    $('#myShotFile').addEventListener('change', async function(e){
+    async function onMyShotFile(e){ /* muc 4: dat ten de bind lai khi input nam trong Cai dat */
       var input = e.target, files = Array.prototype.slice.call(input.files || []).filter(function(f){ return /^image\//.test(f.type) || /\.(jpe?g|png|heic|heif|webp)$/i.test(f.name); });
       input.value = '';
       if (!files.length) return;
@@ -7998,7 +7909,8 @@ function setupDecorStep(c){
       await loadMyShots();
       if (ok){ toast('Đã thêm ' + ok + ' ảnh vào app'); celebrate('Ảnh đẹp quá trời!', 'party'); }
       else toast('Chưa thêm được ảnh — máy có thể đang hết dung lượng', 'warn');
-    });
+    }
+    var _msf0 = $('#myShotFile'); if (_msf0) _msf0.addEventListener('change', onMyShotFile);
     var _rhp = renderHome;
     renderHome = function(){ _rhp(); renderShots(); };
     document.addEventListener('visibilitychange', function(){ if (!document.hidden) renderShots(); });   /* qua ngày mới là đổi ảnh */

@@ -63,52 +63,42 @@ async function loadDom(beforeParse) {
   t('source chứa fotobro-backup-', html.includes('fotobro-backup-'));
   t('source không chứa fotobro-sao-luu.json', !html.includes('fotobro-sao-luu.json'));
 
-  console.log('\n[1] Config mặc định người mới: trống + giá digital mặc định, film 0');
+  console.log('\n[1] Config mặc định người mới: trống, KHÔNG còn bảng giá cố định (mục 1)');
   const d0 = W.mergeCfg(null);
   eq('mergeCfg(null).name rỗng', d0.name, '');
   eq('mergeCfg(null).studio rỗng', d0.studio, '');
   eq('mergeCfg(null).instagram rỗng', d0.instagram, '');
-  eq('mergeCfg(null).prices Portrait=2.5tr', d0.prices.Portrait, 2500000);
-  eq('mergeCfg(null).prices Couple=4tr', d0.prices.Couple, 4000000);
-  eq('mergeCfg(null).prices Wedding=15tr', d0.prices.Wedding, 15000000);
-  eq('mergeCfg(null).prices Lookbook=8tr', d0.prices.Lookbook, 8000000);
-  eq('mergeCfg(null).prices Event=5tr', d0.prices.Event, 5000000);
-  eq('mergeCfg(null).pricesFilm Portrait=0', d0.pricesFilm.Portrait, 0);
-  eq('mergeCfg(null).pricesFilm Wedding=0', d0.pricesFilm.Wedding, 0);
+  t('mergeCfg(null) KHÔNG còn prices', d0.prices === undefined);
+  t('mergeCfg(null) KHÔNG còn pricesFilm', d0.pricesFilm === undefined);
+  t('KHÔNG còn hàm priceFor', typeof W.priceFor === 'undefined');
   eq('mergeCfg(null).extraHour=0', d0.extraHour, 0);
   eq('mergeCfg(null).depositPct giữ 40', d0.depositPct, 40);
   eq('mergeCfg(null).deliverDays giữ 14', d0.deliverDays, 14);
   eq('state.cfg mặc định name rỗng', W.state.cfg.name, '');
-  eq('state.cfg mặc định prices Wedding=15tr', W.state.cfg.prices.Wedding, 15000000);
+  t('state.cfg mặc định KHÔNG còn prices', W.state.cfg.prices === undefined);
 
-  console.log('\n[2] Dữ liệu cũ của Xèo vẫn giữ nguyên khi merge (không mất)');
+  console.log('\n[2] Dữ liệu cũ của Xèo vẫn giữ nguyên khi merge (không mất); bảng giá cũ bị bỏ (mục 1)');
   const dOld = W.mergeCfg({ name: 'Xèo', studio: 'Sadako Photography', instagram: 'xeonong',
     prices: { Portrait: 2500000, Couple: 4000000, Wedding: 15000000, Lookbook: 8000000, Event: 5000000 },
     pricesFilm: { Wedding: 20000000 } });
   eq('cfg cũ: name Xèo giữ', dOld.name, 'Xèo');
   eq('cfg cũ: studio Sadako giữ', dOld.studio, 'Sadako Photography');
   eq('cfg cũ: instagram xeonong giữ', dOld.instagram, 'xeonong');
-  eq('cfg cũ: giá digital Wedding giữ 15tr', dOld.prices.Wedding, 15000000);
-  eq('cfg cũ: giá film Wedding giữ 20tr', dOld.pricesFilm.Wedding, 20000000);
-  eq('cfg cũ: giá film Portrait về 0', dOld.pricesFilm.Portrait, 0);
+  t('cfg cũ: bảng prices cũ bị bỏ', dOld.prices === undefined);
+  t('cfg cũ: bảng pricesFilm cũ bị bỏ', dOld.pricesFilm === undefined);
   const dOld2 = W.mergeCfg({ name: 'Xèo', prices: { Portrait: 3000000 } });
-  eq('cfg cũ thiếu pricesFilm -> film 0', dOld2.pricesFilm.Couple, 0);
-  eq('cfg cũ: giá digital Portrait giữ 3tr', dOld2.prices.Portrait, 3000000);
-  eq('cfg cũ thiếu Wedding -> về mặc định 15tr', dOld2.prices.Wedding, 15000000);
+  t('cfg cũ có prices cũng bị bỏ', dOld2.prices === undefined);
+  const cdOld = W.cleanData({ jobs: [{ id: 1, client: 'Cu', type: 'Wedding', stage: 'Khách hỏi', price: 15000000, exHour: 500000 }], txs: [] });
+  eq('giá job cũ giữ nguyên qua cleanJob (không mất giá)', cdOld.jobs[0].price, 15000000);
+  eq('phụ phí job cũ giữ nguyên qua cleanJob', cdOld.jobs[0].exHour, 500000);
 
-  console.log('\n[3] priceFor: mặc định digital có giá, film 0, Cả hai cần cả 2 giá');
-  eq('mặc định Digital Portrait = 2.5tr', W.priceFor('Portrait', 'Digital'), 2500000);
-  eq('mặc định Digital Wedding = 15tr', W.priceFor('Wedding', 'Digital'), 15000000);
-  eq('mặc định Film Portrait = 0 (chưa đặt)', W.priceFor('Portrait', 'Film'), 0);
-  eq('mặc định Cả hai Portrait = 0 (film chưa đặt)', W.priceFor('Portrait', 'Cả hai'), 0);
-  W.state.cfg.prices.Portrait = 2500000; W.state.cfg.prices.Wedding = 15000000;
-  W.state.cfg.pricesFilm.Portrait = 3500000; W.state.cfg.pricesFilm.Wedding = 20000000;
-  eq('đã cấu hình Digital Portrait = 2.5tr', W.priceFor('Portrait', 'Digital'), 2500000);
-  eq('đã cấu hình Film Portrait = 3.5tr', W.priceFor('Portrait', 'Film'), 3500000);
-  eq('đã cấu hình Cả hai Portrait = 6tr', W.priceFor('Portrait', 'Cả hai'), 6000000);
-  eq('đã cấu hình Cả hai Wedding = 35tr', W.priceFor('Wedding', 'Cả hai'), 35000000);
-  W.state.cfg.pricesFilm.Couple = 0;
-  eq('Cả hai Couple thiếu giá film = 0', W.priceFor('Couple', 'Cả hai'), 0);
+  console.log('\n[3] Không còn priceFor / bảng giá: giá là giá riêng từng job (mục 1)');
+  t('priceFor đã gỡ hẳn', typeof W.priceFor === 'undefined');
+  t('mergeCfg(null) không có prices', W.mergeCfg(null).prices === undefined);
+  t('mergeCfg(null) không có pricesFilm', W.mergeCfg(null).pricesFilm === undefined);
+  const cjPrice = W.cleanData({ jobs: [{ id: 9, client: 'Khách Giá', type: 'Portrait', stage: 'Khách hỏi', price: 3500000 }], txs: [] });
+  eq('job giữ giá riêng 3.5tr qua cleanJob', cjPrice.jobs[0].price, 3500000);
+  eq('hợp đồng mẫu dùng giá tay 3.5tr (không từ bảng cố định)', W.sampleContractJob().price, 3500000);
 
   console.log('\n[4] Lời chào / tin nhắn / báo cáo theo tên trong Cài đặt');
   W.state.cfg.name = ''; W.state.cfg.studio = ''; W.state.cfg.instagram = '';
@@ -151,37 +141,37 @@ async function loadDom(beforeParse) {
   eq('job Film giữ Film', cd.jobs[1].medium, 'Film');
   eq('medium lạ -> Digital', cd.jobs[2].medium, 'Digital');
 
-  console.log('\n[7] Form thêm job: mặc định giá 0 -> để trống; đã cấu hình thì tự điền');
-  W.state.cfg.prices.Portrait = 0; W.state.cfg.prices.Wedding = 0; W.state.cfg.pricesFilm.Wedding = 0;
+  console.log('\n[7] Form thêm job: giá luôn nhập tay — không tự điền từ bảng giá cố định (mục 1, 9)');
   W.openJobForm(null);
   let form = doc.querySelector('#jobForm');
   t('form có select medium', !!form.querySelector('select[name="medium"]'));
   eq('medium có 3 lựa chọn', form.querySelector('select[name="medium"]').options.length, 3);
   eq('medium mặc định Digital', form.querySelector('select[name="medium"]').value, 'Digital');
   eq('giá mặc định Portrait khi chưa đặt giá -> trống', form.elements.price.value, '');
+  t('form mới KHÔNG có chọn bước (mục 9: auto Khách hỏi)', !form.querySelector('select[name="stage"]'));
   await closeSheet();
-  W.state.cfg.prices.Portrait = 2500000; W.state.cfg.prices.Wedding = 15000000;
-  W.state.cfg.pricesFilm.Portrait = 3500000; W.state.cfg.pricesFilm.Wedding = 20000000;
   W.openJobForm(null);
   form = lastForm();
-  eq('đã cấu hình: giá Portrait Digital 2.5tr', form.elements.price.value, '2.500.000');
+  eq('mở lại form mới: giá vẫn trống (không tự điền)', form.elements.price.value, '');
   const typeSel = form.querySelector('select[name="type"]');
   const medSel = form.querySelector('select[name="medium"]');
+  form.elements.price.value = '20.000.000'; fire(form.elements.price, 'input');
   setSel(typeSel, 'Wedding');
-  eq('đổi sang Wedding Digital -> 15tr', form.elements.price.value, '15.000.000');
+  eq('đổi sang Wedding: giá tay 20tr giữ nguyên', form.elements.price.value, '20.000.000');
   setSel(medSel, 'Film');
-  eq('đổi sang Film -> 20tr', form.elements.price.value, '20.000.000');
+  eq('đổi sang Film: giá tay 20tr giữ nguyên', form.elements.price.value, '20.000.000');
   setSel(medSel, 'Cả hai');
-  eq('đổi sang Cả hai -> 35tr', form.elements.price.value, '35.000.000');
+  eq('đổi sang Cả hai: giá tay 20tr giữ nguyên', form.elements.price.value, '20.000.000');
   await closeSheet();
 
-  console.log('\n[8] Lưu job film + cả hai qua form');
+  console.log('\n[8] Lưu job film + cả hai qua form (giá nhập tay, mục 1)');
   W.openJobForm(null);
   form = lastForm();
   form.elements.client.value = 'Lan';
   setSel(form.querySelector('select[name="type"]'), 'Wedding');
   setSel(form.querySelector('select[name="medium"]'), 'Film');
-  eq('form Lan Film tự điền 20tr', form.elements.price.value, '20.000.000');
+  form.elements.price.value = '20.000.000'; fire(form.elements.price, 'input');
+  eq('form Lan Film giá tay 20tr', form.elements.price.value, '20.000.000');
   await saveSheet();
   const lan = W.state.jobs[0];
   eq('job mới client Lan', lan.client, 'Lan');
@@ -193,13 +183,17 @@ async function loadDom(beforeParse) {
   t('msgFor Lan có Film', W.msgFor(lan).includes('Wedding — Film'));
   await sleep(400);
 
-  console.log('\n[9] Cài đặt: tên/studio đổi thì lời chào đổi; Bảng giá film đủ 5 ô');
+  console.log('\n[9] Cài đặt: tên/studio đổi thì lời chào đổi; KHÔNG còn bảng giá cố định (mục 1)');
   W.openSettings();
   await sleep(100);
   const _sheets9 = doc.querySelectorAll('.sheet .sheet-body');
   const st = _sheets9[_sheets9.length - 1];
-  t('Cài đặt có mục Bảng giá film', st.innerHTML.includes('Bảng giá film'));
-  t('Cài đặt có đủ 5 ô giá film', st.querySelectorAll('input[data-cfg^="pricesFilm."]').length === 5);
+  t('Cài đặt KHÔNG còn mục Bảng giá gói chụp', !st.innerHTML.includes('Bảng giá gói chụp'));
+  t('Cài đặt KHÔNG còn mục Bảng giá film', !st.innerHTML.includes('Bảng giá film'));
+  t('Cài đặt KHÔNG còn ô giá gói', st.querySelectorAll('input[data-cfg^="prices."]').length === 0);
+  t('Cài đặt KHÔNG còn ô giá film', st.querySelectorAll('input[data-cfg^="pricesFilm."]').length === 0);
+  t('Cài đặt còn mục Phụ phí', st.innerHTML.includes('Phụ phí'));
+  t('Cài đặt còn mục Cọc & giao ảnh', st.innerHTML.includes('Cọc &amp; giao ảnh'));
   const nameInp = st.querySelector('input[data-cfg="name"]');
   const studioInp = st.querySelector('input[data-cfg="studio"]');
   t('có ô nhập Tên gọi', !!nameInp);
@@ -210,23 +204,29 @@ async function loadDom(beforeParse) {
   studioInp.value = 'Lan Studio'; fire(studioInp, 'input');
   eq('nhập tên Lan -> cfg.name Lan', W.state.cfg.name, 'Lan');
   eq('nhập studio -> cfg.studio Lan Studio', W.state.cfg.studio, 'Lan Studio');
-  const filmInp = st.querySelector('input[data-cfg="pricesFilm.Wedding"]');
-  t('có ô nhập pricesFilm.Wedding', !!filmInp);
-  filmInp.value = '22.000.000'; fire(filmInp, 'input');
-  eq('nhập giá film Wedding -> cfg 22tr', W.state.cfg.pricesFilm.Wedding, 22000000);
+  const extraInp = st.querySelector('input[data-cfg="extraHour"]');
+  t('có ô nhập phụ phí thêm giờ', !!extraInp);
+  extraInp.value = '500.000'; fire(extraInp, 'input');
+  eq('nhập phụ phí thêm giờ -> cfg 500k', W.state.cfg.extraHour, 500000);
   await saveSheet();
   W.renderHome();
   eq('lưu Cài đặt xong: lời chào là Lan', doc.querySelector('#view-home .lt h1 em').textContent, 'Lan');
 
-  console.log('\n[10] Máy tính giá (Phòng Đón Khách)');
+  console.log('\n[10] Máy tính giá (Phòng Đón Khách): giá nhập tay, lấy giá job đang tư vấn (mục 1)');
   W.openDept('donkhach');
   await sleep(100);
   const _sheets10 = doc.querySelectorAll('.sheet .sheet-body');
   const dept = _sheets10[_sheets10.length - 1];
-  t('máy tính có ô Chụp bằng', !!dept.querySelector('#calcMedium'));
-  setSel(dept.querySelector('#calcPkg'), 'Wedding'); setSel(dept.querySelector('#calcMedium'), 'Cả hai');
-  t('Wedding Cả hai = 15+22=37tr', dept.querySelector('#calcOut').textContent.includes('37.000.000'),
+  t('máy tính có ô Giá job nhập tay', !!dept.querySelector('#calcPrice'));
+  t('máy tính KHÔNG còn chọn gói cố định', !dept.querySelector('#calcPkg'));
+  t('máy tính KHÔNG còn chọn Chụp bằng', !dept.querySelector('#calcMedium'));
+  const cp = dept.querySelector('#calcPrice');
+  cp.value = '15.000.000'; fire(cp, 'input');
+  t('giá tay 15tr -> tổng 15tr', dept.querySelector('#calcOut').textContent.includes('15.000.000'),
     dept.querySelector('#calcOut').textContent.split('\n')[0]);
+  const cj = dept.querySelector('#calcJob');
+  t('máy tính có chọn lấy giá job đang tư vấn', !!cj);
+  if (cj){ setSel(cj, W.state.jobs.find(function(j){ return j.client === 'Lan'; }).id); t('chọn job Lan -> giá 20tr', dept.querySelector('#calcPrice').value === '20.000.000', dept.querySelector('#calcPrice').value); }
   await closeSheet();
 
   console.log('\n[11] Giọng nói: thêm job film / cả hai / digital');
@@ -235,7 +235,7 @@ async function loadDom(beforeParse) {
   eq('voice film: client Lan Anh', j1.client, 'Lan Anh');
   eq('voice film: type Wedding', j1.type, 'Wedding');
   eq('voice film: medium Film', j1.medium, 'Film');
-  eq('voice film: giá 22tr', j1.price, 22000000);
+  eq('voice film: giá 0 (nhập tay sau, mục 1)', j1.price, 0);
   t('voice film: câu trả lời có Film', r1.includes('Film'));
   W.runCommand('thêm job couple cả hai cho Mai');
   const j2 = W.state.jobs[0];
@@ -244,17 +244,18 @@ async function loadDom(beforeParse) {
   W.runCommand('thêm job portrait cho An');
   const j3 = W.state.jobs[0];
   eq('voice digital: medium Digital', j3.medium, 'Digital');
-  eq('voice digital: giá 2.5tr', j3.price, 2500000);
+  eq('voice digital: giá 0 (nhập tay sau, mục 1)', j3.price, 0);
 
   console.log('\n[12] Sao lưu JSON + round-trip localStorage + dữ liệu cũ');
   const saved = JSON.stringify({ jobs: W.state.jobs, txs: W.state.txs, cfg: W.state.cfg });
-  t('JSON sao lưu có pricesFilm', saved.includes('"pricesFilm"'));
+  t('JSON sao lưu KHÔNG còn pricesFilm', !saved.includes('"pricesFilm"'));
+  t('JSON sao lưu KHÔNG còn bảng prices', !saved.includes('"prices"'));
   t('JSON sao lưu có medium Film', saved.includes('"medium":"Film"'));
-  W.state.cfg.pricesFilm.Event = 7000000;
+  W.state.cfg.extraHour = 700000;
   W.saveLocal();
-  W.state.cfg.pricesFilm.Event = 0;
+  W.state.cfg.extraHour = 0;
   W.loadLocal();
-  eq('save/load giữ giá film Event 7tr', W.state.cfg.pricesFilm.Event, 7000000);
+  eq('save/load giữ extraHour 700k', W.state.cfg.extraHour, 700000);
   const oldBackup = JSON.stringify({
     jobs: [{ id: 1, client: 'Cu', type: 'Wedding', stage: 'Khách hỏi', shootDate: '', shootTime: '', location: '', deadline: '', price: 15000000, phone: '', email: '', fbLink: '', msLink: '', driveLink: '', note: '' }],
     txs: [], sample: false,
@@ -262,8 +263,8 @@ async function loadDom(beforeParse) {
   });
   const { win: w2 } = await loadDom(w => { w.localStorage.setItem('troLyXeo.v1', oldBackup); });
   eq('dữ liệu cũ: job medium Digital', w2.jobMedium(w2.state.jobs[0]), 'Digital');
-  eq('dữ liệu cũ: pricesFilm toàn 0', Object.values(w2.state.cfg.pricesFilm).every(v => v === 0), true);
-  eq('dữ liệu cũ: giá digital Wedding giữ 15tr', w2.state.cfg.prices.Wedding, 15000000);
+  eq('dữ liệu cũ: job giữ giá riêng 15tr', w2.state.jobs[0].price, 15000000);
+  t('dữ liệu cũ: bảng prices cũ bị bỏ', w2.state.cfg.prices === undefined);
   eq('dữ liệu cũ: tên Xèo giữ nguyên', w2.state.cfg.name, 'Xèo');
   eq('dữ liệu cũ: studio Sadako giữ nguyên', w2.state.cfg.studio, 'Sadako Photography');
   t('dữ liệu cũ: jobRow không hiện Film', !w2.jobRow(w2.state.jobs[0]).includes('Film'));
@@ -454,8 +455,8 @@ async function loadDom(beforeParse) {
   t('B1: sổ Tiền bạc liệt kê Khách Xong còn thiếu', doc.querySelector('#oweList').textContent.includes('Khách Xong'));
   t('B1: sổ Tiền bạc không nói trả đủ khi còn thiếu', !doc.querySelector('#oweList').textContent.includes('trả đủ hết rồi'));
   t('B1: sổ Tiền bạc không liệt kê Khách Huỷ', !doc.querySelector('#oweList').textContent.includes('Khách Huỷ'));
-  t('B1: "Lời theo từng job" không có Khách Huỷ', !doc.querySelector('#jobProfit').textContent.includes('Khách Huỷ'));
-  t('B1: "Lời theo từng job" có Khách Xong thiếu 1.5tr', doc.querySelector('#jobProfit').textContent.includes('Khách Xong') && doc.querySelector('#jobProfit').textContent.includes('1.500.000'));
+  t('B1: "Lời theo từng job" không có Khách Huỷ', !doc.querySelector('#txList').textContent.includes('Khách Huỷ'));
+  t('B1: "Lời theo từng job" có Khách Xong thiếu 1.5tr', doc.querySelector('#txList').textContent.includes('Khách Xong') && doc.querySelector('#txList').textContent.includes('1.500.000'));
   t('B1: chi tiết job chưa ghi giá hiện "Chưa ghi giá"', W.jobDetailHTML(jNoPrice).includes('Chưa ghi giá'));
   t('B1: chi tiết job chưa ghi giá không nói "Đã thu đủ"', !W.jobDetailHTML(jNoPrice).includes('Đã thu đủ'));
   W.state.jobs = [jNoPrice]; W.state.txs = [];
@@ -556,9 +557,8 @@ async function loadDom(beforeParse) {
   console.log('\n[22] Hiển thị + Cài đặt: máy tính film, Sắp tới, Quyền riêng tư');
   t('source không còn "Giọng nói sẽ có ở bản v2.1"', !html.includes('Giọng nói sẽ có ở bản v2.1'));
   t('source không còn "Giọng nói sẽ có ở bản sau" (mic hỏi đã gỡ)', !html.includes('Giọng nói sẽ có ở bản sau'));
-  W.state.cfg.prices.Wedding = 15000000; W.state.cfg.pricesFilm.Wedding = 22000000;
-  t('calcPkgOptions Film hiện giá film 22tr', W.calcPkgOptions('Film').includes('Wedding — 22.000.000'));
-  t('calcPkgOptions Digital hiện giá digital 15tr', W.calcPkgOptions('Digital').includes('Wedding — 15.000.000'));
+  t('calcPkgOptions đã gỡ (máy tính dùng giá tay, mục 1)', typeof W.calcPkgOptions === 'undefined');
+  t('source không còn calcPkg/calcMedium', !html.includes('calcPkg') && !html.includes('calcMedium'));
   const cdDep = W.cleanData({ jobs: [{ id: 5, client: 'X', depPrompted: true }], txs: [] });
   eq('cleanData giữ cờ depPrompted', cdDep.jobs[0].depPrompted, true);
   W.state.jobs = [mk16('Khách Xa', 2500000, 'Khách hỏi', 0)];
@@ -607,7 +607,7 @@ async function loadDom(beforeParse) {
     t('A3: trợ lý "ai chưa trả tiền?" có Khách Xong', W.answer('ai chưa trả tiền?').includes('Khách Xong'));
     W.renderMoney(); W.renderHome();
     t('A4: sổ Tiền bạc liệt kê Khách Xong + 2.400.000', doc.querySelector('#oweList').textContent.includes('Khách Xong') && doc.querySelector('#oweList').textContent.includes('2.400.000'));
-    t('A5: "Lời theo từng job" có Khách Xong thiếu 2.400.000', doc.querySelector('#jobProfit').textContent.includes('Khách Xong') && doc.querySelector('#jobProfit').textContent.includes('2.400.000'));
+    t('A5: "Lời theo từng job" có Khách Xong thiếu 2.400.000', doc.querySelector('#txList').textContent.includes('Khách Xong') && doc.querySelector('#txList').textContent.includes('2.400.000'));
     t('A6: tile Hôm nay "Khách còn thiếu" hiện 6,4 triệu (2.4 Xong + 4 chạy)', doc.querySelector('#homeStats').textContent.includes('Khách còn thiếu') && doc.querySelector('#homeStats').textContent.includes('6,4') && doc.querySelector('#homeStats').textContent.includes('triệu'), doc.querySelector('#homeStats').textContent);
     t('A7: todayItems nhắc nợ job Xong', W.todayItems().some(function(it){ return it.title.includes('Khách Xong') && it.title.includes('còn thiếu 2.400.000'); }), JSON.stringify(W.todayItems().map(function(i){ return i.title; })));
 
@@ -631,7 +631,7 @@ async function loadDom(beforeParse) {
     t('C3: trợ lý "ai chưa trả tiền?" không có Khách Huỷ', !W.answer('ai chưa trả tiền?').includes('Khách Huỷ'));
     W.renderMoney();
     t('C4: sổ Tiền bạc không liệt kê Khách Huỷ', !doc.querySelector('#oweList').textContent.includes('Khách Huỷ'));
-    t('C5: "Lời theo từng job" không có Khách Huỷ', !doc.querySelector('#jobProfit').textContent.includes('Khách Huỷ'));
+    t('C5: "Lời theo từng job" không có Khách Huỷ', !doc.querySelector('#txList').textContent.includes('Khách Huỷ'));
 
     /* --- D. Chỉ còn job chưa ghi giá (giá 0) -> "Chưa ghi giá", không "trả đủ" --- */
     console.log('\n[D] Job giá 0 không tính là "trả đủ"');
@@ -787,61 +787,51 @@ async function loadDom(beforeParse) {
     eq('APP_VERSION 2.3', W.APP_VERSION, '2.3');
     eq('storage key giữ troLyXeo.v1', W.LS_KEY, 'troLyXeo.v1');
 
-    console.log('\n[1] Giá mặc định Digital (web v2.5), Film 0 = chưa đặt');
+    console.log('\n[1] Không còn bảng giá cố định (mục 1): giá theo từng job');
     const d0 = W.mergeCfg(null);
-    eq('mặc định Portrait 2.500.000', d0.prices.Portrait, 2500000);
-    eq('mặc định Couple 4.000.000', d0.prices.Couple, 4000000);
-    eq('mặc định Wedding 15.000.000', d0.prices.Wedding, 15000000);
-    eq('mặc định Lookbook 8.000.000', d0.prices.Lookbook, 8000000);
-    eq('mặc định Event 5.000.000', d0.prices.Event, 5000000);
-    eq('mặc định Film Portrait 0', d0.pricesFilm.Portrait, 0);
-    eq('mặc định Film Wedding 0', d0.pricesFilm.Wedding, 0);
-    eq('mặc định Film Couple 0', d0.pricesFilm.Couple, 0);
+    t('mặc định KHÔNG còn prices', d0.prices === undefined);
+    t('mặc định KHÔNG còn pricesFilm', d0.pricesFilm === undefined);
+    t('KHÔNG còn hàm priceFor', typeof W.priceFor === 'undefined');
 
-    console.log('\n[2] mergeCfg GIỮ giá người dùng đã lưu, không ghi đè bằng mặc định mới');
+    console.log('\n[2] mergeCfg GIỮ dữ liệu người dùng đã lưu; bảng giá cũ bị bỏ (mục 1)');
     const dOld = W.mergeCfg({ name: 'Xèo', prices: { Portrait: 3000000, Couple: 4500000 }, pricesFilm: { Wedding: 20000000 } });
-    eq('cfg cũ: Portrait giữ 3.000.000', dOld.prices.Portrait, 3000000);
-    eq('cfg cũ: Couple giữ 4.500.000', dOld.prices.Couple, 4500000);
-    eq('cfg cũ: Wedding digital về mặc định 15tr', dOld.prices.Wedding, 15000000);
-    eq('cfg cũ: Wedding film giữ 20.000.000', dOld.pricesFilm.Wedding, 20000000);
-    eq('cfg cũ: Film Portrait về 0', dOld.pricesFilm.Portrait, 0);
+    eq('cfg cũ: name Xèo giữ', dOld.name, 'Xèo');
+    t('cfg cũ: bảng prices cũ bị bỏ', dOld.prices === undefined);
+    t('cfg cũ: bảng pricesFilm cũ bị bỏ', dOld.pricesFilm === undefined);
 
-    console.log('\n[3] Tạo job Couple tự điền 4.000.000; đổi loại/hình thức thì giá theo bảng mới');
-    W.state.cfg.prices = { Portrait: 2500000, Couple: 4000000, Wedding: 15000000, Lookbook: 8000000, Event: 5000000 };
-    W.state.cfg.pricesFilm = { Portrait: 3500000, Couple: 2000000, Wedding: 20000000, Lookbook: 0, Event: 0 };
+    console.log('\n[3] Tạo job Couple: giá nhập tay, đổi loại/hình thức không tự điền lại (mục 1)');
     W.openJobForm(null);
     let form = lastForm();
-    eq('form mới: giá Portrait Digital 2.500.000', form.elements.price.value, '2.500.000');
+    eq('form mới: giá trống (không còn bảng giá cố định)', form.elements.price.value, '');
+    form.elements.price.value = '4.000.000'; fire(form.elements.price, 'input');
     setSel(form.querySelector('select[name="type"]'), 'Couple');
-    eq('đổi sang Couple Digital -> 4.000.000', form.elements.price.value, '4.000.000');
+    eq('đổi sang Couple: giá tay 4tr giữ nguyên', form.elements.price.value, '4.000.000');
     setSel(form.querySelector('select[name="medium"]'), 'Film');
-    eq('đổi sang Film -> 2.000.000', form.elements.price.value, '2.000.000');
+    eq('đổi sang Film: giá tay 4tr giữ nguyên', form.elements.price.value, '4.000.000');
     setSel(form.querySelector('select[name="medium"]'), 'Cả hai');
-    eq('đổi sang Cả hai -> 6.000.000', form.elements.price.value, '6.000.000');
+    eq('đổi sang Cả hai: giá tay 4tr giữ nguyên', form.elements.price.value, '4.000.000');
     setSel(form.querySelector('select[name="medium"]'), 'Digital');
-    eq('đổi lại Digital -> 4.000.000', form.elements.price.value, '4.000.000');
+    eq('đổi lại Digital: giá tay 4tr giữ nguyên', form.elements.price.value, '4.000.000');
     form.elements.client.value = 'Khách Couple';
     await saveSheet();
     const jCouple = W.state.jobs.find(j => j.client === 'Khách Couple');
     t('job Couple đã lưu', !!jCouple);
-    eq('job Couple lưu giá 4.000.000', jCouple && jCouple.price, 4000000);
+    eq('job Couple lưu giá 4.000.000 (nhập tay)', jCouple && jCouple.price, 4000000);
     await sleep(500);
 
-    console.log('\n[4] Tạo job mới với pre.type (vd từ Gmail): giá theo đúng loại, không nhầm Portrait');
+    console.log('\n[4] Tạo job mới với pre.type (vd từ Gmail): giá để trống, nhập tay (mục 1)');
     W.openJobForm(null, { client: 'Khách Gmail', type: 'Wedding' });
     form = lastForm();
-    eq('pre Wedding Digital -> 15.000.000', form.elements.price.value, '15.000.000');
+    eq('pre Wedding Digital -> giá trống', form.elements.price.value, '');
     await closeSheet();
     W.openJobForm(null, { client: 'Khách Film', type: 'Wedding', medium: 'Film' });
     form = lastForm();
-    eq('pre Wedding Film (đã đặt 20tr) -> 20.000.000', form.elements.price.value, '20.000.000');
+    eq('pre Wedding Film -> giá trống', form.elements.price.value, '');
     await closeSheet();
-    W.state.cfg.pricesFilm.Wedding = 0;
     W.openJobForm(null, { client: 'Khách Film Chưa Giá', type: 'Wedding', medium: 'Film' });
     form = lastForm();
     eq('pre Wedding Film chưa đặt giá -> để trống', form.elements.price.value, '');
     await closeSheet();
-    W.state.cfg.pricesFilm.Wedding = 20000000;
 
     console.log('\n[5] Cọc làm tròn thống nhất depFor (10.000đ) ở mẫu chat báo giá');
     eq('depFor(2.535.000đ) = 1.010.000', W.depFor({ price: 2535000 }), 1010000);
@@ -920,7 +910,7 @@ async function loadDom(beforeParse) {
     W.state.txs.unshift({ id: W.nid(), kind: 'chi', category: 'Thuê đèn', jobId: j.id, amount: 1150000, date: W.dstr(0), method: 'Tiền mặt', note: '', src: '' });
 
     W.renderMoney();
-    const profitTxt = doc.querySelector('#jobProfit').textContent;
+    const profitTxt = doc.querySelector('#txList').textContent;
     const txTxt = doc.querySelector('#txList').textContent;
     const statsHtml = doc.querySelector('#moneyStats').innerHTML;
 
@@ -1132,24 +1122,29 @@ async function loadDom(beforeParse) {
     await sleep(700);
     t('đã có cọc: form cọc KHÔNG mở', !doc.querySelector('#txForm'));
 
-    console.log('\n[B] Tạo job mới ở bước Đã chốt chưa có cọc -> hỏi nhập cọc sau khi lưu');
+    console.log('\n[B] Tạo job mới (auto Khách hỏi, mục 9) rồi sang Đã chốt -> hỏi nhập cọc');
     ({ win: W, doc } = await loadDom());
     W.openJobForm(null);
     let form = doc.querySelector('#jobForm');
     t('mở form thêm job', !!form);
+    t('form mới KHÔNG có chọn bước (mục 9)', !form.querySelector('select[name="stage"]'));
     form.elements.client.value = 'Khách Mới';
     setSel(form.querySelector('select[name="type"]'), 'Wedding');
-    eq('chọn Wedding -> giá tự điền 15tr', form.elements.price.value, '15.000.000');
-    setSel(form.querySelector('select[name="stage"]'), 'Đã chốt');
-    form.elements.shootDate.value = W.dstr(5); form.elements.shootTime.value = '08:00'; form.elements.location.value = 'Studio'; form.elements.phone.value = '0901234567'; // v2.4: qua Khách hỏi cần đủ thông tin
+    form.elements.price.value = '15.000.000'; fire(form.elements.price, 'input');
+    form.elements.shootDate.value = W.dstr(5); form.elements.shootTime.value = '08:00'; form.elements.location.value = 'Studio'; form.elements.contact.value = '0901234567'; // v2.4: qua Khách hỏi cần đủ thông tin (liên lạc giờ là ô ghi chú, mục 11)
     eq('ô cọc để trống', form.elements.deposit.value, '');
     lastSheetEl06(doc, '.sh-r').click();
     await sleep(900);
     const jm = W.state.jobs[0];
     eq('job mới đã lưu, client Khách Mới', jm && jm.client, 'Khách Mới');
-    eq('job mới ở bước Đã chốt', jm && jm.stage, 'Đã chốt');
-    eq('job mới giá 15tr', jm && jm.price, 15000000);
-    t('sau khi lưu: mở form hỏi nhập cọc', !!doc.querySelector('#txForm'));
+    eq('job mới auto ở bước Khách hỏi', jm && jm.stage, 'Khách hỏi');
+    eq('job mới giá 15tr (nhập tay)', jm && jm.price, 15000000);
+    eq('job mới lưu SĐT vào ô liên lạc', jm && jm.contact, '0901234567');
+    eq('job mới tách được SĐT từ ô liên lạc', jm && jm.phone, '0901234567');
+    W.setStage(jm, 'Đã chốt');
+    await sleep(700);
+    eq('chuyển bước: job sang Đã chốt', jm && jm.stage, 'Đã chốt');
+    t('sau khi sang Đã chốt: mở form hỏi nhập cọc', !!doc.querySelector('#txForm'));
     if (doc.querySelector('#txForm')) eq('form cọc gợi ý 6.000.000 (40% của 15tr)', doc.querySelector('#txForm').elements.amount.value, '6.000.000');
     t('form cọc có nút "Để sau"', !!doc.querySelector('#txDefer'));
     doc.querySelector('#txDefer').click();
@@ -1709,13 +1704,8 @@ async function loadDom(beforeParse) {
     t('"Thuê đèn" nằm trong nhóm "Chi cho buổi chụp"', (W.CHI_GROUPS['Chi cho buổi chụp'] || []).indexOf('Thuê đèn') >= 0);
     t('"Hoàn cọc" nằm trong nhóm "Chi khác"', (W.CHI_GROUPS['Chi khác'] || []).indexOf('Hoàn cọc') >= 0);
 
-    // Máy tính giá: giá film Wedding 6tr, giá digital 15tr
-    W.state.cfg.pricesFilm = { Portrait: 0, Couple: 0, Wedding: 6000000, Lookbook: 0, Event: 0 };
-    const filmOpts = W.calcPkgOptions('Film');
-    t('Film: nhãn Wedding hiện 6.000.000', filmOpts.includes('Wedding — 6.000.000'), filmOpts);
-    t('Film: nhãn Wedding KHÔNG hiện 15.000.000 (giá Digital)', !filmOpts.includes('15.000.000'), filmOpts);
-    const digOpts = W.calcPkgOptions('Digital');
-    t('Digital: nhãn Wedding hiện 15.000.000', digOpts.includes('Wedding — 15.000.000'), digOpts);
+    // Máy tính giá: không còn giá gói cố định — giá nhập tay (mục 1)
+    t('source không còn calcPkgOptions', !html.includes('calcPkgOptions'));
 
     // Form chi liệt kê đủ 2 hạng mục mới
     W.openTxForm({ kind: 'chi' });
@@ -2214,16 +2204,15 @@ async function loadDom(beforeParse) {
   t('4: Phòng Đón khách nhắc job chưa ghi giá dù đã có người nợ', W4.deptLines('donkhach').join(' ').includes('chưa ghi giá'));
   t('4: Phòng Tiền bạc nhắc job chưa ghi giá dù đã có người nợ', W4.deptLines('tienbac').join(' ').includes('chưa ghi giá'));
 
-  // [35e] Mục 5 — CHECKLISTS.Event + checkItems phòng thủ
+  // [35e] Mục 12 — checklist chuẩn bị đồ đã gỡ hẳn (fixer 21/11/2026)
   const g5c = await loadDom35();
   const W5c = g5c.win;
-  t('5: CHECKLISTS.Event có đồ event', Array.isArray(W5c.CHECKLISTS.Event) && W5c.CHECKLISTS.Event.length >= 6, JSON.stringify(W5c.CHECKLISTS.Event));
-  t('5: checklist Event nhắc timeline chương trình', W5c.checkItems('Event').join(' ').includes('Timeline chương trình'));
-  t('5: checklist Event nhắc khách VIP', W5c.checkItems('Event').join(' ').includes('khách VIP'));
-  let noCrash = true; let unk = null;
-  try { unk = W5c.checkItems('Kiểu lạ'); } catch (e) { noCrash = false; }
-  t('5: checkItems loại lạ không crash, trả mảng rỗng', noCrash && Array.isArray(unk) && unk.length === 0);
-  eq('5: listType Event không rơi về Portrait', W5c.listType('Event'), 'Event');
+  t('5: CHECKLISTS đã gỡ', typeof W5c.CHECKLISTS === 'undefined');
+  t('5: checkItems đã gỡ', typeof W5c.checkItems === 'undefined');
+  t('5: listType đã gỡ', typeof W5c.listType === 'undefined');
+  t('5: prepHTML/bindPrep đã gỡ', typeof W5c.prepHTML === 'undefined' && typeof W5c.bindPrep === 'undefined');
+  t('5: openPrepTemplates đã gỡ', typeof W5c.openPrepTemplates === 'undefined');
+  t('5: prepText vẫn giữ (nhắc kèm ghi chú)', typeof W5c.prepText === 'function');
 
   // [35f] Mục 6 — hàng Đăng nhập trên Hôm nay + reset authAsked khi ngắt kết nối
   const g6 = await loadDom35();
@@ -2290,13 +2279,14 @@ async function loadDom(beforeParse) {
   W8b.renderMoney();
   t('8: job đã hoàn cọc thì không nhắc nữa', !doc8b.querySelector('#oweList').textContent.includes('cọc chưa hoàn'));
 
-  // [35i] Mục 9 — "đã nhận X / Y" không ngắt dòng
+  // [35i] Mục 9 — "đã nhận X / Y" được xuống dòng (không nowrap) để không cắt chữ ở màn hẹp (sửa 21/11/2026)
   const g9 = await loadDom35();
   const W9 = g9.win, doc9 = g9.doc;
   mkJ35(W9, 'Khách Nợ', 2500000, 'Đã chốt', 1000000);
   W9.renderMoney();
-  const nw9 = doc9.querySelector('#oweList [style*="white-space:nowrap"]');
-  t('9: cụm "đã nhận X / Y" bọc trong span nowrap', !!nw9 && nw9.textContent.includes('đã nhận') && nw9.textContent.includes('1.000.000') && nw9.textContent.includes('2.500.000'), nw9 ? nw9.textContent : 'không có span');
+  const owe9 = doc9.querySelector('#oweList');
+  t('9: dòng còn thiếu hiện đủ "đã nhận 1.000.000 / 2.500.000"', owe9.textContent.includes('đã nhận') && owe9.textContent.includes('1.000.000') && owe9.textContent.includes('2.500.000'), owe9.textContent.slice(0, 200));
+  t('9: cụm "đã nhận X / Y" KHÔNG bọc nowrap (được xuống dòng, không cắt chữ)', !doc9.querySelector('#oweList [style*="white-space:nowrap"]'));
 
   // [35j] Mục 10 — tiêu đề/địa chỉ sự kiện Google xuống dòng đầy đủ
   const g10 = await loadDom35();
@@ -2591,9 +2581,8 @@ async function loadDom(beforeParse) {
   const jj = W.state.jobs.find(x => x.stage === 'Đã chốt');
   W.openJob(jj.id); await sleep(300);
   const sb = [...d.querySelectorAll('.sheet .sheet-body')].pop();
-  t('37: chi tiết job có Chuẩn bị đồ', !!sb.querySelector('#prepList'));
-  const inp = sb.querySelector('#prepAdd input'); inp.value = 'Quạt test 37'; sb.querySelector('#prepAdd button').click(); await sleep(100);
-  t('37: thêm món đọc đúng ô nhập (không trùng elements.item)', (jj.prep || []).includes('Quạt test 37'));
+  t('37: chi tiết job KHÔNG còn mục Chuẩn bị đồ (mục 12)', !sb.querySelector('#prepList') && !sb.querySelector('#prepAdd'));
+  t('37: chi tiết job không còn chữ "Chuẩn bị đồ"', !sb.textContent.includes('Chuẩn bị đồ'));
   t('37: chi tiết job có nút Hợp đồng', !![...d.querySelectorAll('.sheet [data-act="contract"]')].length);
   const tv = W.state.jobs.find(x => x.stage === 'Khách hỏi');
   W.setStage(tv, 'Đã chốt');
@@ -2739,7 +2728,7 @@ async function loadDom(beforeParse) {
     t('40: nền sau kính có gradient kem + 4 vệt màu', html.includes('linear-gradient(165deg, #FBF6EF 0%, #FAF0E6 55%, #F7EFE3 100%)') && html.includes('linear-gradient(165deg, #1D1712 0%, #171310 55%, #1C1418 100%)'));
     t('40: ô Thu = sage, ô Còn thiếu = peach', html.includes('.tile[data-tile="thu"]{ background:var(--tint-sage) !important; }') && html.includes('.tile[data-tile="owe"]{ background:var(--tint-peach) !important; }'));
     t('40: danh thiếp = sky, danh sách job = sky', html.includes('.idc{ background:var(--tint-sky); }') && html.includes('#todayList, html[data-glass="1"] #upcomingList, html[data-glass="1"] #jobList .list{ background:var(--tint-sky) !important; }'));
-    t('40: Tài chính sage/peach/sun, biểu đồ sky, còn thiếu/lời/sổ = lilac', html.includes('.msum-c:nth-child(1){ background:var(--tint-sage) !important; }') && html.includes('.msum-c:nth-child(3){ background:var(--tint-sun) !important; }') && html.includes('#moneyChart{ background:var(--tint-sky) !important; }') && html.includes('#oweList, html[data-glass="1"] #jobProfit, html[data-glass="1"] #txList .list{ background:var(--tint-lilac) !important; }'));
+    t('40: Tài chính sage/peach/sun, biểu đồ sky, còn thiếu/lời/sổ = lilac', html.includes('.msum-c:nth-child(1){ background:var(--tint-sage) !important; }') && html.includes('.msum-c:nth-child(3){ background:var(--tint-sun) !important; }') && html.includes('#moneyChart{ background:var(--tint-sky) !important; }') && html.includes('#oweList, html[data-glass="1"] #txList .list{ background:var(--tint-lilac) !important; }'));
     t('40: Phòng ban giữ màu riêng dạng kính (color-mix 55%)', html.includes('color-mix(in srgb, var(--kc, var(--k-cream)) 55%, transparent)'));
     t('40: tabbar blur 22px saturate 170% + viền kính', /html\[data-glass="1"\] \.tabbar\{[^}]*blur\(22px\) saturate\(170%\)/.test(html) && html.includes('border:1px solid var(--glass-border);'));
     t('40: fallback nền đặc khi không hỗ trợ blur', html.includes('@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px)))'));
@@ -3031,6 +3020,227 @@ async function loadDom(beforeParse) {
     /* --- (F) Reduced-motion: animation mascot tắt --- */
     t('43: reduced-motion tắt sway/cá/nảy của mascot',
       /@media \(prefers-reduced-motion: reduce\)[\s\S]{0,1500}\.mascot \.m-sway/.test(html));
+  }
+
+  console.log('\n[44] 14 mục 21/11/2026 — giá cố định, dark lối vào, phòng ban, ảnh bìa, lịch, biểu đồ, lời job, ±1 năm, form mới, tagline, splash');
+  {
+    /* --- (A) Mục 1: không còn bảng giá cố định --- */
+    t('44-1: source không còn "Bảng giá gói chụp"', !html.includes('Bảng giá gói chụp'));
+    t('44-1: source không còn "Bảng giá film"', !html.includes('Bảng giá film'));
+    t('44-1: source không còn money prices. trong Cài đặt', !html.includes("money('prices."));
+    t('44-1: source không còn data-cfg prices. (setup)', !html.includes('data-cfg="prices.'));
+    t('44-1: priceFor đã gỡ hẳn', typeof W.priceFor === 'undefined');
+    t('44-1: DEFAULT_CFG không còn prices/pricesFilm', W.mergeCfg(null).prices === undefined && W.mergeCfg(null).pricesFilm === undefined);
+    t('44-1: giá job cũ vẫn giữ qua cleanJob (không mất giá)', W.cleanData({ jobs: [{ id: 1, client: 'Cu', type: 'Wedding', price: 15000000, exHour: 500000 }], txs: [] }).jobs[0].price === 15000000);
+    t('44-1: hợp đồng mẫu dùng giá tay 3.5tr (không từ bảng cố định)', W.sampleContractJob().price === 3500000);
+
+    /* --- (B) Mục 2: dark lối vào --- */
+    t('44-2: có media query dark cho lớp voan decor', /@media \(prefers-color-scheme: dark\)\{\s*#decorLayer \.decor-bg/.test(html));
+    t('44-2: voan tối dùng rgba(46,38,28', html.includes('rgba(46,38,28,.52)'));
+    t('44-2: toast không còn đè nút trên (top 60px)', html.includes('top:calc(env(safe-area-inset-top, 0px) + 60px)'));
+
+    /* --- (C) Mục 3: 6 màn phòng ban --- */
+    const { win: W44, doc: D44 } = await loadDom();
+    DOC = D44;
+    const mk44 = (client, stage, days, extra) => { const j = Object.assign({ id: W44.nid(), client, type: 'Portrait', medium: 'Digital', stage, stageSince: W44.dstr(0), shootDate: W44.dstr(days), shootTime: '09:00', location: 'Studio', deadline: '', price: 2000000, phone: '', email: '', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false }, extra || {}); W44.state.jobs.unshift(j); return j; };
+    const jLead = mk44('Khách Hỏi 1', 'Khách hỏi', 5);
+    const jShoot = mk44('Khách Chụp Mai', 'Đã chốt', 1);
+    const jDone = mk44('Khách Đã Chụp', 'Đã chụp', -1);
+    const jEdit = mk44('Khách Đang Làm', 'Đang làm ảnh', -5);
+    W44.renderDepts();
+    t('44-3: 6 ô phòng ban có data-dept-open (không còn data-dfil)', D44.querySelectorAll('.dtile[data-dept-open]').length === 6 && D44.querySelectorAll('.dtile[data-dfil]').length === 0);
+    D44.querySelector('.dtile[data-dept-open="hauky"]').click(); await sleep(150);
+    let sh = [...D44.querySelectorAll('.sheet .sheet-body')].pop();
+    t('44-3: bấm ô Hậu kỳ mở màn quản lý', sh.textContent.includes('Gửi ảnh xem trước') && sh.textContent.includes('Chờ khách chọn'));
+    t('44-3: màn Hậu kỳ có đủ 4 bước giao ảnh', ['1 · Gửi ảnh xem trước', '2 · Gửi link chọn ảnh', '3 · Chờ khách chọn', '4 · Chỉnh & giao'].every(s => sh.textContent.includes(s)));
+    t('44-3: nút quay lại là "‹ Phòng ban"', D44.querySelector('.sheet .sh-l').textContent.includes('Phòng ban'));
+    await closeSheet();
+    D44.querySelector('.dtile[data-dept-open="donkhach"]').click(); await sleep(150);
+    sh = [...D44.querySelectorAll('.sheet .sheet-body')].pop();
+    t('44-3: bấm ô Đón khách mở màn tư vấn', sh.textContent.includes('Tính giá nhanh'));
+    t('44-3: máy tính trong màn tư vấn dùng giá tay', !!sh.querySelector('#calcPrice') && !sh.querySelector('#calcPkg'));
+    await closeSheet();
+    const nSheetsBefore = D44.querySelectorAll('.sheet').length;
+    W44.openDept('tienbac');
+    t('44-3: Tài chính nhảy thẳng sang tab (không mở màn riêng)', D44.querySelectorAll('.sheet').length === nSheetsBefore && D44.querySelector('#view-money').classList.contains('on'));
+    W44.renderDepts();
+    const taskRow = D44.querySelector('.dept-task[data-dtask="buoichup"]');
+    t('44-3: có dòng việc Lịch chụp bấm được', !!taskRow);
+    if (taskRow){ taskRow.click(); await sleep(150); sh = [...D44.querySelectorAll('.sheet .sheet-body')].pop(); t('44-3: bấm dòng việc mở màn Lịch chụp', sh.textContent.includes('Lịch chụp')); t('44-12: màn Lịch chụp không còn nhắc danh sách đồ', !sh.textContent.includes('Chuẩn bị đồ') && !sh.textContent.includes('danh sách đồ')); await closeSheet(); }
+
+    /* --- (D) Mục 4: ảnh bìa chỉ trong Hồ sơ studio --- */
+    t('44-4: tab Phòng ban không còn khối ảnh bìa', !D44.querySelector('#view-depts #myShots') && !D44.querySelector('#view-depts #myShotFile'));
+    W44.openSettings(); await sleep(150);
+    let st44 = [...D44.querySelectorAll('.sheet .sheet-body')].pop();
+    t('44-4: Cài đặt có mục Ảnh bìa danh thiếp', st44.innerHTML.includes('Ảnh bìa danh thiếp'));
+    t('44-4: chỉ có đúng 1 input ảnh bìa', D44.querySelectorAll('#myShotFile').length === 1);
+    await saveSheet(); /* Cài đặt chỉ có nút phải "Xong", không có nút trái */
+    await sleep(500); /* sheet gỡ khỏi DOM sau 420ms */
+    t('44-4: đóng Cài đặt thì không còn #myShots trong DOM', !D44.querySelector('#myShots'));
+
+    /* --- (E) Mục 5: lịch — dòng Lịch iPhone gọn, không khung Google to --- */
+    W44.localStorage.setItem('troLyXeo.nativeCal', '1');
+    W44.jobsMode = 'cal'; W44.renderCal();
+    const calHtml = D44.querySelector('#calView').innerHTML;
+    t('44-5: đã nối Lịch iPhone thì hiện dòng gọn', calHtml.includes('Lịch iPhone đã kết nối'));
+    t('44-5: đã nối Lịch iPhone thì KHÔNG hiện khung Google to', !calHtml.includes('Xem Google Lịch ngay trong app') && !D44.querySelector('#gConnectBtn'));
+    t('44-5: có nút Nhập thêm', !!D44.querySelector('#calNativeMore'));
+    t('44-5: source có tự mở nhập lịch sau đăng nhập Apple', html.includes('troLyXeo.nativeCalAuto') && html.includes('setTimeout(openCalImport, 900)'));
+    t('44-5: source có tự đồng bộ Google sau đăng nhập', html.includes('gSyncAll(true)'));
+
+    /* --- (F) Mục 6: biểu đồ tuần/tháng/năm --- */
+    const mkTx44 = (kind, amount, days) => W44.state.txs.unshift({ id: W44.nid(), kind, category: kind === 'thu' ? 'Cọc' : 'Thuê đèn', jobId: '', amount, date: W44.dstr(days), method: 'Chuyển khoản', note: '', src: '' });
+    mkTx44('thu', 1000000, 0); mkTx44('thu', 2000000, -10); mkTx44('chi', 500000, -40); mkTx44('thu', 5000000, -200);
+    W44.renderMoney();
+    const chartTxt = () => D44.querySelector('#moneyChart').textContent;
+    t('44-6: mặc định biểu đồ 6 tháng', chartTxt().includes('Thu chi 6 tháng qua'));
+    t('44-6: có bộ chọn tuần/tháng/năm', D44.querySelectorAll('#chartSeg button').length === 3);
+    D44.querySelector('#chartSeg button[data-cp="week"]').click();
+    t('44-6: chọn Tuần -> biểu đồ 7 ngày qua', chartTxt().includes('Thu chi 7 ngày qua'));
+    t('44-6: chọn Tuần -> tổng thu chỉ còn 1tr (7 ngày)', D44.querySelector('#moneyStats').textContent.includes('1.000.000'));
+    D44.querySelector('#chartSeg button[data-cp="year"]').click();
+    t('44-6: chọn Năm -> biểu đồ 12 tháng qua', chartTxt().includes('Thu chi 12 tháng qua'));
+    D44.querySelector('#chartSeg button[data-cp="month"]').click();
+    t('44-6: về Tháng -> biểu đồ 6 tháng qua', chartTxt().includes('Thu chi 6 tháng qua'));
+
+    /* --- (G) Mục 7: lời từng job trong sổ --- */
+    const jP = mk44('Khách Lời', 'Xong', -2, { price: 5000000 });
+    W44.state.txs.unshift({ id: W44.nid(), kind: 'thu', category: 'Cọc', jobId: jP.id, amount: 3200000, date: W44.dstr(0), method: 'Chuyển khoản', note: '', src: '' });
+    W44.state.txs.unshift({ id: W44.nid(), kind: 'chi', category: 'Thuê đèn', jobId: jP.id, amount: 1150000, date: W44.dstr(0), method: 'Tiền mặt', note: '', src: '' });
+    W44.renderMoney();
+    t('44-7: sổ thu chi có khối "Lời từng job"', D44.querySelector('#txList').textContent.includes('Lời từng job'));
+    t('44-7: khối lời có Khách Lời +2.050.000', D44.querySelector('#txList').textContent.includes('Khách Lời') && D44.querySelector('#txList').textContent.includes('+2.050.000'));
+    t('44-7: không còn mục riêng #jobProfit', !D44.querySelector('#jobProfit'));
+
+    /* --- (H) Mục 8: cửa sổ lịch ±1 năm --- */
+    t('44-8: Google fetch 1 năm trước', html.includes('dstr(-365)'));
+    t('44-8: Google fetch 1 năm sau', html.includes('dstr(365)'));
+    t('44-8: EventKit 1 năm trước/sau', html.includes('now - 365 * 86400000') && html.includes('now + 365 * 86400000'));
+    t('44-8: timeline lịch ±365 ngày', html.includes('for (var k = -365; k <= 365; k++)'));
+    const jOld = mk44('Khách 200 Ngày Trước', 'Đã chụp', -200);
+    const jFut = mk44('Khách 200 Ngày Sau', 'Đã chốt', 200);
+    W44.jobsMode = 'cal'; W44.renderCal();
+    const calTxt = D44.querySelector('#calView').textContent;
+    t('44-8: lịch hiện buổi 200 ngày trước', calTxt.includes('Khách 200 Ngày Trước'));
+    t('44-8: lịch hiện buổi 200 ngày sau', calTxt.includes('Khách 200 Ngày Sau'));
+
+    /* --- (I) Mục 9+10+11: form mới --- */
+    W44.openJobForm(null); await sleep(100);
+    let f44 = lastForm();
+    t('44-9: form mới không có chọn bước', !f44.querySelector('select[name="stage"]'));
+    t('44-10: form mới có ô giá', !!f44.querySelector('input[name="price"]'));
+    t('44-10: form mới có đủ 4 ô phụ phí', ['exHour', 'exLoc', 'exRetouch', 'exAlbum'].every(n => !!f44.querySelector('input[name="' + n + '"]')));
+    t('44-11: form mới có ô liên lạc tự do', !!f44.querySelector('textarea[name="contact"]'));
+    t('44-11: form mới KHÔNG còn ô SĐT/Email/Facebook/Messenger riêng', !f44.querySelector('input[name="phone"]') && !f44.querySelector('input[name="email"]') && !f44.querySelector('input[name="fbLink"]') && !f44.querySelector('input[name="msLink"]'));
+    t('44-12: form mới KHÔNG còn mục chuẩn bị đồ', !f44.querySelector('#jfPrep'));
+    f44.elements.client.value = 'Khách Form Mới';
+    f44.elements.price.value = '4.000.000'; fire(f44.elements.price, 'input');
+    f44.elements.exHour.value = '500.000'; fire(f44.elements.exHour, 'input');
+    f44.elements.exRetouch.value = '300.000'; fire(f44.elements.exRetouch, 'input');
+    f44.elements.contact.value = '0901 234 567\nfacebook.com/khachmoi';
+    f44.elements.note.value = 'Mang theo đèn pin';
+    await saveSheet();
+    const jNew = W44.state.jobs.find(j => j.client === 'Khách Form Mới');
+    t('44-9: job mới auto ở Khách hỏi', jNew && jNew.stage === 'Khách hỏi');
+    eq('44-10: job mới lưu giá 4tr', jNew && jNew.price, 4000000);
+    eq('44-10: job mới lưu phụ phí giờ thêm', jNew && jNew.exHour, 500000);
+    eq('44-10: job mới lưu phụ phí retouch', jNew && jNew.exRetouch, 300000);
+    eq('44-10: jobTotal = giá + phụ phí', jNew && W44.jobTotal(jNew), 4800000);
+    t('44-11: job mới lưu nguyên ô liên lạc', jNew && jNew.contact === '0901 234 567\nfacebook.com/khachmoi');
+    eq('44-11: tách được SĐT từ ô liên lạc', jNew && jNew.phone, '0901234567');
+    t('44-11: tách được link Facebook từ ô liên lạc', jNew && (jNew.fbLink || '').includes('facebook.com/khachmoi'));
+    W44.openJobForm(jNew); await sleep(100);
+    f44 = lastForm();
+    t('44-9: form sửa vẫn có chọn bước', !!f44.querySelector('select[name="stage"]'));
+    t('44-10: form sửa hiện lại phụ phí đã lưu', f44.elements.exHour.value === '500.000');
+    t('44-11: form sửa hiện lại ô liên lạc đã lưu', f44.elements.contact.value === '0901 234 567\nfacebook.com/khachmoi');
+    await closeSheet();
+
+    /* --- (J) Mục 12: không còn chuẩn bị đồ --- */
+    t('44-12: chi tiết job không còn prepHTML', !W44.jobDetailHTML(jNew).includes('prepList'));
+    W44.openJob(jNew.id); await sleep(150);
+    let sb44 = [...D44.querySelectorAll('.sheet .sheet-body')].pop();
+    t('44-12: chi tiết job không có #prepList', !sb44.querySelector('#prepList'));
+    await closeSheet();
+    t('44-12: source không còn mục Chuẩn bị đồ trong Cài đặt', !html.includes('<p class="sec-s">Chuẩn bị đồ</p>'));
+
+    /* --- (K) Mục 13: tagline thắng specialty, lưu bền --- */
+    const { win: W44b, doc: D44b } = await loadDom();
+    DOC = D44b;
+    const mk44b = (client, type) => { const j = { id: W44b.nid(), client, type, medium: 'Digital', stage: 'Khách hỏi', stageSince: W44b.dstr(0), shootDate: W44b.dstr(3), shootTime: '09:00', location: 'Studio', deadline: '', price: 2000000, phone: '', email: '', fbLink: '', msLink: '', driveLink: '', note: '', cancelled: false }; W44b.state.jobs.unshift(j); return j; };
+    mk44b('Khách Couple 1', 'Couple'); mk44b('Khách Couple 2', 'Couple');
+    W44b.state.cfg.name = 'Xèo'; W44b.state.cfg.studio = 'Xèo nọng'; W44b.saveLocal(); W44b.renderHome();
+    t('44-13: chưa sửa giới thiệu -> thẻ hiện chuyên Couple (auto)', D44b.querySelector('#view-home .idc-sub').textContent.includes('chuyên Couple'));
+    W44b.openSettings(); await sleep(150);
+    st44 = [...D44b.querySelectorAll('.sheet .sheet-body')].pop();
+    const tagInp = st44.querySelector('input[data-cfg="tagline"]');
+    tagInp.value = 'Chụp ảnh cưới & gia đình'; fire(tagInp, 'input');
+    eq('44-13: sửa giới thiệu -> cfg.tagline mới', W44b.state.cfg.tagline, 'Chụp ảnh cưới & gia đình');
+    await saveSheet(); /* Cài đặt chỉ có nút phải "Xong", không có nút trái */
+    W44b.renderHome();
+    t('44-13: thẻ Hôm nay hiện giới thiệu mới', D44b.querySelector('#view-home .idc-sub').textContent.includes('Chụp ảnh cưới & gia đình'));
+    t('44-13: thẻ Hôm nay KHÔNG còn chuyên Couple', !D44b.querySelector('#view-home .idc-sub').textContent.includes('chuyên Couple'));
+    W44b.saveLocal(); /* ghi ngay — setCfg dùng saveLocalSoon debounce 300ms, đọc liền sẽ thiếu tagline mới */
+    const saved44 = W44b.localStorage.getItem('troLyXeo.v1');
+    const w2 = await loadDom(w => { w.localStorage.setItem('troLyXeo.v1', saved44); });
+    t('44-13: reload vẫn còn giới thiệu mới', w2.doc.querySelector('#view-home .idc-sub').textContent.includes('Chụp ảnh cưới & gia đình'));
+
+    /* --- (L) Mục 14: splash dark không còn nền trắng --- */
+    const zlib = require('zlib');
+    function pngPixels(buf){
+      let pos = 8, w = 0, h = 0, bitDepth = 0, colorType = 0; const idats = [];
+      while (pos < buf.length){
+        const len = buf.readUInt32BE(pos); const type = buf.toString('ascii', pos + 4, pos + 8);
+        if (type === 'IHDR'){ w = buf.readUInt32BE(pos + 8); h = buf.readUInt32BE(pos + 12); bitDepth = buf[pos + 16]; colorType = buf[pos + 17]; }
+        if (type === 'IDAT') idats.push(buf.slice(pos + 8, pos + 8 + len));
+        if (type === 'IEND') break;
+        pos += 12 + len;
+      }
+      const raw = zlib.inflateSync(Buffer.concat(idats));
+      const ch = colorType === 2 ? 3 : colorType === 6 ? 4 : colorType === 0 ? 1 : 0;
+      if (bitDepth !== 8 || !ch) return null;
+      const stride = w * ch, px = Buffer.alloc(w * h * ch);
+      let p = 0;
+      for (let y = 0; y < h; y++){
+        const f = raw[p++];
+        for (let x = 0; x < stride; x++){
+          const v = raw[p++];
+          const a = x >= ch ? px[y * stride + x - ch] : 0;
+          const b = y > 0 ? px[(y - 1) * stride + x] : 0;
+          const c = (x >= ch && y > 0) ? px[(y - 1) * stride + x - ch] : 0;
+          let r;
+          if (f === 0) r = v; else if (f === 1) r = (v + a) & 255; else if (f === 2) r = (v + b) & 255;
+          else if (f === 3) r = (v + ((a + b) >> 1)) & 255;
+          else { const pa = Math.abs(b - c), pb = Math.abs(a - c), pc = Math.abs(a + b - 2 * c); const pr = (pa <= pb && pa <= pc) ? a : ((pb <= pc) ? b : c); r = (v + pr) & 255; }
+          px[y * stride + x] = r;
+        }
+      }
+      return { w, h, ch, get:function(x, y){ const o = (y * w + x) * ch; return [px[o], px[o + 1], px[o + 2]]; }, alpha:function(x, y){ const o = (y * w + x) * ch; return ch === 4 ? px[o + 3] : 255; } };
+    }
+    const splashDir = path.join(__dirname, 'ios', 'App', 'App', 'Assets.xcassets', 'Splash.imageset');
+    const dark = pngPixels(fs.readFileSync(path.join(splashDir, 'Default@3x~universal~anyany-dark.png')));
+    t('44-14: đọc được PNG splash tối 2732x2732', !!dark && dark.w === 2732 && dark.h === 2732);
+    if (dark){
+      const corner = (x, y) => dark.get(x, y).join(',');
+      t('44-14: 4 góc splash tối đều đen (0,0,0)', [corner(0, 0), corner(2731, 0), corner(0, 2731), corner(2731, 2731)].join('|') === '0,0,0|0,0,0|0,0,0|0,0,0');
+      let white = 0, sampled = 0;
+      for (let y = 0; y < 2732; y += 16) for (let x = 0; x < 2732; x += 16){ const p = dark.get(x, y); sampled++; if (p[0] >= 242 && p[1] >= 242 && p[2] >= 242) white++; }
+      t('44-14: tỉ lệ điểm gần trắng ở splash tối < 1%', white / sampled < 0.01, 'white=' + white + '/' + sampled);
+      t('44-14: giữa splash tối có logo (không phải toàn đen)', dark.get(1366, 1366).join(',') !== '0,0,0');
+    }
+    const light = pngPixels(fs.readFileSync(path.join(splashDir, 'Default@3x~universal~anyany.png')));
+    t('44-14: splash sáng vẫn nền trắng', !!light && light.get(0, 0).join(',') === '255,255,255' && light.get(2731, 2731).join(',') === '255,255,255');
+    const contents = JSON.parse(fs.readFileSync(path.join(splashDir, 'Contents.json'), 'utf-8'));
+    t('44-14: Contents.json khai báo 3 bản dark', contents.images.filter(i => (i.appearances || []).some(a => a.value === 'dark')).length === 3);
+    const gen = fs.readFileSync(path.join(__dirname, 'assets', 'logo-v9', 'build-icon-v9.py'), 'utf-8');
+    t('44-14: generator splash tối tách nền trắng (logo_transparent)', gen.includes('def logo_transparent') && gen.includes('(0, 0, 0)'));
+    /* --- (M) Mục 2: icon-192.png nền trong suốt (fixer 21/11/2026) --- */
+    const icon = pngPixels(fs.readFileSync(path.join(__dirname, 'www', 'icon-192.png')));
+    t('44-2: icon-192.png 192x192 RGBA (nền trong suốt)', !!icon && icon.w === 192 && icon.h === 192 && icon.ch === 4);
+    if (icon){
+      t('44-2: 4 góc icon-192 trong suốt (alpha 0)', [icon.alpha(0, 0), icon.alpha(191, 0), icon.alpha(0, 191), icon.alpha(191, 191)].join('|') === '0|0|0|0');
+      t('44-2: giữa icon có logo (không trong suốt hết)', icon.alpha(96, 96) > 200);
+    }
   }
 
   console.log('\n===== KẾT QUẢ: ' + pass + ' đạt / ' + (pass + fail) + ' =====');
