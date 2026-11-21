@@ -2755,8 +2755,9 @@ async function loadDom(beforeParse) {
     var DECOR_BG = { default: '', c1: 'bg-lotus.webp', c2: 'bg-wildflower.webp', c3: 'bg-peach.webp', m1: 'bg-fish.webp', m2: 'bg-forest.webp', m3: 'bg-sea.webp', m4: 'bg-film.webp' };
     /* Số phần tử con của #decorDrift — đếm từ shared/motifs-drifts.js:
        FLOWER_DRIFT = 10 fallSpan (6 bướm + 4 cánh); m1 = 2 cá + 3 bọt = 5;
-       m2 = 2 sương + 4 lá = 6; m3 = 2 sóng + 3 bọt = 5; m4 = 11 fallSpan. */
-    var DECOR_DRIFT = { default: 0, c1: 10, c2: 10, c3: 10, m1: 5, m2: 6, m3: 5, m4: 11 };
+       m2 = 2 sương + 4 lá = 6; m3 = 2 sóng + 3 bọt = 5;
+       m4 = 4 cuộn film (bỏ 7 bướm 21/11/2026 theo yêu cầu Việt). */
+    var DECOR_DRIFT = { default: 0, c1: 10, c2: 10, c3: 10, m1: 5, m2: 6, m3: 5, m4: 4 };
     var decorEl = function () { return doc.documentElement.getAttribute('data-decor'); };
     var driftN = function () { var d = doc.querySelector('#decorDrift'); return d ? d.children.length : -1; };
     var bgImg = function () { var b = doc.querySelector('#decorBg'); return b ? (b.style.backgroundImage || '') : 'MISSING'; };
@@ -2860,6 +2861,176 @@ async function loadDom(beforeParse) {
     W.loadLocal();
     eq('41: save/load giữ decor m1', W.state.cfg.decor, 'm1');
     W.setDecor('default');
+  }
+
+  console.log('\n[42] Cuộn/vuốt nảy kiểu Apple (v2.9) — lò xo, quán tính, vuốt đổi tab');
+  {
+    /* --- (A) Token lò xo + easing nảy ở các điểm chuyển động --- */
+    t('42: có token --spring-bounce cubic-bezier(.34,1.56,.64,1)', html.includes('--spring-bounce:cubic-bezier(.34,1.56,.64,1)'));
+    t('42: sheet mở dùng lò xo nảy', /\.sheet\{[^}]*transition:transform [^;]*var\(--spring-bounce\)/.test(html));
+    t('42: action sheet dùng lò xo nảy', /\.asheet\{[^}]*transition:transform [^;]*var\(--spring-bounce\)/.test(html));
+    t('42: HUD dùng lò xo nảy', /\.hud\{[^}]*var\(--spring-bounce\)/.test(html));
+    t('42: welcome track dùng lò xo nảy', /\.wl-track\{[^}]*var\(--spring-bounce\)/.test(html));
+    t('42: row swipe snap dùng lò xo nảy', /\.row\.sw-snap\{[^}]*var\(--spring-bounce\)/.test(html));
+    t('42: vào màn rise dùng lò xo nảy', /\.view\.entering[^{]*\{[^}]*var\(--spring-bounce\)/.test(html));
+    t('42: có class .view.tab-drag', html.includes('.view.tab-drag{ transition:none; }'));
+    t('42: có class .view.tab-snap lò xo', html.includes('.view.tab-snap{ transition:transform .32s var(--spring-bounce); }'));
+    t('42: có hàm tabSwipeOK', typeof W.tabSwipeOK === 'function');
+    t('42: có TAB_ORDER 4 tab', Array.isArray(W.TAB_ORDER) && W.TAB_ORDER.join(',') === 'home,jobs,money,depts');
+    t('42: có hàm go', typeof W.go === 'function');
+
+    /* --- (B) Quán tính cuộn + không chặn nảy của document --- */
+    t('42: sheet-body có -webkit-overflow-scrolling:touch', /\.sheet-body\{[^}]*-webkit-overflow-scrolling:touch/.test(html));
+    t('42: wl-page có -webkit-overflow-scrolling:touch', /\.wl-page\{[^}]*-webkit-overflow-scrolling:touch/.test(html));
+    t('42: authgate có -webkit-overflow-scrolling:touch', /\.authgate\{[^}]*-webkit-overflow-scrolling:touch/.test(html));
+    t('42: chip ngang có -webkit-overflow-scrolling:touch', /#stageChips, #checkTypeChips\{[^}]*-webkit-overflow-scrolling:touch/.test(html));
+    t('42: sheet-body overscroll-behavior:contain (kéo quá biên không lôi trang)', /\.sheet-body\{[^}]*overscroll-behavior:contain/.test(html));
+    t('42: không có overscroll-behavior:none trong source', !html.includes('overscroll-behavior:none'));
+    t('42: vuốt đổi tab tôn trọng reduced-motion (guard matchMedia)', /function tabSwipeOK[\s\S]{0,900}prefers-reduced-motion/.test(html));
+
+    /* --- (C) Vuốt đổi tab: theo tay, đủ đà thì đổi, chưa đủ thì nảy về --- */
+    /* Dọn overlay có thể chặn vuốt trong DOM test (welcome mở sau 250ms). */
+    var wl42 = doc.querySelector('.welcome'); if (wl42) wl42.remove();
+    var lk42 = doc.getElementById('lockScreen'); if (lk42) lk42.remove();
+    var ag42 = doc.getElementById('authGate'); if (ag42) ag42.remove();
+    function touch42(target, type, x, y){
+      var ev = new W.Event(type, { bubbles:true, cancelable:true });
+      ev.touches = [{ clientX:x, clientY:y }];
+      target.dispatchEvent(ev);
+    }
+    var homeView = doc.getElementById('view-home');
+    eq('42: đang ở tab home trước khi vuốt', W.curView, 'home');
+    t('42: tabSwipeOK(view-home) đúng khi không có sheet/overlay', W.tabSwipeOK(homeView) === true);
+    t('42: tabSwipeOK sai trên nút tabbar', W.tabSwipeOK(doc.querySelector('.tabbar button')) === false);
+    if (Array.isArray(W.sheets)) {
+      W.sheets.push({});
+      t('42: tabSwipeOK sai khi đang mở sheet', W.tabSwipeOK(homeView) === false);
+      W.sheets.pop();
+    } else { t('42: sheets là mảng toàn cục (để test guard)', false); }
+    var fakeRow42 = doc.createElement('div'); fakeRow42.className = 'row'; fakeRow42.setAttribute('data-job', 'x1');
+    doc.getElementById('view-jobs').appendChild(fakeRow42);
+    t('42: tabSwipeOK sai trên dòng job', W.tabSwipeOK(fakeRow42) === false);
+    /* Vuốt trái đủ đà: home -> jobs. */
+    touch42(homeView, 'touchstart', 200, 300);
+    touch42(homeView, 'touchmove', 80, 300);
+    t('42: vuốt trái theo tay (view dịch -120px)', (homeView.style.transform || '').includes('translateX(-120'));
+    touch42(homeView, 'touchend', 80, 300);
+    await sleep(50);
+    eq('42: vuốt trái đủ đà -> sang tab jobs', W.curView, 'jobs');
+    t('42: tab jobs đang hiển thị', doc.getElementById('view-jobs').classList.contains('on'));
+    /* Vuốt phải đủ đà: jobs -> home. */
+    var jobsView = doc.getElementById('view-jobs');
+    touch42(jobsView, 'touchstart', 100, 300);
+    touch42(jobsView, 'touchmove', 220, 300);
+    t('42: vuốt phải theo tay (view dịch +120px)', (jobsView.style.transform || '').includes('translateX(120'));
+    touch42(jobsView, 'touchend', 220, 300);
+    await sleep(50);
+    eq('42: vuốt phải đủ đà -> về tab home', W.curView, 'home');
+    /* Vuốt chưa đủ đà: nảy về, ở nguyên tab. */
+    touch42(homeView, 'touchstart', 200, 300);
+    touch42(homeView, 'touchmove', 160, 300);
+    touch42(homeView, 'touchend', 160, 300);
+    await sleep(50);
+    eq('42: vuốt ngắn -> ở nguyên tab home', W.curView, 'home');
+    t('42: vuốt ngắn -> transform đã về rỗng', (homeView.style.transform || '') === '');
+    t('42: vuốt ngắn -> còn class tab-snap (đang nảy về)', homeView.classList.contains('tab-snap'));
+    /* Vuốt phải ở tab đầu (hết tab): không đổi tab. */
+    touch42(homeView, 'touchstart', 100, 300);
+    touch42(homeView, 'touchmove', 220, 300);
+    touch42(homeView, 'touchend', 220, 300);
+    await sleep(50);
+    eq('42: vuốt phải ở tab đầu -> vẫn home', W.curView, 'home');
+    /* Vuốt trên dòng job: tab không đổi (nhường cho vuốt trái của dòng). */
+    touch42(fakeRow42, 'touchstart', 200, 300);
+    touch42(fakeRow42, 'touchmove', 80, 300);
+    touch42(fakeRow42, 'touchend', 80, 300);
+    await sleep(50);
+    eq('42: vuốt trên dòng job -> vẫn home', W.curView, 'home');
+    t('42: vuốt trên dòng job -> view không bị kéo', (homeView.style.transform || '') === '');
+    fakeRow42.remove();
+  }
+
+  console.log('\n[43] Mascot B — cô gái chạy nhảy chụp từng thẻ (chỉ theme M4)');
+
+  /* --- (A) M4 không còn hoa cánh bướm: drift + motif chỉ còn film sepia --- */
+  t('43: M4_DRIFT có đúng 4 phần tử rơi', (W.M4_DRIFT.match(/petal-fall/g) || []).length === 4,
+    'got=' + ((W.M4_DRIFT.match(/petal-fall/g) || []).length));
+  t('43: M4_DRIFT không chứa bướm (chuỗi + màu hồng bướm)', !/BUTTERFLY|butterfly|#F49AA9/.test(W.M4_DRIFT));
+  t('43: motif M4 hero/sprig/empty không chứa màu hồng bướm',
+    !/#F49AA9/.test(W.DECOR_THEMES['m4'].motifs.hero + W.DECOR_THEMES['m4'].motifs.sprig + W.DECOR_THEMES['m4'].motifs.empty));
+  t('43: theme hoa C1 vẫn giữ bướm (không đụng)', /#F49AA9/.test(W.DECOR_THEMES['c1'].drift));
+  {
+    /* --- (B) Mascot chỉ hiện ở M4 --- */
+    W.setDecor('default'); /* mục [41] để lại theme m4 — chuẩn hoá trước khi đo */
+    var masc43 = doc.getElementById('mascotB');
+    t('43: #mascotB có trong DOM', !!masc43);
+    t('43: ảnh mascot là file local mascot/girl.webp',
+      masc43 && masc43.querySelector('.m-img').getAttribute('src') === 'mascot/girl.webp');
+    t('43: có 3 cá quanh cô gái', masc43 && masc43.querySelectorAll('.m-fish').length === 3);
+    t('43: nút Chạy đi! có trong DOM', !!doc.getElementById('mascotRunBtn'));
+    t('43: CSS cổng mascot theo data-decor=m4',
+      html.includes('html[data-decor="m4"] #mascotB') && html.includes('html[data-decor="m4"] #mascotRunBtn'));
+    eq('43: theme Mặc định -> mascot tắt', W.mascotIsOn(), false);
+    W.setDecor('m4');
+    eq('43: setDecor m4 -> mascot bật', W.mascotIsOn(), true);
+    eq('43: data-decor=m4 sau setDecor', doc.documentElement.getAttribute('data-decor'), 'm4');
+
+    /* --- (C) Vòng chạy: chụp 2 thẻ, gắn chip, về chỗ đỗ --- */
+    var wl43 = doc.querySelector('.welcome'); if (wl43) wl43.remove();
+    var lk43 = doc.getElementById('lockScreen'); if (lk43) lk43.remove();
+    var ag43 = doc.getElementById('authGate'); if (ag43) ag43.remove();
+    var mkJob43 = function (id, client, off) {
+      return { id: id, client: client, type: 'Portrait', medium: 'Digital', stage: 'Đã chốt',
+        shootDate: W.dstr(off), shootTime: '09:00', location: 'Studio', deadline: '',
+        price: 2500000, phone: '', email: '', fbLink: '', msLink: '', driveLink: '', note: '',
+        stageSince: W.dstr(0), cancelled: false };
+    };
+    W.state.jobs = [mkJob43('m1', 'Thu Hằng', 0), mkJob43('m2', 'Minh Quân', 1)];
+    W.state.txs = [];
+    W.renderHome();
+    var rows43 = doc.querySelectorAll('#todayList [data-job]');
+    eq('43: Hôm nay có 2 thẻ job để chụp', rows43.length, 2);
+    t('43: rảnh ở M4 -> nhãn gợi ý bấm vào cô hiện', doc.getElementById('mascotTagB').hidden === false);
+    doc.getElementById('mascotRunBtn').click();
+    await sleep(300);
+    t('43: đang chạy -> mascot có class running', masc43.classList.contains('running'));
+    t('43: đang chạy -> tag ẩn', doc.getElementById('mascotTagB').hidden === true);
+    await sleep(9500); /* vòng chạy ~8s: 150+1100+1100+(1050+1250)x2+1000 */
+    eq('43: chạy xong -> đủ 2 chip đã chụp', doc.querySelectorAll('#todayList .mascot-shot-chip').length, 2,
+      doc.querySelector('#todayList').textContent.slice(0, 200));
+    t('43: chạy xong -> mascot hết busy', masc43.dataset.busy !== '1');
+    t('43: chạy xong -> hết class running', !masc43.classList.contains('running'));
+    t('43: chạy xong -> tag hiện lại', doc.getElementById('mascotTagB').hidden === false);
+    t('43: toast báo chạy xong', doc.getElementById('toastText').textContent.includes('chạy xong một vòng'));
+
+    /* Chip sống qua lần renderHome sau (chỉ trong phiên, không ghi vào job). */
+    W.renderHome();
+    eq('43: renderHome lại -> vẫn 2 chip', doc.querySelectorAll('#todayList .mascot-shot-chip').length, 2);
+    t('43: chip chỉ trong phiên (job không có trường mascot)', !('mascotShot' in W.state.jobs[0]));
+
+    /* --- (D) Bấm vào cô lúc rảnh: chụp tại chỗ, không gắn chip --- */
+    var chipsBefore = doc.querySelectorAll('#todayList .mascot-shot-chip').length;
+    masc43.click();
+    await sleep(150);
+    t('43: bấm lúc rảnh -> mascot có class shooting', masc43.classList.contains('shooting'));
+    t('43: bấm lúc rảnh -> toast chụp tại chỗ', doc.getElementById('toastText').textContent.includes('tại chỗ'));
+    await sleep(1200);
+    t('43: chụp tại chỗ xong -> hết class shooting', !masc43.classList.contains('shooting'));
+    eq('43: chụp tại chỗ -> không thêm chip', doc.querySelectorAll('#todayList .mascot-shot-chip').length, chipsBefore);
+
+    /* --- (E) Đổi theme giữa vòng chạy: vòng dừng, cô về chỗ đỗ --- */
+    doc.getElementById('mascotRunBtn').click();
+    await sleep(400);
+    t('43: vòng 2 đang chạy', masc43.classList.contains('running'));
+    W.setDecor('default');
+    await sleep(150);
+    eq('43: đổi theme -> mascot tắt', W.mascotIsOn(), false);
+    t('43: đổi theme -> vòng chạy dừng (hết busy)', masc43.dataset.busy !== '1');
+    t('43: đổi theme -> hết class running', !masc43.classList.contains('running'));
+
+    /* --- (F) Reduced-motion: animation mascot tắt --- */
+    t('43: reduced-motion tắt sway/cá/nảy của mascot',
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]{0,1500}\.mascot \.m-sway/.test(html));
   }
 
   console.log('\n===== KẾT QUẢ: ' + pass + ' đạt / ' + (pass + fail) + ' =====');

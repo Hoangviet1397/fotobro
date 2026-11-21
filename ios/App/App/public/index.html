@@ -317,7 +317,7 @@
       .pills::-webkit-scrollbar{ display:none; }
       .pill{ flex:none; border:0; background:var(--fill); color:var(--label); font-size:0.9375rem; font-weight:500; padding:0 14px; min-height:44px; border-radius:999px; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
       /* Hàng nút lọc theo bước / theo loại: 1 hàng, vuốt ngang (không xuống 2 dòng) */
-      #stageChips, #checkTypeChips{ flex-wrap:nowrap; overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:none; touch-action:pan-x pan-y;
+      #stageChips, #checkTypeChips{ flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain; scrollbar-width:none; touch-action:pan-x pan-y;
         margin-left:-16px; margin-right:-16px; padding:0 16px; scroll-padding:0 16px; }
       .pill .n{ color:var(--label2); font-variant-numeric:tabular-nums; }
       .pill.on{ background:var(--label); color:var(--bg); }
@@ -473,7 +473,7 @@
       .sheet-bd.on{ opacity:1; }
       .sheet{ position:fixed; left:0; right:0; bottom:0; margin:0 auto; max-width:720px; background:var(--bg); border-radius:14px 14px 0 0;
         max-height:calc(100% - env(safe-area-inset-top) - 10px); display:flex; flex-direction:column;
-        transform:translateY(100%); transition:transform .42s cubic-bezier(.32,.72,0,1); box-shadow:0 -10px 40px rgba(0,0,0,.18); }
+        transform:translateY(100%); transition:transform .45s var(--spring-bounce); box-shadow:0 -10px 40px rgba(0,0,0,.18); }
       .sheet.tall{ height:calc(100% - env(safe-area-inset-top) - 10px); }
       .sheet.on{ transform:none; }
       .sheet.drag{ transition:none; }
@@ -490,7 +490,7 @@
       .sh-l{ justify-self:start; font-weight:600; } .sh-r{ justify-self:end; font-weight:600; }
       .sheet-body{ overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; padding:4px 16px calc(30px + env(safe-area-inset-bottom)); flex:1; }
       .asheet{ position:fixed; left:8px; right:8px; bottom:calc(8px + env(safe-area-inset-bottom)); max-width:480px; margin:0 auto;
-        transform:translateY(130%); transition:transform .36s cubic-bezier(.32,.72,0,1); }
+        transform:translateY(130%); transition:transform .38s var(--spring-bounce); }
       .asheet.on{ transform:none; }
       .ag{ background:var(--bar-strong); -webkit-backdrop-filter:blur(30px); backdrop-filter:blur(30px); border-radius:14px; overflow:hidden; }
       .ag + .ag{ margin-top:8px; }
@@ -507,9 +507,9 @@
         background:var(--bar-strong); -webkit-backdrop-filter:blur(30px); backdrop-filter:blur(30px); color:var(--label);
         padding:11px 18px 11px 13px; border-radius:999px; box-shadow:0 10px 34px rgba(0,0,0,.18), 0 0 0 .5px var(--sep);
         font-size:0.9375rem; font-weight:600; max-width:calc(100% - 28px); display:flex; gap:9px; align-items:center;
-        transition:transform .45s cubic-bezier(.32,.72,0,1), opacity .25s ease, visibility 0s linear .45s; pointer-events:none;
+        transition:transform .45s var(--spring-bounce), opacity .25s ease, visibility 0s linear .45s; pointer-events:none;
         opacity:0; visibility:hidden; /* ẩn hẳn khi không hiện: tránh bóng đổ lộ thành vệt xám ở đầu màn hình */ }
-      .hud.show{ transform:translate(-50%,0); opacity:1; visibility:visible; transition:transform .45s cubic-bezier(.32,.72,0,1), opacity .15s ease, visibility 0s; }
+      .hud.show{ transform:translate(-50%,0); opacity:1; visibility:visible; transition:transform .45s var(--spring-bounce), opacity .15s ease, visibility 0s; }
       .hud .ic{ width:24px; height:24px; border-radius:50%; }
       .hud .ic svg{ width:14px; height:14px; }
 
@@ -568,10 +568,10 @@
       .welcome.on{ opacity:1; }
       .wl-skip{ position:absolute; top:calc(env(safe-area-inset-top) + 4px); right:8px; z-index:3; border:0; background:none; color:var(--accent-t); font-size:1.0625rem; font-weight:500; min-height:44px; padding:0 12px; }
       .wl-pages{ flex:1; min-height:0; overflow:hidden; position:relative; z-index:2; }
-      .wl-track{ display:flex; height:100%; transition:transform .45s cubic-bezier(.32,.72,0,1); will-change:transform; }
+      .wl-track{ display:flex; height:100%; transition:transform .45s var(--spring-bounce); will-change:transform; }
       .wl-track.drag{ transition:none; }
       .wl-pages::-webkit-scrollbar{ display:none; }
-      .wl-page{ flex:none; width:100%; height:100%; overflow-y:auto; overscroll-behavior:contain; padding:calc(env(safe-area-inset-top) + 20px) 22px 16px; }
+      .wl-page{ flex:none; width:100%; height:100%; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; padding:calc(env(safe-area-inset-top) + 20px) 22px 16px; }
       .wl-page{ display:flex; flex-direction:column; }
       .wl-in{ max-width:460px; width:100%; margin:auto; text-align:center; } /* canh giữa theo chiều dọc, nội dung dài thì vẫn cuộn từ trên */
       .wl-page:not(.seen) .fl{ animation:none; opacity:0; }
@@ -597,7 +597,7 @@
       .wl-dots i{ cursor:pointer; width:7px; height:7px; border-radius:4px; background:var(--label3); transition:all .25s ease; }
       .wl-dots i.on{ width:22px; background:var(--accent); }
       /* ---------- Màn đăng nhập lúc vào app (v2.2) ---------- */
-      .authgate{ position:fixed; inset:0; z-index:300; display:flex; flex-direction:column; justify-content:center; overflow-y:auto; background:var(--bg); padding:calc(env(safe-area-inset-top) + 24px) 22px calc(20px + env(safe-area-inset-bottom)); opacity:0; transition:opacity .4s ease; }
+      .authgate{ position:fixed; inset:0; z-index:300; display:flex; flex-direction:column; justify-content:center; overflow-y:auto; -webkit-overflow-scrolling:touch; background:var(--bg); padding:calc(env(safe-area-inset-top) + 24px) 22px calc(20px + env(safe-area-inset-bottom)); opacity:0; transition:opacity .4s ease; }
       .authgate.on{ opacity:1; }
       .ag-in{ width:100%; max-width:460px; margin:0 auto; text-align:center; }
       .ag-in h1{ font-size:2rem; line-height:1.2; font-weight:800; margin-top:10px; }
@@ -740,7 +740,7 @@
       .idc-empty .idc-av.mono{ background:var(--k-ink); color:#fff; }
       .idc-empty .chev{ color:var(--k-ink); }
       /* ===== v2.8 (Việt: "thao tác chạm, kéo vuốt, animation chuẩn Apple") ===== */
-      :root{ --spring:cubic-bezier(.2,.9,.25,1.05); --sw-bg:#fff; }
+      :root{ --spring:cubic-bezier(.2,.9,.25,1.05); --spring-bounce:cubic-bezier(.34,1.56,.64,1); --sw-bg:#fff; }
       @media (prefers-color-scheme: dark){ :root{ --sw-bg:#1C1C1E; } }
       /* chạm: thẻ lún nhẹ rồi bật lại như iOS */
       .dtile, .tile, .btn, .pill, .idc-empty, .jd-chip, .seg button, .bp{ transition:transform .28s var(--spring), box-shadow .2s ease, background-color .2s ease; }
@@ -753,14 +753,14 @@
       @keyframes tabPop{ 0%{ transform:scale(.8); } 60%{ transform:scale(1.12); } 100%{ transform:scale(1); } }
       /* vào màn: các khối trồi lên lần lượt */
       @keyframes rise{ from{ opacity:0; transform:translateY(14px) scale(.985); } to{ opacity:1; transform:none; } }
-      .view.entering .list, .view.entering .tiles > *, .view.entering .dgrid > *, .view.entering .sec-h, .view.entering .idc{ animation:rise .46s var(--spring) both; }
+      .view.entering .list, .view.entering .tiles > *, .view.entering .dgrid > *, .view.entering .sec-h, .view.entering .idc{ animation:rise .46s var(--spring-bounce) both; }
       .view.entering .dgrid > :nth-child(2), .view.entering .tiles > :nth-child(2){ animation-delay:.04s; }
       .view.entering .dgrid > :nth-child(3){ animation-delay:.08s; } .view.entering .dgrid > :nth-child(4){ animation-delay:.12s; }
       .view.entering .dgrid > :nth-child(5){ animation-delay:.16s; } .view.entering .dgrid > :nth-child(6){ animation-delay:.2s; }
       /* vuốt trái 1 buổi chụp: lộ nút nhanh như app Mail */
       .row[data-job]{ touch-action:pan-y; }
       .row.sw-moving, .row.sw-open{ position:relative; z-index:2; background:var(--sw-bg) !important; }
-      .row.sw-snap{ transition:transform .32s var(--spring); }
+      .row.sw-snap{ transition:transform .32s var(--spring-bounce); }
       .swipe-acts{ position:absolute; right:0; display:flex; z-index:1; }
       .swipe-acts button{ border:0; font:inherit; font-size:.8125rem; font-weight:700; color:#fff; width:76px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; }
       .swipe-acts button svg{ width:20px; height:20px; }
@@ -769,6 +769,16 @@
       /* nhấn giữ: thẻ phồng nhẹ */
       .row.lp-hold{ transform:scale(.98); background:var(--press); transition:transform .4s ease, background-color .2s ease; }
       @media (prefers-reduced-motion: reduce){ .view.entering *, .tabbar button.on svg{ animation:none !important; } .dtile, .tile, .btn, .pill{ transition:none; } }
+      /* ===== v2.9: cuộn/vuốt nảy kiểu Apple (Việt 13:13 21/11 "chưa có cuộn vuốt kiểu nhảy nhảy của apple") =====
+         Lò xo nảy --spring-bounce (overshoot 1.56): sheet/asheet/HUD/welcome/row-snap/vào màn đều nảy nhẹ
+         rồi về vị trí, ~200–450ms như iOS. Vùng cuộn trong (sheet/welcome/authgate/chip ngang) có quán tính
+         (-webkit-overflow-scrolling:touch) + overscroll-behavior:contain để kéo quá biên không lôi cả trang
+         theo; cuộn chính của trang vẫn là document (nảy tự nhiên của WKWebView, không đặt
+         overscroll-behavior chặn nảy, html đã có nền var(--bg) nên vùng overscroll không lộ trắng).
+         Vuốt đổi tab: .tab-drag theo tay, .tab-snap nảy về bằng lò xo (JS ở cuối khối điều hướng).
+         prefers-reduced-motion đã tắt hết transition/animation ở khối global nên nảy tự tắt theo. */
+      .view.tab-drag{ transition:none; }
+      .view.tab-snap{ transition:transform .32s var(--spring-bounce); }
       /* ===== v2.8 đồng bộ toàn app (Việt: "sửa lại toàn bộ giao diện cho đồng bộ") =====
          1 bảng màu pastel + chữ mực cho MỌI biểu tượng; nút chính màu mực, nút phụ xám nhạt; mọi nút bo tròn. */
       .ic.bg-accent, .ic.bg-red, .ic.bg-pink{ background:var(--k-peach) !important; }
@@ -1087,6 +1097,11 @@ button:active{ transform:scale(.96); filter:brightness(.94) saturate(1.06); }
     animation:none !important; transition:none !important;
   }
   .decor-opt{ transition:none !important; }
+  /* Mascot B: tắt đung đưa/cá bơi/nảy khi chạy + flash; vòng chạy vẫn hoạt
+     động (nhảy vị trí tức thì, không transition). */
+  .mascot .m-sway, .mascot .m-fish, #mascotB.running .m-sway{ animation:none !important; }
+  #mascotB{ transition:none !important; }
+  .mascot-flash{ display:none !important; }
 }
 /* theme-c1.css — theme Sen (c1). Mọi rule có tiền tố html[data-decor="c1"].
    Nguồn: mock v7 (dòng 300–410 trong shared/decor-css.css + dòng 413–430 của file
@@ -1453,6 +1468,42 @@ html[data-decor="m4"] #decorDrift .petal-sway{
 }
 html[data-decor="m4"] #decorDrift .petal-sway svg{ display:block; }
 
+/* ============ MASCOT B — cô gái chạy nhảy chụp từng thẻ job (chỉ theme M4) ============
+   Việt chọn phương án B lúc 15:07 21/11 (mock "FotoBro — cô gái mascot",
+   v2: ảnh thật tách từ logo v9, girl.webp 420×448 nền trong suốt + 3 cá).
+   Cô đỗ bên phải lời chào; nút "Chạy đi!" cho cô chạy một vòng chụp từng thẻ
+   job ở mục "Hôm nay & sắp tới". Ảnh local www/mascot/, KHÔNG nhúng base64.
+   Ẩn mặc định — chỉ hiện khi html[data-decor="m4"] (applyDecor set sẵn). */
+#view-home{ position:relative; }
+#mascotB, #mascotRunBtn, #mascotTagB{ display:none; }
+html[data-decor="m4"] #mascotB{ display:block; }
+html[data-decor="m4"] #mascotRunBtn{ display:inline-flex; }
+html[data-decor="m4"] #mascotTagB{ display:block; }
+#mascotTagB[hidden]{ display:none !important; }
+.mascot{ position:absolute; z-index:20; width:104px; right:6px; top:64px; cursor:pointer; -webkit-tap-highlight-color:transparent; background:none; border:0; padding:0; font:inherit; }
+.mascot .m-sway{ display:block; transform-origin:50% 84%; animation:mascot-sway 6s ease-in-out infinite alternate; }
+.mascot .m-img{ display:block; width:100%; height:auto; transition:transform .28s cubic-bezier(.34,1.45,.64,1); }
+@keyframes mascot-sway{ from{ transform:rotate(-1.4deg) translateY(0); } to{ transform:rotate(1.4deg) translateY(-2px); } }
+.mascot .m-fish{ position:absolute; z-index:1; pointer-events:none; animation:mascot-fish-bob 4.4s ease-in-out infinite alternate; }
+.mascot .m-fish.f1{ width:26%; left:-14%; top:4%; }
+.mascot .m-fish.f2{ width:18%; left:-2%; top:-7%; animation-duration:5.2s; animation-delay:-1.8s; }
+.mascot .m-fish.f3{ width:14%; left:4%; top:14%; animation-duration:3.8s; animation-delay:-.9s; }
+@keyframes mascot-fish-bob{ from{ transform:translate(0,-2px) rotate(-2deg); } to{ transform:translate(3px,3px) rotate(2deg); } }
+.mascot.shooting .m-sway{ animation-play-state:paused; }
+.mascot.shooting .m-img{ transform:translateY(-8px) rotate(-3deg) scale(1.04); }
+.mascot.shooting::after{ content:""; position:absolute; left:55%; top:36%; width:64px; height:64px; transform:translate(-50%,-50%); background:radial-gradient(circle, rgba(255,255,255,.95), rgba(255,255,255,0) 70%); border-radius:50%; pointer-events:none; }
+#mascotB.running .m-sway{ animation:mascot-run-bob .38s ease-in-out infinite alternate; }
+@keyframes mascot-run-bob{ from{ transform:translateY(0) rotate(-2deg); } to{ transform:translateY(-7px) rotate(2deg); } }
+.mascot-tag{ position:absolute; z-index:21; font-size:10.5px; font-weight:700; color:var(--accent); background:rgba(255,255,255,.85); border:1px solid rgba(250,45,72,.3); padding:3px 8px; border-radius:999px; pointer-events:none; white-space:nowrap; box-shadow:0 4px 10px rgba(30,20,10,.12); }
+:root[data-theme="dark"] .mascot-tag{ background:rgba(24,20,15,.85); color:#FF8FA0; }
+.mascot-run-btn{ margin:10px 0 0; border:0; cursor:pointer; font:inherit; font-weight:700; font-size:13.5px; padding:9px 18px; min-height:40px; border-radius:999px; color:#fff; background:linear-gradient(150deg,#FF5C74, var(--accent) 60%, #D81F3C); box-shadow:0 8px 18px rgba(250,45,72,.35); align-items:center; gap:6px; }
+.mascot-flash{ position:fixed; inset:0; z-index:60; background:#fff; opacity:0; pointer-events:none; }
+.mascot-flash.go{ animation:mascot-flash-go .55s ease-out; }
+@keyframes mascot-flash-go{ 0%{ opacity:0; } 12%{ opacity:.92; } 100%{ opacity:0; } }
+.mascot-bubble{ position:absolute; z-index:21; font-size:15px; font-weight:800; color:var(--accent); background:#fff; border:1.5px solid var(--accent); padding:4px 10px; border-radius:999px; opacity:0; pointer-events:none; transform:scale(.7); transition:opacity .18s ease, transform .18s ease; box-shadow:0 6px 16px rgba(250,45,72,.25); }
+.mascot-bubble.show{ opacity:1; transform:scale(1); }
+.mascot-shot-chip{ display:block; font-size:12px; font-weight:700; color:var(--accent); margin-top:2px; }
+
 /* ---------- Bản tối NỀN cho decor (theo mock v7: .phone.dark .bgimg/.theme-bg::after/.petals/.corner-motif) ----------
    w09 (dark-overrides.css, nạp SAU khối này) đè riêng cho c1/c2/c3/m4 bằng brightness(.92) + tông nâu sữa. */
 :root[data-theme="dark"] #decorBg{ filter:brightness(.62) saturate(.85); }
@@ -1659,7 +1710,14 @@ html[data-decor="m4"] #decorDrift .petal-sway svg{ display:block; }
           <p class="eyebrow" id="dateLine">Hôm nay</p>
           <h1>Chào <em>bạn</em></h1>
           <p class="lt-sub" id="greetLine">FotoBro</p>
+          <!-- Mascot B (chỉ theme M4): nút cho cô gái chạy một vòng chụp từng thẻ job -->
+          <button type="button" class="mascot-run-btn" id="mascotRunBtn">▶ Chạy đi!</button>
         </div>
+        <!-- Cô gái mascot B — ảnh thật tách từ logo v9 (www/mascot/girl.webp) -->
+        <button type="button" class="mascot" id="mascotB" aria-label="Cô gái mascot — bấm để cô chụp ảnh"><span class="m-sway"><img class="m-img" src="mascot/girl.webp" alt="Cô gái mascot"/></span><img class="m-fish f1" src="mascot/fish-big.webp" alt=""/><img class="m-fish f2" src="mascot/fish-small.webp" alt=""/><img class="m-fish f3" src="mascot/fish-tiny.webp" alt=""/></button>
+        <span class="mascot-tag" id="mascotTagB" hidden>Bấm vào cô gái để chụp ngay</span>
+        <div class="mascot-flash" id="mascotFlash" aria-hidden="true"></div>
+        <div class="mascot-bubble" id="mascotBubble" aria-hidden="true">Tách!</div>
         <div id="idCard"></div>
         <div class="tiles" id="homeStats"></div>
 
@@ -2362,6 +2420,8 @@ html[data-decor="m4"] #decorDrift .petal-sway svg{ display:block; }
     }
     window.addEventListener('scroll', onScroll, {passive:true});
     function go(view){
+      /* Mascot B: rời màn Hôm nay giữa vòng chạy thì dừng vòng, cô về chỗ đỗ. */
+      if (view !== 'home' && typeof mascotStopRun === 'function') mascotStopRun();
       if (view === curView){ window.scrollTo({top:0, behavior:'smooth'}); return; }
       scrollMem[curView] = window.scrollY;
       curView = view;
@@ -2452,6 +2512,54 @@ html[data-decor="m4"] #decorDrift .petal-sway svg{ display:block; }
       if (lpFired || (row._swiped && Date.now() - row._swiped < 350) || (swOpen && swOpen.row === row)){ e.preventDefault(); e.stopPropagation(); lpFired = false; if (swOpen && swOpen.row === row && !(row._swiped && Date.now() - row._swiped < 350)) closeSwipe(); }
     }, true);
     window.addEventListener('scroll', function(){ if (swOpen && !sw) closeSwipe(); }, { passive:true });
+    /* v2.9 (Việt 13:13: "chưa có cuộn vuốt kiểu nhảy nhảy của Apple"):
+       vuốt ngang trên màn chính để đổi tab kề — theo tay, chưa đủ đà thì nảy về bằng lò xo.
+       Chỉ khi: không mở sheet, không ở màn chào/xác thực/khoá, không vuốt trên dòng job (đã có
+       vuốt trái riêng), chip ngang, input/nút/link. prefers-reduced-motion thì không vuốt. */
+    var tabSw = null;
+    var TAB_ORDER = ['home', 'jobs', 'money', 'depts'];
+    function tabSwipeOK(t){
+      if (!t || !t.closest) return false;
+      if (typeof sheets !== 'undefined' && sheets.length) return false;
+      if (document.querySelector('.welcome') || document.getElementById('authGate') || document.getElementById('lockScreen')) return false;
+      if (t.closest('.row[data-job], #stageChips, #checkTypeChips, input, textarea, select, button, a, .sheet, .asheet, .composer, .tabbar, .nav')) return false;
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+      return TAB_ORDER.indexOf(curView) >= 0;
+    }
+    document.addEventListener('touchstart', function(e){
+      if (tabSw || e.touches.length !== 1) return;
+      if (!tabSwipeOK(e.target)) return;
+      var p = e.touches[0];
+      tabSw = { x:p.clientX, y:p.clientY, dx:0, dir:null, view:document.getElementById('view-' + curView) };
+    }, { passive:true });
+    document.addEventListener('touchmove', function(e){
+      if (!tabSw) return;
+      var p = e.touches[0], dx = p.clientX - tabSw.x, dy = p.clientY - tabSw.y;
+      if (!tabSw.dir && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) tabSw.dir = Math.abs(dx) > Math.abs(dy) * 1.2 ? 'h' : 'v';
+      if (tabSw.dir !== 'h') return;
+      var idx = TAB_ORDER.indexOf(curView);
+      var canNext = dx < 0 && idx < TAB_ORDER.length - 1, canPrev = dx > 0 && idx > 0, x = dx;
+      if (!canNext && !canPrev) x = dx * .25; /* hết tab: kéo nặng như chạm tường */
+      else if (Math.abs(dx) > 120) x = (dx < 0 ? -120 : 120) + (dx - (dx < 0 ? -120 : 120)) * .3; /* quá đà: nặng dần */
+      tabSw.dx = dx;
+      tabSw.view.classList.add('tab-drag'); tabSw.view.classList.remove('tab-snap');
+      tabSw.view.style.transform = 'translateX(' + x.toFixed(1) + 'px)';
+    }, { passive:true });
+    document.addEventListener('touchend', function(){
+      if (!tabSw) return; var s = tabSw; tabSw = null;
+      if (s.dir !== 'h' || !s.view) return;
+      var idx = TAB_ORDER.indexOf(curView), v = s.view;
+      v.classList.remove('tab-drag'); v.classList.add('tab-snap');
+      if (s.dx < -90 && idx < TAB_ORDER.length - 1){ v.style.transform = ''; v.classList.remove('tab-snap'); go(TAB_ORDER[idx + 1]); }
+      else if (s.dx > 90 && idx > 0){ v.style.transform = ''; v.classList.remove('tab-snap'); go(TAB_ORDER[idx - 1]); }
+      else { v.style.transform = ''; setTimeout(function(){ v.classList.remove('tab-snap'); }, 340); }
+    }, { passive:true });
+    document.addEventListener('touchcancel', function(){
+      if (!tabSw) return; var s = tabSw; tabSw = null;
+      if (!s.view || s.dir !== 'h') return;
+      s.view.classList.remove('tab-drag'); s.view.classList.add('tab-snap'); s.view.style.transform = '';
+      setTimeout(function(){ s.view.classList.remove('tab-snap'); }, 340);
+    }, { passive:true });
     function quickAdd(){
       actionSheet({ title:'Ghi nhanh', actions:[
         {label:'Buổi chụp mới', fn:function(){ openJobForm(); }},
@@ -2633,6 +2741,9 @@ html[data-decor="m4"] #decorDrift .petal-sway svg{ display:block; }
         return '<button type="button" class="row" data-dept="' + d.id + '"><span class="ic bg-' + d.color + '">' + I(d.icon) + '</span><span class="txt"><span class="t1 b" style="display:block;">' + esc(d.name) + '</span><span class="t2 wrap2" style="display:block;">' + esc(deptLines(d.id)[0] || 'Đang rảnh, chờ lệnh của bạn.') + '</span></span>' + I('chev').replace('<svg', '<svg class="chev"') + '</button>';
       }).join('');
       bindRows($('#view-home'));
+      /* Mascot B: render lại Hôm nay thì gắn lại chip "đã chụp" (chỉ trong phiên)
+         và đặt lại tư thế cô gái nếu cô đang rảnh. */
+      if (typeof mascotAfterRender === 'function') mascotAfterRender();
     }
     function bindRows(root){
       $$('[data-job]', root).forEach(function(b){ if (b._b) return; b._b = 1; b.addEventListener('click', function(){ openJob(b.getAttribute('data-job')); }); });
@@ -3156,6 +3267,8 @@ function setDecor(id){
    xong: theme chưa có entry thì slot/drift/nền về rỗng nhưng data-decor
    và aria-pressed vẫn đúng. */
 function applyDecor(){
+  /* Mascot B: đổi theme (rời M4) thì dừng vòng chạy ngay, tránh cô chạy ẩn. */
+  if (typeof mascotStopRun === 'function') mascotStopRun();
   var id = (state.cfg && state.cfg.decor) || 'default';
   if (DECOR_IDS.indexOf(id) < 0) id = 'default';
   var t = (typeof DECOR_THEMES === 'object' && DECOR_THEMES) ? DECOR_THEMES[id] : null;
@@ -3348,45 +3461,248 @@ function m4FallSpan(left, w, h, dur, delay, sway, svg){
    __BUTTERFLY2_DRIFT__ trong drift của w01–w03 (CONTRACT §5). */
 var FILM_DRIFT_M4 = '<svg viewBox="0 0 22 36" width="100%" height="100%" aria-hidden="true">' + filmStrip2(11, 1, 19, 34, 0) + '</svg>';
 
-/* Drift m4: 4 cuộn film + 7 hoa cánh bướm = 11 phần tử, 24–32s.
-   Lấy nguyên DRIFTS.m4 trong mock, chỉ thay filmStrip→filmStrip2 (qua
-   FILM_DRIFT_M4) và butterfly→butterfly2 (qua BUTTERFLY_DRIFT). */
+/* Drift m4: CHỈ 4 cuộn film sepia — bỏ hẳn hoa cánh bướm theo yêu cầu Việt
+   13:09 21/11 ("Bỏ cái bông hoa đi, để lại cuộn phim"); mock mascot v2 cũng
+   không còn chữ butterfly nào ở theme M4. Rơi 28–32s, đu đưa 6.5–7.2s. */
 var M4_DRIFT =
-      m4FallSpan(8, 17, 17, 27, -20, 3.5, BUTTERFLY_DRIFT) +
       m4FallSpan(10, 19, 31, 28, -6, 6.5, FILM_DRIFT_M4) +
-      m4FallSpan(24, 18, 18, 25, -15, 3.6, BUTTERFLY_DRIFT) +
       m4FallSpan(38, 15, 25, 31, -22, 7.2, FILM_DRIFT_M4) +
-      m4FallSpan(50, 20, 20, 27, -3, 3.9, BUTTERFLY_DRIFT) +
       m4FallSpan(62, 17, 28, 29, -18, 6.8, FILM_DRIFT_M4) +
-      m4FallSpan(68, 18, 18, 29, -14, 4.3, BUTTERFLY_DRIFT) +
-      m4FallSpan(74, 16, 16, 24, -11, 3.3, BUTTERFLY_DRIFT) +
-      m4FallSpan(86, 19, 19, 30, -26, 4.1, BUTTERFLY_DRIFT) +
-      m4FallSpan(44, 17, 17, 26, -28, 3.8, BUTTERFLY_DRIFT) +
       m4FallSpan(93, 14, 23, 32, -9, 7.0, FILM_DRIFT_M4);
 
 /* ---------- Đăng ký theme m4 ----------
    Motif lấy nguyên cấu trúc MOTIFS.m4 trong mock, chỉ thay
-   butterfly→butterfly2(..., true) và filmStrip→filmStrip2. */
+   filmStrip→filmStrip2. Bướm đã BỎ HẲN khỏi motif theo yêu cầu Việt 13:09
+   21/11 (bông hoa cạnh lời chào trong ảnh chụp máy thật chính là motif hero
+   ở góc phải trên; mock mascot v2 cũng không còn butterfly nào ở M4). */
 DECOR_THEMES['m4'] = {
   label: 'Máy ảnh film',
   bg: 'assets/themes/bg-film.webp',
   motifs: {
     hero: svgWrap('0 0 150 98', '<g filter="url(#wc-rough)">' +
       filmStrip2(118, 4, 27, 90, -6) +
-      '<g class="anim-sway">' + butterfly2(48, 44, 1.25, true) + '</g>' +
-      '<g class="anim-sway">' + butterfly2(96, 76, 0.7, true) + '</g>' +
       '</g>'),
     sprig: svgWrap('0 0 90 90', '<g filter="url(#wc-rough)">' +
       filmStrip2(70, 2, 22, 62, 8) +
-      '<g class="anim-sway">' + butterfly2(34, 34, 0.9, true) + '</g>' +
       '</g>'),
     empty: svgWrap('0 0 140 92', '<g filter="url(#wc-rough)">' +
       filmStrip2(112, 6, 25, 82, -5) +
-      '<g class="anim-sway">' + butterfly2(52, 42, 1.0, true) + '</g>' +
       '</g>')
   },
   drift: M4_DRIFT
 };
+
+/* ============ MASCOT B — cô gái chạy nhảy chụp từng thẻ job (chỉ theme M4) ============
+   Việt chọn phương án B lúc 15:07 21/11, theo đúng mock "FotoBro — cô gái
+   mascot" v2 (ảnh thật tách từ logo v9, www/mascot/girl.webp + 3 cá).
+   - Cô đỗ bên phải lời chào (tính theo bề rộng màn hình, không hard-code px).
+   - Nút "Chạy đi!" hoặc bấm vào cô: cô chạy về vạch xuất phát trái, chạy
+     ngang vùng lời chào, nhảy xuống từng thẻ job ở "Hôm nay & sắp tới"
+     (tối đa 2 thẻ), dừng chụp từng thẻ (flash + bong bóng "Tách!" + chip
+     "✓ Cô gái vừa chụp tấm này" gắn lên thẻ).
+   - Bấm vào cô lúc đang chạy: dừng lại chụp ngay một tấm rồi chạy về chỗ đỗ.
+   - Bấm vào cô lúc rảnh: chụp một tấm tại chỗ (không gắn chip).
+   - Chip "đã chụp" CHỈ trong phiên: lưu trong mascotShotJobs (id job → true),
+     KHÔNG ghi vào dữ liệu job, KHÔNG lưu localStorage — tắt app mở lại là hết.
+     renderHome gọi lại mascotAfterRender() nên chip không mất khi màn vẽ lại.
+   - Chuyển tab giữa chừng hoặc đổi theme: vòng chạy tự hủy (token), cô về
+     chỗ đỗ. Tôn trọng prefers-reduced-motion: vòng chạy nhảy vị trí tức thì
+     (CSS đã tắt transition/animation của mascot).
+   - Chạy bằng document scroll (app cuộn bằng document, WKWebView nảy tự nhiên);
+     scrollTop gán trực tiếp để khỏi phụ thuộc window.scrollTo. */
+var mascotShotJobs = {};
+var mascotRunToken = 0;
+function mascotIsOn(){ return ((state.cfg && state.cfg.decor) || 'default') === 'm4'; }
+function mascotEl(){ return document.getElementById('mascotB'); }
+function mascotSleep(ms){ return new Promise(function(res){ setTimeout(res, ms); }); }
+function mascotParkPos(){
+  var view = document.getElementById('view-home');
+  var w = (view && view.clientWidth) || 390;
+  var m = mascotEl();
+  var mw = (m && m.offsetWidth) || 104;
+  var greet = view ? view.querySelector('.lt') : null;
+  var gh = (greet && greet.offsetHeight) || 130;
+  var top = (greet ? greet.offsetTop : 0) + Math.max(40, gh - 64);
+  return { left: Math.max(6, w - mw - 6), top: top };
+}
+function mascotPark(instant){
+  var m = mascotEl(); if (!m) return;
+  var p = mascotParkPos();
+  if (instant) m.style.transition = 'none';
+  m.style.left = p.left + 'px'; m.style.top = p.top + 'px';
+  var tag = document.getElementById('mascotTagB');
+  if (tag){ tag.style.left = Math.max(6, p.left - 108) + 'px'; tag.style.top = (p.top + 112) + 'px'; }
+  if (instant){ void m.offsetWidth; m.style.transition = ''; }
+}
+function mascotResetPose(){
+  var m = mascotEl(); if (!m) return;
+  m.classList.remove('running', 'shooting');
+  mascotPark(true);
+}
+function mascotStopRun(){
+  /* Hủy vòng chạy đang dở (đổi theme / chuyển tab): token tăng khiến runLoop
+     dừng ở lần await tiếp theo; đặt lại tư thế ngay để cô không kẹt giữa đường. */
+  mascotRunToken++;
+  var m = mascotEl();
+  if (m && m.dataset.busy === '1'){
+    m.dataset.busy = '0';
+    mascotResetPose();
+    var tag = document.getElementById('mascotTagB'); if (tag) tag.hidden = false;
+  }
+}
+function mascotFlashGo(){
+  var f = document.getElementById('mascotFlash'); if (!f) return;
+  f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');
+}
+function mascotBubbleAt(left, top){
+  var b = document.getElementById('mascotBubble'); if (!b) return;
+  var view = document.getElementById('view-home');
+  var w = (view && view.clientWidth) || 390;
+  b.style.left = Math.max(4, Math.min(left, w - 64)) + 'px';
+  b.style.top = Math.max(0, top) + 'px';
+  b.classList.add('show');
+  clearTimeout(b._h); b._h = setTimeout(function(){ b.classList.remove('show'); }, 900);
+}
+function mascotJobRows(){
+  return Array.prototype.slice.call(document.querySelectorAll('#todayList [data-job]')).slice(0, 2);
+}
+function mascotRowLabel(row){
+  var t = row.querySelector('.t1');
+  return t ? t.textContent.trim() : 'buổi chụp này';
+}
+function mascotApplyShotChips(){
+  /* Gắn lại chip cho các job đã chụp trong phiên (sau mỗi lần renderHome). */
+  var rows = document.querySelectorAll('#todayList [data-job]');
+  for (var i = 0; i < rows.length; i++){
+    var row = rows[i], id = row.getAttribute('data-job');
+    var txt = row.querySelector('.txt');
+    var has = txt && txt.querySelector('.mascot-shot-chip');
+    if (mascotShotJobs[id]){
+      if (txt && !has){
+        var chip = document.createElement('span');
+        chip.className = 'mascot-shot-chip';
+        chip.textContent = '✓ Cô gái vừa chụp tấm này';
+        txt.appendChild(chip);
+      }
+    } else if (has){ has.remove(); }
+  }
+}
+function mascotShootJob(row){
+  var id = row.getAttribute('data-job');
+  if (id) mascotShotJobs[id] = true;
+  mascotApplyShotChips();
+  mascotFlashGo();
+  var m = mascotEl();
+  var left = m ? (parseFloat(m.style.left) || 0) + 40 : 40;
+  var top = m ? (parseFloat(m.style.top) || 0) - 8 : 0;
+  mascotBubbleAt(left, top);
+  toast('Tách! Cô gái vừa chụp: ' + mascotRowLabel(row));
+}
+function mascotAfterRender(){
+  /* Gọi cuối renderHome: chip không mất khi màn vẽ lại; cô rảnh thì về chỗ đỗ
+     (vị trí tính lại theo màn hình — khỏi lệch sau khi nội dung đổi) và hiện
+     nhãn gợi ý bấm vào cô (nhãn mặc định hidden trong HTML). */
+  mascotApplyShotChips();
+  var m = mascotEl();
+  if (m && m.dataset.busy !== '1'){
+    mascotResetPose();
+    var tag = document.getElementById('mascotTagB');
+    if (tag && mascotIsOn()) tag.hidden = false;
+  }
+}
+async function mascotRunLoop(){
+  var token = ++mascotRunToken;
+  var m = mascotEl(); if (!m) return;
+  var view = document.getElementById('view-home');
+  var tag = document.getElementById('mascotTagB');
+  m.classList.add('running');
+  m.dataset.busy = '1';
+  if (tag) tag.hidden = true;
+  var park = mascotParkPos();
+  var reduced = false;
+  try{ reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
+  m.style.transition = reduced ? 'none' : 'left 1s ease, top .6s cubic-bezier(.34,1.56,.64,1)';
+  document.documentElement.scrollTop = 0; document.body.scrollTop = 0;
+  await mascotSleep(150);
+  if (token !== mascotRunToken || !view.classList.contains('on')) return;
+  m.style.top = park.top + 'px'; m.style.left = '6px'; /* chạy về vạch xuất phát bên trái */
+  await mascotSleep(1100);
+  if (token !== mascotRunToken || !view.classList.contains('on')) return;
+  m.style.left = park.left + 'px'; /* chạy ngang vùng lời chào, từ trái sang phải */
+  await mascotSleep(1100);
+  if (token !== mascotRunToken || !view.classList.contains('on')) return;
+  var rows = mascotJobRows();
+  for (var i = 0; i < rows.length; i++){
+    var row = rows[i];
+    var top = row.offsetTop - 8;
+    m.style.top = top + 'px';
+    m.style.left = (i % 2 === 0) ? (park.left + 'px') : '6px';
+    var y = Math.max(0, top - 220);
+    document.documentElement.scrollTop = y; document.body.scrollTop = y;
+    await mascotSleep(1050);
+    if (token !== mascotRunToken || !view.classList.contains('on')) return;
+    m.classList.remove('running'); m.classList.add('shooting');
+    mascotShootJob(row);
+    await mascotSleep(1250);
+    if (token !== mascotRunToken || !view.classList.contains('on')) return;
+    m.classList.remove('shooting'); m.classList.add('running');
+  }
+  /* Chạy về chỗ đỗ bên phải lời chào. */
+  m.style.transition = reduced ? 'none' : 'left 1s ease, top 1s ease';
+  document.documentElement.scrollTop = 0; document.body.scrollTop = 0;
+  mascotPark();
+  await mascotSleep(1000);
+  if (token !== mascotRunToken) return;
+  m.style.transition = '';
+  m.classList.remove('running');
+  m.dataset.busy = '0';
+  if (tag) tag.hidden = false;
+  toast(rows.length ? 'Cô gái chạy xong một vòng — đã chụp ' + rows.length + ' thẻ job' : 'Hôm nay thong thả, không có thẻ nào để chụp');
+}
+(function bindMascotB(){
+  var runBtn = document.getElementById('mascotRunBtn');
+  var m = mascotEl();
+  if (!runBtn || !m || runBtn.__mascotBound) return;
+  runBtn.__mascotBound = true;
+  runBtn.addEventListener('click', function(){
+    if (!mascotIsOn()) return;
+    if (m.classList.contains('running') || m.dataset.busy === '1') return;
+    mascotRunLoop();
+  });
+  m.addEventListener('click', function(){
+    if (!mascotIsOn()) return;
+    if (!m.classList.contains('running') && m.dataset.busy !== '1'){
+      /* Chưa chạy: bấm vào cô cũng chụp một tấm tại chỗ (không gắn chip). */
+      m.classList.add('shooting');
+      mascotFlashGo();
+      var left = (parseFloat(m.style.left) || 0) + 40;
+      var top = (parseFloat(m.style.top) || 0) - 8;
+      mascotBubbleAt(left, top);
+      toast('Tách! Cô gái chụp một tấm tại chỗ');
+      setTimeout(function(){ m.classList.remove('shooting'); }, 1100);
+      return;
+    }
+    /* Đang chạy: dừng lại chụp ngay một tấm rồi về chỗ đỗ. */
+    mascotRunToken++;
+    m.classList.remove('running');
+    m.classList.add('shooting');
+    mascotFlashGo();
+    var left2 = (parseFloat(m.style.left) || 0) + 40;
+    var top2 = (parseFloat(m.style.top) || 0) - 8;
+    mascotBubbleAt(left2, top2);
+    toast('Tách! Cô gái dừng lại chụp ngay một tấm');
+    setTimeout(function(){
+      m.classList.remove('shooting');
+      m.style.transition = 'left 1s ease, top 1s ease';
+      document.documentElement.scrollTop = 0; document.body.scrollTop = 0;
+      mascotPark();
+      setTimeout(function(){
+        m.style.transition = ''; m.dataset.busy = '0';
+        var tag = document.getElementById('mascotTagB'); if (tag) tag.hidden = false;
+      }, 1000);
+    }, 1200);
+  });
+})();
 
 
 </script>

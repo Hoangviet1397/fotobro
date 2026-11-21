@@ -2,6 +2,64 @@
 
 Ngày: 20/11/2026. Từ v2.2 (build 2.2 (13) đã lên TestFlight 17:07 20/11).
 
+## Mascot B — cô gái chạy nhảy chụp từng thẻ (21/11/2026, Việt chọn phương án B lúc 15:07)
+
+Cô gái mascot trong theme M4 Máy ảnh film, đúng ảnh thật tách từ logo v9
+(`www/mascot/girl.webp` 420×448 nền trong suốt + 3 cá xanh, đường dẫn tương
+đối, không nhúng base64). Chỉ hiện khi theme đang là M4; các theme khác chưa
+có mascot.
+
+- Cô đỗ bên phải lời chào (vị trí tính theo bề rộng màn hình). Nút "▶ Chạy
+  đi!" cạnh lời chào, hoặc bấm thẳng vào cô: cô chạy về vạch xuất phát trái,
+  chạy ngang vùng lời chào, nhảy xuống từng thẻ job ở "Hôm nay & sắp tới"
+  (tối đa 2 thẻ), dừng chụp từng thẻ (flash + bong bóng "Tách!" + chip
+  "✓ Cô gái vừa chụp tấm này" gắn lên thẻ).
+- Bấm vào cô lúc đang chạy: dừng lại chụp ngay một tấm rồi chạy về chỗ đỗ.
+  Bấm vào cô lúc rảnh: chụp một tấm tại chỗ (không gắn chip).
+- Chip "đã chụp" chỉ trong phiên: lưu trong bộ nhớ JS, không ghi vào dữ liệu
+  job, không lưu localStorage — tắt app mở lại là hết; renderHome vẽ lại màn
+  thì chip được gắn lại.
+- Chuyển tab giữa chừng hoặc đổi theme: vòng chạy tự hủy, cô về chỗ đỗ.
+  Tôn trọng prefers-reduced-motion (vòng chạy nhảy vị trí tức thì).
+- Kèm theo: bỏ hẳn hoa cánh bướm ở theme M4 — drift chỉ còn 4 cuộn phim
+  sepia; motif hero/sprig/empty cũng chỉ còn cuộn film (bông hoa cạnh lời
+  chào trong ảnh chụp máy thật của Việt chính là motif hero). Các theme hoa
+  C1/C2/C3 giữ nguyên.
+- Test: thêm mục [43] (mascot chỉ hiện ở M4, nút chạy, chip đã chụp, M4
+  không còn hoa, đổi theme dừng vòng chạy).
+- Giới hạn: cảm giác chạy/nhảy thật chỉ kiểm chứng được trên iPhone thật
+  (headless không sờ được) — cần Việt thử trên máy sau khi có build.
+
+## Cuộn/vuốt nảy kiểu Apple (21/11/2026, Việt: "chưa có cuộn vuốt kiểu nhảy nhảy của apple")
+
+Thêm cảm giác nảy lò xo cho cuộn/vuốt/chuyển màn, chỉ đổi CSS + một cử chỉ vuốt
+trong `www/index.html`. Giữ nguyên phiên bản 2.3, giữ nguyên toàn bộ tính năng.
+
+- Lò xo nảy mới `--spring-bounce: cubic-bezier(.34,1.56,.64,1)` (vượt đà 1.56):
+  sheet mở/đóng (`.45s`), action sheet (`.38s`), HUD (`.45s`), lật trang tour
+  welcome (`.45s`), snap-back vuốt trái dòng job (`.32s`), animation vào màn
+  `rise` (`.46s`). Trước đây các chỗ này dùng `cubic-bezier(.32,.72,0,1)` (chỉ
+  giảm tốc, không vượt đà) nên cảm giác cứng; `--spring` cũ (vượt đà 1.05) giữ
+  nguyên cho nút bấm/tab.
+- Vuốt đổi tab (mới): vuốt ngang trên màn chính để sang tab kề (home ↔ jobs ↔
+  money ↔ depts) — view theo tay, có kháng lực khi hết tab hoặc quá đà; thả ra
+  đủ đà (> 90px) thì đổi tab, chưa đủ thì nảy về bằng lò xo (class
+  `.tab-drag` / `.tab-snap`). Không kích hoạt khi đang mở sheet, ở màn chào /
+  cổng đăng nhập / màn khoá, vuốt trên dòng job (đã có vuốt trái riêng), chip
+  ngang, input/nút/link.
+- Quán tính cuộn: thêm `-webkit-overflow-scrolling:touch` cho `.wl-page`,
+  `.authgate`, chip ngang `#stageChips`/`#checkTypeChips` (sheet-body đã có);
+  `overscroll-behavior:contain` giữ sẵn ở các vùng cuộn trong để kéo quá biên
+  không lôi cả trang theo. Cuộn chính của trang vẫn là document (nảy tự nhiên
+  của WKWebView, không chặn bằng `overscroll-behavior:none`; html đã có nền
+  `var(--bg)` nên vùng overscroll không lộ trắng).
+- Tôn trọng `prefers-reduced-motion`: guard trong JS bỏ qua vuốt đổi tab; khối
+  global đã tắt hết transition/animation nên nảy tự tắt theo.
+- Test: thêm mục [42] (35 test mới: token/easing, quán tính cuộn, guard, vuốt
+  đổi tab theo tay + nảy về + hết tab + nhường dòng job).
+- Giới hạn: cảm giác nảy thật chỉ kiểm chứng được trên iPhone thật (headless
+  không sờ được) — cần Việt thử trên máy sau khi có build.
+
 ## Liquid Glass C — Kính Nhuộm (21/11/2026, Việt chọn phương án C)
 
 Dựng giao diện Liquid Glass kiểu iOS 26 vào code thật, chỉ đổi CSS trong
